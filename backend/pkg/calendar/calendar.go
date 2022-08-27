@@ -1,0 +1,70 @@
+package calendar
+
+import (
+	"io"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/engvik/eink/backend/internal/config"
+)
+
+type parser interface {
+	Parse(string) error
+}
+
+type Calendar struct {
+	URL        string
+	Parser     parser
+	HTTPClient *http.Client
+}
+
+func NewTask(c *http.Client, p parser, cfg *config.Config) *Calendar {
+	return &Calendar{
+		URL:        cfg.CalendarURL,
+		Parser:     p,
+		HTTPClient: c,
+	}
+}
+
+func (c *Calendar) Name() string {
+	return "Calendar"
+}
+
+func (c *Calendar) Run() {
+	ticker := time.NewTicker(time.Second * 5)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			req, err := http.NewRequest(http.MethodGet, c.URL, nil)
+			if err != nil {
+				log.Println("Error creating request: %s\n", err)
+				continue
+			}
+
+			resp, err := c.HTTPClient.Do(req)
+			if err != nil {
+				log.Printf("Error getting calendar: %s\n", err)
+				continue
+			}
+
+			body, err := readBody(resp)
+			if err != nil {
+				log.Printf("Error reading calendar body: %s\n", err)
+				continue
+			}
+
+			if err := c.Parser.Parse(string(body)); err != nil {
+				log.Printf("Error parsing calendar: %s\n", err)
+			}
+		}
+	}
+}
+
+func readBody(resp *http.Response) ([]byte, error) {
+	defer resp.Body.Close()
+
+	return io.ReadAll(resp.Body)
+}
