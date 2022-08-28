@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/engvik/eink/backend/internal/config"
+	"github.com/engvik/eink/backend/pkg/storage"
 )
 
 type parser interface {
@@ -17,13 +18,15 @@ type Calendar struct {
 	URL        string
 	Parser     parser
 	HTTPClient *http.Client
+	Storage    *storage.Storage
 }
 
-func NewTask(c *http.Client, p parser, cfg *config.Config) *Calendar {
+func NewTask(c *http.Client, s *storage.Storage, p parser, cfg *config.Config) *Calendar {
 	return &Calendar{
 		URL:        cfg.CalendarURL,
 		Parser:     p,
 		HTTPClient: c,
+		Storage:    s,
 	}
 }
 
