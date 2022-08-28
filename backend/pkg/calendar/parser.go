@@ -43,7 +43,7 @@ func (p *Parser) Parse(cal string) ([]Event, error) {
 
 			summary := e.GetProperty(ics.ComponentProperty(ics.PropertySummary))
 			description := e.GetProperty(ics.ComponentProperty(ics.PropertyDescription))
-			location := e.GetProperty(ics.ComponentProperty(ics.PropertyDescription))
+			location := e.GetProperty(ics.ComponentProperty(ics.PropertyLocation))
 
 			events = append(events, Event{
 				Start:       eStart,
