@@ -10,7 +10,7 @@ import (
 )
 
 type parser interface {
-	Parse(string) error
+	Parse(string) ([]Event, error)
 }
 
 type Calendar struct {
@@ -56,8 +56,14 @@ func (c *Calendar) Run() {
 				continue
 			}
 
-			if err := c.Parser.Parse(string(body)); err != nil {
+			events, err := c.Parser.Parse(string(body))
+			if err != nil {
 				log.Printf("Error parsing calendar: %s\n", err)
+				continue
+			}
+
+			for _, e := range events {
+				log.Println("todo: store event:", e)
 			}
 		}
 	}

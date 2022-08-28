@@ -24,7 +24,7 @@ func main() {
 
 	httpClient := transport.NewHTTPClient()
 
-	calendarParser := calendar.NewParser()
+	calendarParser := calendar.NewParser(&cfg)
 	calendar := calendar.NewTask(httpClient, calendarParser, &cfg)
 
 	tasks.Start(calendar)
