@@ -16,7 +16,7 @@ type parser interface {
 
 type store interface {
 	SetCalendarEvents(context.Context, []Event) error
-	GetCalendarEvents() []Event
+	GetCalendarEvents(context.Context) ([]Event, error)
 }
 
 type Calendar struct {

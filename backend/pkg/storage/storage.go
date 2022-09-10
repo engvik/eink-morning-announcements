@@ -8,6 +8,7 @@ import (
 
 type store interface {
 	SetCalendarEvents(context.Context, []calendar.Event) error
+	GetCalendarEvents(context.Context) ([]calendar.Event, error)
 }
 
 type Storage struct {
@@ -24,6 +25,6 @@ func (s *Storage) SetCalendarEvents(ctx context.Context, events []calendar.Event
 	return s.client.SetCalendarEvents(ctx, events)
 }
 
-func (s *Storage) GetCalendarEvents() []calendar.Event {
-	return []calendar.Event{}
+func (s *Storage) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error) {
+	return s.client.GetCalendarEvents(ctx)
 }
