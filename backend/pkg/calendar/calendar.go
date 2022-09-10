@@ -1,27 +1,32 @@
 package calendar
 
 import (
+	"context"
 	"io"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/engvik/eink/backend/internal/config"
-	"github.com/engvik/eink/backend/pkg/storage"
 )
 
 type parser interface {
 	Parse(string) ([]Event, error)
 }
 
+type store interface {
+	SetCalendarEvents(context.Context, []Event) error
+	GetCalendarEvents() []Event
+}
+
 type Calendar struct {
 	URL        string
 	Parser     parser
 	HTTPClient *http.Client
-	Storage    *storage.Storage
+	Storage    store
 }
 
-func NewTask(c *http.Client, s *storage.Storage, p parser, cfg *config.Config) *Calendar {
+func NewTask(c *http.Client, s store, p parser, cfg *config.Config) *Calendar {
 	return &Calendar{
 		URL:        cfg.CalendarURL,
 		Parser:     p,
@@ -41,6 +46,8 @@ func (c *Calendar) Run() {
 	for {
 		select {
 		case <-ticker.C:
+			ctx := context.Background()
+
 			req, err := http.NewRequest(http.MethodGet, c.URL, nil)
 			if err != nil {
 				log.Println("Error creating request: %s\n", err)
@@ -65,8 +72,8 @@ func (c *Calendar) Run() {
 				continue
 			}
 
-			for _, e := range events {
-				log.Println("todo: store event:", e)
+			if err := c.Storage.SetCalendarEvents(ctx, events); err != nil {
+				log.Printf("Error storing calendar events: %s\n", err)
 			}
 		}
 	}

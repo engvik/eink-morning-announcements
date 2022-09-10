@@ -48,6 +48,7 @@ func (p *Parser) Parse(cal string) ([]Event, error) {
 			events = append(events, Event{
 				Start:       eStart,
 				End:         eEnd,
+				ID:          e.Id(),
 				Title:       summary.Value,
 				Description: description.Value,
 				Location:    location.Value,
