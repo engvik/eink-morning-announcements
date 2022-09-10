@@ -6,6 +6,7 @@ tasks:
       - go run -race ./cmd/server
     env:
       CALENDAR_URL: "todo"
+      SQLITE_PATH: "storage.db"
   help:
     desc: Display help
     silent: true
