@@ -6,6 +6,7 @@ tasks:
       - go run -race ./cmd/server
     env:
       CALENDAR_URL: "todo"
+      WEATHER_URL: "https://api.met.no/weatherapi/locationforecast/2.0"
       SQLITE_PATH: "storage.db"
   help:
     desc: Display help

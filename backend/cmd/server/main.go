@@ -12,6 +12,7 @@ import (
 	"github.com/engvik/eink/backend/pkg/calendar"
 	"github.com/engvik/eink/backend/pkg/storage"
 	"github.com/engvik/eink/backend/pkg/tasks"
+	"github.com/engvik/eink/backend/pkg/weather"
 )
 
 func main() {
@@ -38,8 +39,12 @@ func main() {
 	calendarParser := calendar.NewParser(&cfg)
 	calendarTask := calendar.NewTask(storage, calendarFetcher, calendarParser)
 
+	// Weather
+	weatherFetcher := weather.NewFetcher(httpClient, &cfg)
+	weatherTask := weather.NewTask(weatherFetcher, storage)
+
 	// Start background tasks
-	tasks.Start(calendarTask)
+	tasks.Start(calendarTask, weatherTask)
 
 	// Start HTTP server
 	s := server.New(&cfg)
