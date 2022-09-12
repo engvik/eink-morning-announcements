@@ -33,11 +33,15 @@ func main() {
 
 	storage := storage.New(sqlClient)
 
+	// Calendar
+	calendarFetcher := calendar.NewFetcher(httpClient, &cfg)
 	calendarParser := calendar.NewParser(&cfg)
-	calendar := calendar.NewTask(httpClient, storage, calendarParser, &cfg)
+	calendarTask := calendar.NewTask(storage, calendarFetcher, calendarParser)
 
-	tasks.Start(calendar)
+	// Start background tasks
+	tasks.Start(calendarTask)
 
+	// Start HTTP server
 	s := server.New(&cfg)
 	s.Serve(ctx)
 }
