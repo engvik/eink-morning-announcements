@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/engvik/eink/backend/internal/config"
+	"github.com/engvik/eink/backend/internal/transport"
 )
 
 type parser interface {
@@ -20,18 +21,18 @@ type store interface {
 }
 
 type Calendar struct {
-	URL        string
-	Parser     parser
-	HTTPClient *http.Client
-	Storage    store
+	URL     string
+	Parser  parser
+	HTTP    *transport.HTTP
+	Storage store
 }
 
-func NewTask(c *http.Client, s store, p parser, cfg *config.Config) *Calendar {
+func NewTask(c *transport.HTTP, s store, p parser, cfg *config.Config) *Calendar {
 	return &Calendar{
-		URL:        cfg.CalendarURL,
-		Parser:     p,
-		HTTPClient: c,
-		Storage:    s,
+		URL:     cfg.CalendarURL,
+		Parser:  p,
+		HTTP:    c,
+		Storage: s,
 	}
 }
 
@@ -54,7 +55,9 @@ func (c *Calendar) Run() {
 				continue
 			}
 
-			resp, err := c.HTTPClient.Do(req)
+			req.Header.Set("User-Agent", c.HTTP.UserAgent())
+
+			resp, err := c.HTTP.Client.Do(req)
 			if err != nil {
 				log.Printf("Error getting calendar: %s\n", err)
 				continue
@@ -63,6 +66,11 @@ func (c *Calendar) Run() {
 			body, err := readBody(resp)
 			if err != nil {
 				log.Printf("Error reading calendar body: %s\n", err)
+				continue
+			}
+
+			if resp.StatusCode != http.StatusOK {
+				log.Println("Unexpected HTTP status:", resp.Status)
 				continue
 			}
 
