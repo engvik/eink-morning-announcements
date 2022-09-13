@@ -10,6 +10,7 @@ import (
 
 	"github.com/engvik/eink/backend/internal/config"
 	"github.com/engvik/eink/backend/pkg/calendar"
+	"github.com/engvik/eink/backend/pkg/weather"
 )
 
 type SQLite struct {
@@ -103,6 +104,134 @@ func (c *SQLite) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error
 	}
 
 	return events, nil
+}
+
+func (c *SQLite) SetWeatherForecasts(ctx context.Context, forecasts []weather.Forecast) error {
+	tx, err := c.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.PrepareContext(
+		ctx,
+		`
+		INSERT OR REPLACE INTO forecasts
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, f := range forecasts {
+		if _, err := stmt.ExecContext(
+			ctx,
+			f.Time.UnixMicro(),
+			f.Instant.AirPressureAtSeaLevel,
+			f.Instant.AirTemperature,
+			f.Instant.CloudAreaFraction,
+			f.Instant.RelativeHumidity,
+			f.Instant.WindFromDirection,
+			f.Instant.WindSpeed,
+			f.OneHour.SymbolCode,
+			f.OneHour.PrecipitationAmount,
+			f.SixHours.SymbolCode,
+			f.SixHours.PrecipitationAmount,
+			f.TwelveHours.SymbolCode,
+		); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func (c *SQLite) GetWeatherForecasts(ctx context.Context) ([]weather.Forecast, error) {
+
+	rows, err := c.db.QueryContext(
+		ctx,
+		`
+		SELECT *
+		FROM forecasts
+		ORDER BY time
+		LIMIT 10
+		`,
+	)
+	if err != nil {
+		return []weather.Forecast{}, err
+	}
+
+	defer rows.Close()
+
+	forecasts := make([]weather.Forecast, 0, 10)
+
+	for rows.Next() {
+		var (
+			timestamp                    int64
+			instantAirPressureAtSeaLevel float64
+			instantAirTemperature        float64
+			instantCloudAreaFraction     float64
+			instantRelativeHumidity      float64
+			instantWindFromDirection     float64
+			instantWindSpeed             float64
+			oneHourSymbolCode            string
+			oneHourPrecipitationAmount   float64
+			sixHoursSymbolCode           string
+			sixHoursPrecipitationAmount  float64
+			twelveHoursSymbolCode        string
+		)
+
+		if err := rows.Scan(
+			&timestamp,
+			&instantAirPressureAtSeaLevel,
+			&instantAirTemperature,
+			&instantCloudAreaFraction,
+			&instantRelativeHumidity,
+			&instantWindFromDirection,
+			&instantWindSpeed,
+			&oneHourSymbolCode,
+			&oneHourPrecipitationAmount,
+			&sixHoursSymbolCode,
+			&sixHoursPrecipitationAmount,
+			&twelveHoursSymbolCode,
+		); err != nil {
+			return forecasts, fmt.Errorf("scan: %w", err)
+		}
+
+		forecasts = append(
+			forecasts,
+			weather.Forecast{
+				Time: time.UnixMicro(timestamp),
+				Instant: weather.InstantForecast{
+					AirPressureAtSeaLevel: instantAirPressureAtSeaLevel,
+					AirTemperature:        instantAirTemperature,
+					CloudAreaFraction:     instantCloudAreaFraction,
+					RelativeHumidity:      instantRelativeHumidity,
+					WindFromDirection:     instantWindFromDirection,
+					WindSpeed:             instantWindSpeed,
+				},
+				OneHour: weather.PeriodForecast{
+					SymbolCode:          oneHourSymbolCode,
+					PrecipitationAmount: oneHourPrecipitationAmount,
+				},
+				SixHours: weather.PeriodForecast{
+					SymbolCode:          sixHoursSymbolCode,
+					PrecipitationAmount: sixHoursPrecipitationAmount,
+				},
+				TwelveHours: weather.PeriodForecast{
+					SymbolCode: twelveHoursSymbolCode,
+				},
+			},
+		)
+	}
+
+	if err := rows.Err(); err != nil {
+		return forecasts, err
+	}
+
+	return forecasts, nil
 }
 
 func (c *SQLite) Close() {

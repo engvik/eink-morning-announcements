@@ -12,17 +12,20 @@ type fetcher interface {
 	Fetch(context.Context) ([]Forecast, error)
 }
 
-type store interface{}
+type store interface {
+	SetWeatherForecasts(context.Context, []Forecast) error
+	GetWeatherForecasts(context.Context) ([]Forecast, error)
+}
 
 type Weather struct {
 	Fetcher fetcher
-	Store   store
+	Storage store
 }
 
 func NewTask(f fetcher, s store) *Weather {
 	return &Weather{
 		Fetcher: f,
-		Store:   s,
+		Storage: s,
 	}
 }
 
@@ -45,11 +48,9 @@ func (w *Weather) Run() {
 				continue
 			}
 
-			for _, f := range forecasts {
-				log.Println(f)
+			if err := w.Storage.SetWeatherForecasts(ctx, forecasts); err != nil {
+				log.Printf("Error storing weather forecast: %s\n", err)
 			}
-
-			// TODO: Store weather data
 		}
 	}
 }

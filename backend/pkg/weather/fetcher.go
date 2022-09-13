@@ -55,11 +55,19 @@ func (f *Fetcher) Fetch(ctx context.Context) ([]Forecast, error) {
 
 	for _, forecast := range respJSON.Properties.Timeseries {
 		forecasts = append(forecasts, Forecast{
-			Time:        forecast.Time,
-			Instant:     forecast.Data.Instant.Details,
-			OneHour:     forecast.Data.OneHour,
-			SixHours:    forecast.Data.SixHours,
-			TwelveHours: forecast.Data.TwelveHours,
+			Time:    forecast.Time,
+			Instant: forecast.Data.Instant.Details,
+			OneHour: PeriodForecast{
+				SymbolCode:          forecast.Data.OneHour.Summary.SymbolCode,
+				PrecipitationAmount: forecast.Data.OneHour.Details.PrecipitationAmount,
+			},
+			SixHours: PeriodForecast{
+				SymbolCode:          forecast.Data.SixHours.Summary.SymbolCode,
+				PrecipitationAmount: forecast.Data.SixHours.Details.PrecipitationAmount,
+			},
+			TwelveHours: PeriodForecast{
+				SymbolCode: forecast.Data.TwelveHours.Summary.SymbolCode,
+			},
 		})
 	}
 
