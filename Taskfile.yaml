@@ -1,11 +1,13 @@
 version: '3'
 
 tasks:
-  run:
+  run-backend:
     cmds:
       - go run -race ./cmd/server
+    dir: backend/
     env:
       CALENDAR_URL: "todo"
+      WEATHER_URL: "https://api.met.no/weatherapi/locationforecast/2.0"
       SQLITE_PATH: "storage.db"
   help:
     desc: Display help

@@ -2,13 +2,13 @@ package calendar
 
 import (
 	"context"
-	"io"
 	"log"
-	"net/http"
 	"time"
-
-	"github.com/engvik/eink/backend/internal/config"
 )
+
+type fetcher interface {
+	Fetch(context.Context) ([]byte, error)
+}
 
 type parser interface {
 	Parse(string) ([]Event, error)
@@ -20,18 +20,16 @@ type store interface {
 }
 
 type Calendar struct {
-	URL        string
-	Parser     parser
-	HTTPClient *http.Client
-	Storage    store
+	Fetcher fetcher
+	Parser  parser
+	Storage store
 }
 
-func NewTask(c *http.Client, s store, p parser, cfg *config.Config) *Calendar {
+func NewTask(s store, f fetcher, p parser) *Calendar {
 	return &Calendar{
-		URL:        cfg.CalendarURL,
-		Parser:     p,
-		HTTPClient: c,
-		Storage:    s,
+		Fetcher: f,
+		Parser:  p,
+		Storage: s,
 	}
 }
 
@@ -48,21 +46,9 @@ func (c *Calendar) Run() {
 		case <-ticker.C:
 			ctx := context.Background()
 
-			req, err := http.NewRequest(http.MethodGet, c.URL, nil)
+			body, err := c.Fetcher.Fetch(ctx)
 			if err != nil {
-				log.Println("Error creating request: %s\n", err)
-				continue
-			}
-
-			resp, err := c.HTTPClient.Do(req)
-			if err != nil {
-				log.Printf("Error getting calendar: %s\n", err)
-				continue
-			}
-
-			body, err := readBody(resp)
-			if err != nil {
-				log.Printf("Error reading calendar body: %s\n", err)
+				log.Printf("Error fetching calendar: %s\n", err)
 				continue
 			}
 
@@ -77,10 +63,4 @@ func (c *Calendar) Run() {
 			}
 		}
 	}
-}
-
-func readBody(resp *http.Response) ([]byte, error) {
-	defer resp.Body.Close()
-
-	return io.ReadAll(resp.Body)
 }
