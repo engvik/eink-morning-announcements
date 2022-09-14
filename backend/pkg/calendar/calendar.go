@@ -44,14 +44,13 @@ func (c *Calendar) Name() string {
 }
 
 func (c *Calendar) Run() {
-	ticker := time.NewTicker(time.Second * c.updateInterval)
+	ticker := time.NewTicker(c.updateInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
 			ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
-			defer cancel()
 
 			body, err := c.Fetcher.Fetch(ctx)
 			if err != nil {
@@ -68,6 +67,8 @@ func (c *Calendar) Run() {
 			if err := c.Storage.SetCalendarEvents(ctx, events); err != nil {
 				log.Printf("Error storing calendar events: %s\n", err)
 			}
+
+			cancel()
 		}
 	}
 }

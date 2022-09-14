@@ -5,9 +5,9 @@ import "time"
 type Config struct {
 	CalendarPeek            time.Duration `envconfig:"CALENDAR_PEEK" default:"168h"`
 	CalendarUpdateInterval  time.Duration `envconfig:"CALENDAR_UPDATE_INTERVAL" default:"1h"`
-	CalendarTimeout         time.Duration `envconfig."CALENDAR_TIMEOUT_INTERVAL" default:"30s"`
+	CalendarTimeout         time.Duration `envconfig:"CALENDAR_TIMEOUT_INTERVAL" default:"30s"`
 	WeatherUpdateInterval   time.Duration `envconfig:"WEATHER_UPDATE_INTERVAL" default:"1h"`
-	WeatherTimeout          time.Duration `envconfig."WEATHER_TIMEOUT_INTERVAL" default:"30s"`
+	WeatherTimeout          time.Duration `envconfig:"WEATHER_TIMEOUT_INTERVAL" default:"30s"`
 	HTTPTimeout             time.Duration `envconfig:"HTTP_TIMEOUT" default:"10s"`
 	HTTPDialTimeout         time.Duration `envconfig:"HTTP_DIAL_TIMEOUT" default:"5s"`
 	HTTPTLSHandshakeTimeout time.Duration `envconfig:"HTTP_TLS_HANDSHAKE_TIMEOUT" default:"5s"`

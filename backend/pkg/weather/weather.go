@@ -40,14 +40,13 @@ func (w *Weather) Name() string {
 }
 
 func (w *Weather) Run() {
-	ticker := time.NewTicker(time.Second * w.updateInterval)
+	ticker := time.NewTicker(w.updateInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
 			ctx, cancel := context.WithTimeout(context.Background(), w.timeout)
-			defer cancel()
 
 			forecasts, err := w.Fetcher.Fetch(ctx)
 			if err != nil {
@@ -58,6 +57,8 @@ func (w *Weather) Run() {
 			if err := w.Storage.SetWeatherForecasts(ctx, forecasts); err != nil {
 				log.Printf("Error storing weather forecast: %s\n", err)
 			}
+
+			cancel()
 		}
 	}
 }
