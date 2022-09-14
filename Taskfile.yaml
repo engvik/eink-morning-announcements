@@ -9,6 +9,10 @@ tasks:
       CALENDAR_URL: "todo"
       WEATHER_URL: "https://api.met.no/weatherapi/locationforecast/2.0"
       SQLITE_PATH: "storage.db"
+  run-frontend:
+    cmds:
+      - npm run dev
+    dir: frontend/
   help:
     desc: Display help
     silent: true
