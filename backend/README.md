@@ -1,6 +1,46 @@
 # Backend
 
+The backend is a Go application that performs two things:
+
+1) Is a HTTP server serving an API for the frontend and the ESP32.
+2) Runs tasks to fetch forecasts and calendar events on a regular basis.
+
+## Run locally
+
+From repository root folder: `task run-backend`
+
+## Tasks
+
+To write a new task, implement the following interface:
+
+```go
+    Name() string       // Should return the task name.
+    Run()               // Should implement the task runner itself. Note that
+                        // tasks runs in it's own Go routine, so it must
+                        // block otherwise the task will just exit.
+```
+
+Then it can be passed into `tasks.Start(...tasks)`
+
+## API
+
 ## Database
+
+The backend uses a `sqlite` database as it should be enough for this
+application, but hopefully it should be pretty easy to write support for
+antoher database.
+
+As long as it fulfills the interface,
+
+```go
+    SetCalendarEvents(context.Context, []calendar.Event) error
+    GetCalendarEvents(context.Context) ([]calendar.Event, error)
+    SetWeatherForecasts(context.Context, []weather.Forecast) error
+    GetWeatherForecasts(context.Context) ([]weather.Forecast, error
+```
+
+it can be passed into `storage.New(myDBClientImplementation)`, and it should
+just work.
 
 ### Tables
 
