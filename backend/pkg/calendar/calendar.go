@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"time"
+
+	"github.com/engvik/eink/backend/internal/config"
 )
 
 type fetcher interface {
@@ -20,16 +22,20 @@ type store interface {
 }
 
 type Calendar struct {
-	Fetcher fetcher
-	Parser  parser
-	Storage store
+	Fetcher        fetcher
+	Parser         parser
+	Storage        store
+	updateInterval time.Duration
+	timeout        time.Duration
 }
 
-func NewTask(s store, f fetcher, p parser) *Calendar {
+func NewTask(s store, f fetcher, p parser, cfg *config.Config) *Calendar {
 	return &Calendar{
-		Fetcher: f,
-		Parser:  p,
-		Storage: s,
+		Fetcher:        f,
+		Parser:         p,
+		Storage:        s,
+		updateInterval: cfg.CalendarUpdateInterval,
+		timeout:        cfg.CalendarTimeout,
 	}
 }
 
@@ -38,13 +44,14 @@ func (c *Calendar) Name() string {
 }
 
 func (c *Calendar) Run() {
-	ticker := time.NewTicker(time.Second * 5)
+	ticker := time.NewTicker(time.Second * c.updateInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			ctx := context.Background()
+			ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
+			defer cancel()
 
 			body, err := c.Fetcher.Fetch(ctx)
 			if err != nil {

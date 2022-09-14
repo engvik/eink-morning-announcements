@@ -24,7 +24,7 @@ func main() {
 
 	ctx := context.Background()
 
-	httpClient := transport.NewHTTPClient()
+	httpClient := transport.NewHTTPClient(&cfg)
 
 	sqlClient, err := storage.NewSQLiteClient(&cfg)
 	if err != nil {
@@ -37,11 +37,11 @@ func main() {
 	// Calendar
 	calendarFetcher := calendar.NewFetcher(httpClient, &cfg)
 	calendarParser := calendar.NewParser(&cfg)
-	calendarTask := calendar.NewTask(storage, calendarFetcher, calendarParser)
+	calendarTask := calendar.NewTask(storage, calendarFetcher, calendarParser, &cfg)
 
 	// Weather
 	weatherFetcher := weather.NewFetcher(httpClient, &cfg)
-	weatherTask := weather.NewTask(weatherFetcher, storage)
+	weatherTask := weather.NewTask(weatherFetcher, storage, &cfg)
 
 	// Start background tasks
 	tasks.Start(calendarTask, weatherTask)

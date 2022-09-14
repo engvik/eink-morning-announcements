@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/engvik/eink/backend/internal/config"
 )
 
 type fetcher interface {
@@ -18,14 +20,18 @@ type store interface {
 }
 
 type Weather struct {
-	Fetcher fetcher
-	Storage store
+	Fetcher        fetcher
+	Storage        store
+	updateInterval time.Duration
+	timeout        time.Duration
 }
 
-func NewTask(f fetcher, s store) *Weather {
+func NewTask(f fetcher, s store, cfg *config.Config) *Weather {
 	return &Weather{
-		Fetcher: f,
-		Storage: s,
+		Fetcher:        f,
+		Storage:        s,
+		updateInterval: cfg.WeatherUpdateInterval,
+		timeout:        cfg.WeatherTimeout,
 	}
 }
 
@@ -34,13 +40,14 @@ func (w *Weather) Name() string {
 }
 
 func (w *Weather) Run() {
-	ticker := time.NewTicker(time.Second * 5)
+	ticker := time.NewTicker(time.Second * w.updateInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			ctx := context.Background()
+			ctx, cancel := context.WithTimeout(context.Background(), w.timeout)
+			defer cancel()
 
 			forecasts, err := w.Fetcher.Fetch(ctx)
 			if err != nil {

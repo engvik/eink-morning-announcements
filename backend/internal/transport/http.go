@@ -6,21 +6,23 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/engvik/eink/backend/internal/config"
 )
 
 type HTTP struct {
 	Client *http.Client
 }
 
-func NewHTTPClient() *HTTP {
+func NewHTTPClient(cfg *config.Config) *HTTP {
 	return &HTTP{
 		Client: &http.Client{
-			Timeout: time.Second * 10,
+			Timeout: time.Second * cfg.HTTPTimeout,
 			Transport: &http.Transport{
 				Dial: (&net.Dialer{
-					Timeout: 5 * time.Second,
+					Timeout: time.Second * cfg.HTTPDialTimeout,
 				}).Dial,
-				TLSHandshakeTimeout: 5 * time.Second,
+				TLSHandshakeTimeout: time.Second * cfg.HTTPTLSHandshakeTimeout,
 			},
 		},
 	}
