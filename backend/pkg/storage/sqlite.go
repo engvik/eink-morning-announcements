@@ -10,6 +10,7 @@ import (
 
 	"github.com/engvik/eink/backend/internal/config"
 	"github.com/engvik/eink/backend/pkg/calendar"
+	"github.com/engvik/eink/backend/pkg/message"
 	"github.com/engvik/eink/backend/pkg/weather"
 )
 
@@ -149,7 +150,6 @@ func (c *SQLite) SetWeatherForecasts(ctx context.Context, forecasts []weather.Fo
 }
 
 func (c *SQLite) GetWeatherForecasts(ctx context.Context) ([]weather.Forecast, error) {
-
 	rows, err := c.db.QueryContext(
 		ctx,
 		`
@@ -232,6 +232,40 @@ func (c *SQLite) GetWeatherForecasts(ctx context.Context) ([]weather.Forecast, e
 	}
 
 	return forecasts, nil
+}
+
+func (c *SQLite) SetMessage(ctx context.Context, m message.Message) error {
+	stmt, err := c.db.PrepareContext(
+		ctx,
+		`
+		INSERT OR REPLACE INTO messages
+		VALUES (?, ?)
+		`,
+	)
+	if err != nil {
+		return err
+	}
+
+	if _, err := stmt.ExecContext(ctx, time.Now().UnixMicro(), m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *SQLite) GetMessage(ctx context.Context) (message.Message, error) {
+	var timestamp int64
+	var msg string
+
+	err := c.db.QueryRowContext(ctx, "SELECT * FROM messages ORDER BY time LIMIT 1").Scan(&timestamp, &msg)
+	if err != nil {
+		return message.Message{}, err
+	}
+
+	return message.Message{
+		Time:    time.UnixMicro(timestamp),
+		Message: msg,
+	}, nil
 }
 
 func (c *SQLite) Close() {

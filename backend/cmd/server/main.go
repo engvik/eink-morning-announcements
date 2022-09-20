@@ -10,6 +10,7 @@ import (
 	"github.com/engvik/eink/backend/internal/server"
 	"github.com/engvik/eink/backend/internal/transport"
 	"github.com/engvik/eink/backend/pkg/calendar"
+	"github.com/engvik/eink/backend/pkg/message"
 	"github.com/engvik/eink/backend/pkg/storage"
 	"github.com/engvik/eink/backend/pkg/tasks"
 	"github.com/engvik/eink/backend/pkg/weather"
@@ -45,10 +46,16 @@ func main() {
 	weatherTask := weather.NewTask(weatherFetcher, storage, &cfg)
 	weatherHandler := weather.NewHTTPHandler(storage)
 
+	// Message
+	messageHandler := message.NewHTTPHandler(storage)
+
 	// Create HTTP server
 	s := server.New(&cfg)
+
+	// Mount routes
 	s.MountRoute("/api/calendar", calendarHandler)
 	s.MountRoute("/api/weather", weatherHandler)
+	s.MountRoute("/api/message", messageHandler)
 
 	// Start background tasks
 	tasks.Start(calendarTask, weatherTask)

@@ -37,6 +37,8 @@ As long as it fulfills the interface,
     GetCalendarEvents(context.Context) ([]calendar.Event, error)
     SetWeatherForecasts(context.Context, []weather.Forecast) error
     GetWeatherForecasts(context.Context) ([]weather.Forecast, error
+    SetMessage(context.Context, message.Message) error
+    GetMessage(context.Context) (message.Message, error)
 ```
 
 it can be passed into `storage.New(myDBClientImplementation)`, and it should
@@ -62,7 +64,7 @@ CREATE TABLE events (
 
 ```sql
 CREATE TABLE forecasts (
-  time INTEGER PRIMARY KEY NOT NULL,
+  time INTEGER,
   instant_air_pressure_at_sea_level REAL,
   instant_air_temperature REAL,
   instant_cloud_area_fraction REAL,
@@ -75,4 +77,13 @@ CREATE TABLE forecasts (
   six_hours_precipitation_amount REAL,
   twelve_hours_symbol_code TEXT
 );
+```
+
+#### Messages
+
+```sql
+CREATE TABLE messages (
+  time INTEGER,
+  message TEXT
+)
 ```
