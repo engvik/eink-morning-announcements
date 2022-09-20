@@ -21,7 +21,7 @@ type store interface {
 	GetCalendarEvents(context.Context) ([]Event, error)
 }
 
-type Calendar struct {
+type Task struct {
 	Fetcher        fetcher
 	Parser         parser
 	Storage        store
@@ -29,8 +29,8 @@ type Calendar struct {
 	timeout        time.Duration
 }
 
-func NewTask(s store, f fetcher, p parser, cfg *config.Config) *Calendar {
-	return &Calendar{
+func NewTask(s store, f fetcher, p parser, cfg *config.Config) *Task {
+	return &Task{
 		Fetcher:        f,
 		Parser:         p,
 		Storage:        s,
@@ -39,32 +39,32 @@ func NewTask(s store, f fetcher, p parser, cfg *config.Config) *Calendar {
 	}
 }
 
-func (c *Calendar) Name() string {
+func (t *Task) Name() string {
 	return "Calendar"
 }
 
-func (c *Calendar) Run() {
-	ticker := time.NewTicker(c.updateInterval)
+func (t *Task) Run() {
+	ticker := time.NewTicker(t.updateInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
+			ctx, cancel := context.WithTimeout(context.Background(), t.timeout)
 
-			body, err := c.Fetcher.Fetch(ctx)
+			body, err := t.Fetcher.Fetch(ctx)
 			if err != nil {
 				log.Printf("Error fetching calendar: %s\n", err)
 				continue
 			}
 
-			events, err := c.Parser.Parse(string(body))
+			events, err := t.Parser.Parse(string(body))
 			if err != nil {
 				log.Printf("Error parsing calendar: %s\n", err)
 				continue
 			}
 
-			if err := c.Storage.SetCalendarEvents(ctx, events); err != nil {
+			if err := t.Storage.SetCalendarEvents(ctx, events); err != nil {
 				log.Printf("Error storing calendar events: %s\n", err)
 			}
 

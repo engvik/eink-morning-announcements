@@ -2,9 +2,7 @@ package weather
 
 import (
 	"context"
-	"io"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/engvik/eink/backend/internal/config"
@@ -19,15 +17,15 @@ type store interface {
 	GetWeatherForecasts(context.Context) ([]Forecast, error)
 }
 
-type Weather struct {
+type Task struct {
 	Fetcher        fetcher
 	Storage        store
 	updateInterval time.Duration
 	timeout        time.Duration
 }
 
-func NewTask(f fetcher, s store, cfg *config.Config) *Weather {
-	return &Weather{
+func NewTask(f fetcher, s store, cfg *config.Config) *Task {
+	return &Task{
 		Fetcher:        f,
 		Storage:        s,
 		updateInterval: cfg.WeatherUpdateInterval,
@@ -35,36 +33,30 @@ func NewTask(f fetcher, s store, cfg *config.Config) *Weather {
 	}
 }
 
-func (w *Weather) Name() string {
+func (t *Task) Name() string {
 	return "Weather"
 }
 
-func (w *Weather) Run() {
-	ticker := time.NewTicker(w.updateInterval)
+func (t *Task) Run() {
+	ticker := time.NewTicker(t.updateInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			ctx, cancel := context.WithTimeout(context.Background(), w.timeout)
+			ctx, cancel := context.WithTimeout(context.Background(), t.timeout)
 
-			forecasts, err := w.Fetcher.Fetch(ctx)
+			forecasts, err := t.Fetcher.Fetch(ctx)
 			if err != nil {
 				log.Printf("Error fetching weather data: %s\n", err)
 				continue
 			}
 
-			if err := w.Storage.SetWeatherForecasts(ctx, forecasts); err != nil {
+			if err := t.Storage.SetWeatherForecasts(ctx, forecasts); err != nil {
 				log.Printf("Error storing weather forecast: %s\n", err)
 			}
 
 			cancel()
 		}
 	}
-}
-
-func readBody(resp *http.Response) ([]byte, error) {
-	defer resp.Body.Close()
-
-	return io.ReadAll(resp.Body)
 }
