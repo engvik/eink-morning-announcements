@@ -3,11 +3,11 @@ package weather
 import "time"
 
 type Forecast struct {
-	Time        time.Time
-	Instant     InstantForecast
-	OneHour     PeriodForecast
-	SixHours    PeriodForecast
-	TwelveHours PeriodForecast
+	Time        time.Time       `json:"time"`
+	Instant     InstantForecast `json:"instant"`
+	OneHour     PeriodForecast  `json:"one_hour"`
+	SixHours    PeriodForecast  `json:"six_hours`
+	TwelveHours PeriodForecast  `json:"twelve_hours"`
 }
 
 type InstantForecast struct {

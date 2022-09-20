@@ -15,22 +15,26 @@ import (
 )
 
 type Server struct {
-	Port   string
-	Router *chi.Mux
-	HTTP   *http.Server
+	port   string
+	router *chi.Mux
+	server *http.Server
 }
 
 func New(cfg *config.Config) *Server {
 	router := chi.NewRouter()
 
 	return &Server{
-		Port:   cfg.Port,
-		Router: router,
-		HTTP: &http.Server{
+		port:   cfg.Port,
+		router: router,
+		server: &http.Server{
 			Addr:    fmt.Sprintf(":%s", cfg.Port),
 			Handler: router,
 		},
 	}
+}
+
+func (s *Server) MountRoute(path string, route http.Handler) {
+	s.router.Mount(path, route)
 }
 
 func (s *Server) Serve(ctx context.Context) {
@@ -45,11 +49,11 @@ func (s *Server) Serve(ctx context.Context) {
 		if err := server.Shutdown(ctx); err != nil {
 			log.Fatalf("Error gracefully shutting down server: %s", err)
 		}
-	}(ctx, s.HTTP)
+	}(ctx, s.server)
 
-	log.Printf("Listening at: %s\n", s.Port)
+	log.Printf("Listening at: %s\n", s.port)
 
-	if err := s.HTTP.ListenAndServe(); err != http.ErrServerClosed {
+	if err := s.server.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatalf("Error serving: %s", err)
 	}
 }

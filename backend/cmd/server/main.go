@@ -38,15 +38,21 @@ func main() {
 	calendarFetcher := calendar.NewFetcher(httpClient, &cfg)
 	calendarParser := calendar.NewParser(&cfg)
 	calendarTask := calendar.NewTask(storage, calendarFetcher, calendarParser, &cfg)
+	calendarHandler := calendar.NewHTTPHandler(storage)
 
 	// Weather
 	weatherFetcher := weather.NewFetcher(httpClient, &cfg)
 	weatherTask := weather.NewTask(weatherFetcher, storage, &cfg)
+	weatherHandler := weather.NewHTTPHandler(storage)
+
+	// Create HTTP server
+	s := server.New(&cfg)
+	s.MountRoute("/api/calendar", calendarHandler)
+	s.MountRoute("/api/weather", weatherHandler)
 
 	// Start background tasks
 	tasks.Start(calendarTask, weatherTask)
 
 	// Start HTTP server
-	s := server.New(&cfg)
 	s.Serve(ctx)
 }

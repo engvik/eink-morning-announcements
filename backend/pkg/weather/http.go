@@ -1,4 +1,4 @@
-package calendar
+package weather
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 type service interface {
-	GetCalendarEvents(context.Context) ([]Event, error)
+	GetWeatherForecasts(context.Context) ([]Forecast, error)
 }
 
 func NewHTTPHandler(s service) http.Handler {
@@ -18,7 +18,7 @@ func NewHTTPHandler(s service) http.Handler {
 
 	h := &handler{service: s}
 
-	r.Get("/", h.getCalendarEvents)
+	r.Get("/", h.getWeatherForecasts)
 
 	return r
 }
@@ -27,18 +27,18 @@ type handler struct {
 	service service
 }
 
-func (h *handler) getCalendarEvents(w http.ResponseWriter, r *http.Request) {
-	events, err := h.service.GetCalendarEvents(r.Context())
+func (h *handler) getWeatherForecasts(w http.ResponseWriter, r *http.Request) {
+	forecasts, err := h.service.GetWeatherForecasts(r.Context())
 	if err != nil {
-		log.Printf("error getting events: %s\n", err)
+		log.Printf("error getting forecasts: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 		return
 	}
 
-	res, err := json.Marshal(events)
+	res, err := json.Marshal(forecasts)
 	if err != nil {
-		log.Printf("error marshaling events: %s\n", err)
+		log.Printf("error marshaling forecasts: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 		return
