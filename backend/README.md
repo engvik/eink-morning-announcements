@@ -24,6 +24,28 @@ Then it can be passed into `tasks.Start(...tasks)`
 
 ## API
 
+### GET /api/calendar
+
+Get calendar events.
+
+### GET /api/weather
+
+Get weather forecasts.
+
+### GET /api/messages
+
+Get latest message.
+
+### POST /api/messages
+
+Create a new message.
+
+Payload:
+
+```json
+{ "message": "my-message" }
+```
+
 ## Database
 
 The backend uses a `sqlite` database as it should be enough for this
