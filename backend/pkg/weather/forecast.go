@@ -20,8 +20,8 @@ type InstantForecast struct {
 }
 
 type PeriodForecast struct {
-	SymbolCode          string
-	PrecipitationAmount float64
+	SymbolCode          string  `json:"symbol_code"`
+	PrecipitationAmount float64 `json:"precipitation_amount"`
 }
 
 type forecastResponse struct {
