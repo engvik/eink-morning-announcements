@@ -1,9 +1,10 @@
 <script>
-  // import Counter from './lib/Counter.svelte'
+  import Input from './lib/Input.svelte'
 </script>
 
 <main>
-    <p>Hello</p>
+    <h1>Message</h1>
+    <Input />
 </main>
 
 
