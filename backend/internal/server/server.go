@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi"
 
 	"github.com/engvik/eink/backend/internal/config"
+	"github.com/engvik/eink/backend/internal/transport"
 )
 
 type Server struct {
@@ -22,6 +23,7 @@ type Server struct {
 
 func New(cfg *config.Config) *Server {
 	router := chi.NewRouter()
+	router.Use(transport.CORSHandler())
 
 	return &Server{
 		port:   cfg.Port,
