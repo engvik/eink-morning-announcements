@@ -61,7 +61,7 @@ func (c *SQLite) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error
 		`
 		SELECT *
 		FROM events
-		ORDER BY start
+		ORDER BY start DESC
 		LIMIT 10
 		`,
 	)
@@ -155,7 +155,7 @@ func (c *SQLite) GetWeatherForecasts(ctx context.Context) ([]weather.Forecast, e
 		`
 		SELECT *
 		FROM forecasts
-		ORDER BY time
+		ORDER BY time DESC
 		LIMIT 10
 		`,
 	)
