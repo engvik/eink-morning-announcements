@@ -257,7 +257,7 @@ func (c *SQLite) GetMessage(ctx context.Context) (message.Message, error) {
 	var timestamp int64
 	var msg string
 
-	err := c.db.QueryRowContext(ctx, "SELECT * FROM messages ORDER BY time LIMIT 1").Scan(&timestamp, &msg)
+	err := c.db.QueryRowContext(ctx, "SELECT * FROM messages ORDER BY time DESC LIMIT 1").Scan(&timestamp, &msg)
 	if err != nil {
 		return message.Message{}, err
 	}
