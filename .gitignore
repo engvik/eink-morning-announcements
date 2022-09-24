@@ -25,3 +25,7 @@ dist-ssr
 
 # SQLite DB
 *.db
+
+# platformio
+esp32/.pio
+esp32/.vscode/*
