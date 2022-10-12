@@ -13,6 +13,14 @@ tasks:
     cmds:
       - npm run dev
     dir: frontend/
+  build-esp:
+    cmds:
+      - pio run
+    dir: esp32/
+  upload-esp:
+    cmds:
+      - pio run --target upload
+    dir: esp32/
   help:
     desc: Display help
     silent: true
