@@ -4,15 +4,15 @@
 
 GxEPD2_BW<GxEPD2_750_T7, GxEPD2_750_T7::HEIGHT> display(GxEPD2_750_T7(/*CS=*/5, /*DC=*/ 0, /*RST=*/ 2, /*BUSY=*/ 15));
 
-void init() {
+void EinkDisplay::init() {
   display.init(115200);
 }
 
-void hibernate() {
+void EinkDisplay::hibernate() {
   display.hibernate();
 }
 
-void refreshScreen() {
+void EinkDisplay::refreshScreen() {
   display.setTextColor(GxEPD_BLACK);
   display.firstPage();
   do

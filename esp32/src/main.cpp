@@ -5,9 +5,10 @@
 
 void setup()
 {
-    init();
-    refreshScreen();
-    hibernate();
+    EinkDisplay ed;
+    ed.init();
+    ed.refreshScreen();
+    ed.hibernate();
 }
 
 void loop() {};

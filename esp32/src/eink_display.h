@@ -1,3 +1,6 @@
-void init();
-void hibernate();
-void refreshScreen();
+class EinkDisplay {
+    public:
+        void init();
+        void hibernate();
+        void refreshScreen();
+};
