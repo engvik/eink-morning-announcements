@@ -13,7 +13,7 @@ void EinkDisplay::hibernate() {
 }
 
 void EinkDisplay::refreshScreen() {
-  display.setTextColor(GxEPD_BLACK);
+  display.setFullWindow();
   display.firstPage();
   do
   {
