@@ -1,14 +1,10 @@
 #include "wifi.h"
 
-
-const char* ssid = "ssid";
-const char* passord = "password";
-
 void initWiFi() {
     Serial.println("Setting up WiFi ..");
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin("", "");
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     Serial.print("\tConnecting to WiFi ..");
     while (WiFi.status() != WL_CONNECTED) {
