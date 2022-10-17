@@ -1,8 +1,6 @@
 #include "wifi.h"
 
 void initWiFi() {
-    Serial.println("Setting up WiFi ..");
-
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
