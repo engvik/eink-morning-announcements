@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Arduino_JSON.h>
 
 #include "eink_display.h"
 #include "http.h"
@@ -15,16 +16,19 @@ void setup()
 
     Serial.println("Fetching calendar data ..");
     // Fetch data from backend
-    String calendar = httpGET(BACKEND_CALENDAR_ENDPOINT);
-    Serial.println(calendar);
+    String rawCalendar = httpGET(BACKEND_CALENDAR_ENDPOINT);
+    JSONVar calendar = JSON.parse(rawCalendar);
+    Serial.println(calendar.length());
 
     Serial.println("Fetching message ..");
-    String message = httpGET(BACKEND_MESSAGE_ENDPOINT);
-    Serial.println(message);
+    String rawMessage = httpGET(BACKEND_MESSAGE_ENDPOINT);
+    JSONVar message = JSON.parse(rawMessage);
+    Serial.println(message["message"]);
 
     Serial.println("Fetching weather data ..");
-    String weather = httpGET(BACKEND_WEATHER_ENDPOINT);
-    Serial.println(weather);
+    String rawWeather = httpGET(BACKEND_WEATHER_ENDPOINT);
+    JSONVar weather = JSON.parse(rawWeather);
+    Serial.println(weather.length());
 
     // Init display
     Serial.println("Setting up Eink Display ..");
