@@ -17,26 +17,29 @@ void setup()
     Serial.println("Fetching calendar data ..");
     // Fetch data from backend
     String rawCalendar = httpGET(BACKEND_CALENDAR_ENDPOINT);
-    JSONVar calendar = JSON.parse(rawCalendar);
-    Serial.println(calendar.length());
 
     Serial.println("Fetching message ..");
     String rawMessage = httpGET(BACKEND_MESSAGE_ENDPOINT);
-    JSONVar message = JSON.parse(rawMessage);
-    Serial.println(message["message"]);
 
     Serial.println("Fetching weather data ..");
     String rawWeather = httpGET(BACKEND_WEATHER_ENDPOINT);
-    JSONVar weather = JSON.parse(rawWeather);
-    Serial.println(weather.length());
+
+    struct DisplayData data;
+    data.calendar = JSON.parse(rawCalendar);
+    data.message = JSON.parse(rawMessage);
+    data.weather = JSON.parse(rawWeather);
 
     // Init display
     Serial.println("Setting up Eink Display ..");
     
     EinkDisplay ed;
     ed.init();
+    delay(5000);
+    Serial.println("Refreshing Eink Display ..");
     ed.refreshScreen();
-    ed.hibernate();
+    delay(5000);
+    ed.draw(&data);
+    ed.off();
 }
 
 void loop() {};
