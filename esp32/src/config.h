@@ -15,4 +15,10 @@ extern int PIN_DC;
 extern int PIN_RST;
 extern int PIN_BUSY;
 
+// HTTP Backend
+
+extern const char* BACKEND_CALENDAR_ENDPOINT;
+extern const char* BACKEND_MESSAGE_ENDPOINT;
+extern const char* BACKEND_WEATHER_ENDPOINT;
+
 #endif
