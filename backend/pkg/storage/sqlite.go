@@ -61,9 +61,11 @@ func (c *SQLite) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error
 		`
 		SELECT *
 		FROM events
-		ORDER BY start DESC
+		WHERE start >= ?
+		ORDER BY start ASC
 		LIMIT 10
 		`,
+		time.Now().UnixMicro(),
 	)
 	if err != nil {
 		return []calendar.Event{}, err
@@ -155,9 +157,11 @@ func (c *SQLite) GetWeatherForecasts(ctx context.Context) ([]weather.Forecast, e
 		`
 		SELECT *
 		FROM forecasts
-		ORDER BY time DESC
+		WHERE time >= ?
+		ORDER BY time ASC
 		LIMIT 10
 		`,
+		time.Now().UnixMicro(),
 	)
 	if err != nil {
 		return []weather.Forecast{}, err
