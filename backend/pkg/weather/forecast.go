@@ -6,7 +6,7 @@ type Forecast struct {
 	Time        time.Time       `json:"time"`
 	Instant     InstantForecast `json:"instant"`
 	OneHour     PeriodForecast  `json:"one_hour"`
-	SixHours    PeriodForecast  `json:"six_hours`
+	SixHours    PeriodForecast  `json:"six_hours"`
 	TwelveHours PeriodForecast  `json:"twelve_hours"`
 }
 
