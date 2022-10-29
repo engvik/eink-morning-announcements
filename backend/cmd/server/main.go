@@ -11,6 +11,7 @@ import (
 	"github.com/engvik/eink/backend/internal/transport"
 	"github.com/engvik/eink/backend/pkg/calendar"
 	"github.com/engvik/eink/backend/pkg/message"
+	"github.com/engvik/eink/backend/pkg/meta"
 	"github.com/engvik/eink/backend/pkg/storage"
 	"github.com/engvik/eink/backend/pkg/tasks"
 	"github.com/engvik/eink/backend/pkg/weather"
@@ -49,6 +50,9 @@ func main() {
 	// Message
 	messageHandler := message.NewHTTPHandler(storage)
 
+	// Meta
+	metaHandler := meta.NewHTTPHandler()
+
 	// Create HTTP server
 	s := server.New(&cfg)
 
@@ -56,6 +60,7 @@ func main() {
 	s.MountRoute("/api/calendar", calendarHandler)
 	s.MountRoute("/api/weather", weatherHandler)
 	s.MountRoute("/api/message", messageHandler)
+	s.MountRoute("/api/meta", metaHandler)
 
 	// Start background tasks
 	tasks.Start(calendarTask, weatherTask)
