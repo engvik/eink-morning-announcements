@@ -13,6 +13,7 @@
 struct DisplayData {
     JSONVar calendar;
     JSONVar message;
+    JSONVar meta;
     JSONVar weather;
 };
 

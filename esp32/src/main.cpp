@@ -14,12 +14,15 @@ void setup()
     Serial.println("Setting up WiFi ..");
     initWiFi();
 
-    Serial.println("Fetching calendar data ..");
     // Fetch data from backend
+    Serial.println("Fetching calendar data ..");
     String rawCalendar = httpGET(BACKEND_CALENDAR_ENDPOINT);
 
     Serial.println("Fetching message ..");
     String rawMessage = httpGET(BACKEND_MESSAGE_ENDPOINT);
+
+    Serial.println("Fetching meta data ..");
+    String rawMeta = httpGET(BACKEND_META_ENDPOINT);
 
     Serial.println("Fetching weather data ..");
     String rawWeather = httpGET(BACKEND_WEATHER_ENDPOINT);
@@ -27,6 +30,7 @@ void setup()
     struct DisplayData data;
     data.calendar = JSON.parse(rawCalendar);
     data.message = JSON.parse(rawMessage);
+    data.meta = JSON.parse(rawMeta);
     data.weather = JSON.parse(rawWeather);
 
     // Init display

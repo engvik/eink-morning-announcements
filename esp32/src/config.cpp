@@ -30,4 +30,5 @@ const char* MSG_EMPTY_WEATHER = "No weather reports today!";
 
 const char* BACKEND_CALENDAR_ENDPOINT = "http://192.168.1.1:8080/api/calendar";
 const char* BACKEND_MESSAGE_ENDPOINT = "http://192.168.1.1:8080/api/message";
+const char* BACKEND_META_ENDPOINT = "http://192.168.1.1:8080/api/meta";
 const char* BACKEND_WEATHER_ENDPOINT = "http://192.168.1.1:8080/api/weather";
