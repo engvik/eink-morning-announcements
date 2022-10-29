@@ -46,9 +46,12 @@ void EinkDisplay::draw(DisplayData *data) {
     Serial.println("\tMain header ...");
     display.setFont(&FreeMonoBold18pt7b);
 
+    const char* today = data->meta["today"];
+    String mainHeader = buildMainHeaderString(today).c_str();
+
     display.setCursor(x, y);
-    display.print(HEADER_MAIN);
-    display.getTextBounds(HEADER_MAIN, x, y, &sx, &sy, &sw, &sh);
+    display.print(mainHeader);
+    display.getTextBounds(mainHeader, x, y, &sx, &sy, &sw, &sh);
 
     y = y  + sh + Y_DEFAULT_SPACING;
 
@@ -183,8 +186,30 @@ void EinkDisplay::draw(DisplayData *data) {
 
         y = y + sh + Y_DEFAULT_SPACING;
     }
+
+
+    // TODO: Place in lower right corner
+    const char* now = data->meta["now"];
+    String lastUpdated = buildLastUpdateString(now).c_str();
+
+    display.setFont(&FreeMono9pt7b);
+    display.setCursor(x, y);
+    display.print(lastUpdated);
+    display.getTextBounds(lastUpdated, x, y, &sx, &sy, &sw, &sh);
   }
   while (display.nextPage());
+}
+
+String buildMainHeaderString(const char* weekday) {
+    String prefixStr = String(HEADER_MAIN);
+
+    if (strcmp(weekday, "") == 0) {
+        return prefixStr + "!";
+    }
+    
+    String weekdayStr = String(weekday);
+
+    return prefixStr + ", it's " + weekdayStr + "!";
 }
 
 String buildTemperaturesString(String prefix, JSONVar weather) {
@@ -205,4 +230,10 @@ String buildUpcomingWeatherString(String prefix, double precip, const char* symb
     String precipStr = String(precip);
     String symbolStr = String(symbol);
     return prefix + " " + precipStr + " mm, " + symbolStr;
+}
+
+String buildLastUpdateString(const char* now) {
+    String nowStr = String(now).substring(0, 19);
+
+    return "Last update: " + nowStr;
 }

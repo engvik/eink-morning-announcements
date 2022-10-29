@@ -35,6 +35,7 @@ extern const char* MSG_EMPTY_WEATHER;
 
 extern const char* BACKEND_CALENDAR_ENDPOINT;
 extern const char* BACKEND_MESSAGE_ENDPOINT;
+extern const char* BACKEND_META_ENDPOINT;
 extern const char* BACKEND_WEATHER_ENDPOINT;
 
 #endif
