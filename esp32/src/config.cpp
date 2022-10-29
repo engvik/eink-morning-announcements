@@ -15,7 +15,7 @@ int Y_DEFAULT_PADDING = 20;
 int X_DEFAULT_SPACING = 10;
 int Y_DEFAULT_SPACING = 10;
 
-const char* HEADER_MAIN = "Main Header";
+const char* HEADER_MAIN = "Good morning";
 const char* HEADER_MOTD = "MOTD:";
 const char* HEADER_CALENDAR = "Calendar:";
 const char* HEADER_WEATHER = "Weather:";
