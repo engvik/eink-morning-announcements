@@ -9,6 +9,4 @@ void initWiFi() {
         Serial.print('.');
         delay(1000);
     }
-
-    Serial.println("\tConnected with IP: " + WiFi.localIP());
 }
