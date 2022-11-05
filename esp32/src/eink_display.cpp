@@ -121,7 +121,7 @@ void EinkDisplay::draw(DisplayData *data) {
 
             JSONVar weather = data->weather[0];
             double precip = weather["six_hours"]["precipitation_amount"];
-            String weatherLine = buildUpcomingWeatherString("Next 6 hours:", precip);
+            String weatherLine = buildUpcomingWeatherString("Next 6 hours", precip);
 
             this->drawText(weatherLine.c_str());
             this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
@@ -134,7 +134,7 @@ void EinkDisplay::draw(DisplayData *data) {
             }
 
             precip = weather["twelve_hours"]["precipitation_amount"];
-            weatherLine = buildUpcomingWeatherString("Next 12 hours:", precip);
+            weatherLine = buildUpcomingWeatherString("Next 12 hours", precip);
 
             this->drawText(weatherLine.c_str());
             this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
@@ -162,6 +162,10 @@ void EinkDisplay::draw(DisplayData *data) {
     String lastUpdated = buildLastUpdateString(now);
 
     display.setFont(&FreeMono9pt7b);
+    // Get size of last updated text to be able to calculate position
+    display.getTextBounds(lastUpdated.c_str(), this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
+    // Position in lower right corner
+    this->setNextCursorPosition(display.width() - this->sw - X_DEFAULT_PADDING, display.height() - Y_DEFAULT_PADDING);
     this->drawText(lastUpdated.c_str());
   }
   while (display.nextPage());
