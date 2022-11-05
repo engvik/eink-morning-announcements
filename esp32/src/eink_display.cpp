@@ -154,24 +154,35 @@ void EinkDisplay::draw(DisplayData *data) {
 
             JSONVar weather = data->weather[0];
             double precip = weather["six_hours"]["precipitation_amount"];
-            const char* symbol = weather["six_hours"]["symbol_code"];
-            String weatherLine = buildUpcomingWeatherString("Next 6 hours:", precip, symbol).c_str();
+            String weatherLine = buildUpcomingWeatherString("Next 6 hours:", precip).c_str();
 
             display.setCursor(x, y);
             display.print(weatherLine);
             display.getTextBounds(weatherLine, x, y, &sx, &sy, &sw, &sh);
 
             y = y + sh + Y_DEFAULT_SPACING;
+
+            const char* symbol = weather["six_hours"]["symbol_code"];
+
+            if (symbol != "") {
+                this->drawBitmap(symbol, x, y);
+                y = y + 50 + Y_DEFAULT_SPACING;
+            }
 
             precip = weather["twelve_hours"]["precipitation_amount"];
-            symbol = weather["twelve_hours"]["symbol_code"];
-            weatherLine = buildUpcomingWeatherString("Next 12 hours:", precip, symbol).c_str();
+            weatherLine = buildUpcomingWeatherString("Next 12 hours:", precip).c_str();
 
             display.setCursor(x, y);
             display.print(weatherLine);
             display.getTextBounds(weatherLine, x, y, &sx, &sy, &sw, &sh);
 
             y = y + sh + Y_DEFAULT_SPACING;
+
+            symbol = weather["twelve_hours"]["symbol_code"];
+            if (symbol != "") {
+                this->drawBitmap(symbol, x, y);
+                y = y + 50 + Y_DEFAULT_SPACING;
+            }
         } else {
             display.setCursor(x, y);
             display.print(MSG_EMPTY_WEATHER);
@@ -200,6 +211,16 @@ void EinkDisplay::draw(DisplayData *data) {
   while (display.nextPage());
 }
 
+void EinkDisplay::drawBitmap(const char* icon, int x, int y) {
+    const unsigned char* bitmap = getIcon(icon);
+    if (bitmap == NULL) {
+        Serial.println("Error: icon not found, " + String(icon));
+        return;
+    }
+
+    display.drawBitmap(x, y, bitmap, 50, 50, GxEPD_BLACK);
+}
+
 String buildMainHeaderString(const char* weekday) {
     String prefixStr = String(HEADER_MAIN);
 
@@ -226,14 +247,100 @@ String buildTemperaturesString(String prefix, JSONVar weather) {
     return prefix + line;
 }
 
-String buildUpcomingWeatherString(String prefix, double precip, const char* symbol) {
+String buildUpcomingWeatherString(String prefix, double precip) {
     String precipStr = String(precip);
-    String symbolStr = String(symbol);
-    return prefix + " " + precipStr + " mm, " + symbolStr;
+    return prefix + " " + precipStr + " mm";
 }
 
 String buildLastUpdateString(const char* now) {
     String nowStr = String(now).substring(0, 19);
 
     return "Last update: " + nowStr;
+}
+
+const unsigned char* getIcon(const char* icon) {
+    if (strcmp(icon, "snowshowers_night") == 0) return met_bitmap_black_50x50_snowshowers_night;
+    else if (strcmp(icon, "heavyrain") == 0) return met_bitmap_black_50x50_heavyrain;
+    else if (strcmp(icon, "heavyrainandthunder") == 0) return met_bitmap_black_50x50_heavyrainandthunder;
+    else if (strcmp(icon, "sleet") == 0) return met_bitmap_black_50x50_sleet;
+    else if (strcmp(icon, "snow") == 0) return met_bitmap_black_50x50_snow;
+    else if (strcmp(icon, "snowandthunder") == 0) return met_bitmap_black_50x50_snowandthunder;
+    else if (strcmp(icon, "fog") == 0) return met_bitmap_black_50x50_fog;
+    else if (strcmp(icon, "sleetshowersandthunder_day") == 0) return met_bitmap_black_50x50_heavysleetshowersandthunder_day;
+    else if (strcmp(icon, "sleetshowersandthunder_night") == 0) return met_bitmap_black_50x50_heavysleetshowersandthunder_night;
+    else if (strcmp(icon, "snowshowersandthunder_day") == 0) return met_bitmap_black_50x50_heavysnowshowersandthunder_day;
+    else if (strcmp(icon, "snowshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_heavysnowshowersandthunder_polartwilight;
+    else if (strcmp(icon, "rainandthunder") == 0) return met_bitmap_black_50x50_heavyrainandthunder;
+    else if (strcmp(icon, "sleetandthunder") == 0) return met_bitmap_black_50x50_heavysleetandthunder;
+    else if (strcmp(icon, "lightrainshowersandthunder_day") == 0) return met_bitmap_black_50x50_lightrainshowers_day;
+    else if (strcmp(icon, "lightrainshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_lightrainshowers_polartwilight;
+    else if (strcmp(icon, "heavyrainshowersandthunder_day") == 0) return met_bitmap_black_50x50_heavyrainshowersandthunder_day;
+    else if (strcmp(icon, "heavyrainshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_heavyrainshowersandthunder_polartwilight;
+    else if (strcmp(icon, "lightssleetshowersandthunder_day") == 0) return met_bitmap_black_50x50_lightssleetshowersandthunder_day;
+    else if (strcmp(icon, "lightssleetshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_lightssleetshowersandthunder_polartwilight;
+    else if (strcmp(icon, "lightssleetshowersandthunder_night") == 0) return met_bitmap_black_50x50_lightssleetshowersandthunder_night;
+    else if (strcmp(icon, "heavysleetshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_heavysleetshowersandthunder_polartwilight;
+    else if (strcmp(icon, "heavysleetshowersandthunder_night") == 0) return met_bitmap_black_50x50_heavysleetshowersandthunder_night;
+    else if (strcmp(icon, "lightssnowshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_lightssnowshowersandthunder_polartwilight;
+    else if (strcmp(icon, "lightssnowshowersandthunder_night") == 0) return met_bitmap_black_50x50_lightssnowshowersandthunder_day;
+    else if (strcmp(icon, "heavysnowshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_heavysnowshowersandthunder_polartwilight;
+    else if (strcmp(icon, "heavysnowshowersandthunder_night") == 0) return met_bitmap_black_50x50_heavysnowshowersandthunder_night;
+    else if (strcmp(icon, "lightsleetandthunder") == 0) return met_bitmap_black_50x50_lightsleetandthunder;
+    else if (strcmp(icon, "heavysleetandthunder") == 0) return met_bitmap_black_50x50_heavysleetandthunder;
+    else if (strcmp(icon, "lightsnowandthunder") == 0) return met_bitmap_black_50x50_lightsnowandthunder;
+    else if (strcmp(icon, "heavysnowandthunder") == 0) return met_bitmap_black_50x50_heavysnowandthunder;
+    else if (strcmp(icon, "lightrainshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_lightrainshowers_polartwilight;
+    else if (strcmp(icon, "lightrainshowers_night") == 0) return met_bitmap_black_50x50_lightrainshowers_night;
+    else if (strcmp(icon, "heavyrainshowers_day") == 0) return met_bitmap_black_50x50_heavyrainshowers_day;
+    else if (strcmp(icon, "heavyrainshowers_night") == 0) return met_bitmap_black_50x50_heavyrainshowers_night;
+    else if (strcmp(icon, "lightsleetshowers_day") == 0) return met_bitmap_black_50x50_lightsleetshowers_day;
+    else if (strcmp(icon, "heavysnowshowers_night") == 0) return met_bitmap_black_50x50_heavysnowshowers_night;
+    else if (strcmp(icon, "lightsleet") == 0) return met_bitmap_black_50x50_lightsleet;
+    else if (strcmp(icon, "heavysleet") == 0) return met_bitmap_black_50x50_heavysleet;
+    else if (strcmp(icon, "lightsnow") == 0) return met_bitmap_black_50x50_lightsnow;
+    else if (strcmp(icon, "heavysnow") == 0) return met_bitmap_black_50x50_heavysnow;
+    else if (strcmp(icon, "clearsky_day") == 0) return met_bitmap_black_50x50_clearsky_day;
+    else if (strcmp(icon, "clearsky_polartwilight") == 0) return met_bitmap_black_50x50_clearsky_polartwilight;
+    else if (strcmp(icon, "clearsky_night") == 0) return met_bitmap_black_50x50_clearsky_night;
+    else if (strcmp(icon, "fair_day") == 0) return met_bitmap_black_50x50_fair_day;
+    else if (strcmp(icon, "fair_polartwilight") == 0) return met_bitmap_black_50x50_fair_polartwilight;
+    else if (strcmp(icon, "fair_night") == 0) return met_bitmap_black_50x50_fair_night;
+    else if (strcmp(icon, "partlycloudy_day") == 0) return met_bitmap_black_50x50_partlycloudy_day;
+    else if (strcmp(icon, "partlycloudy_polartwilight") == 0) return met_bitmap_black_50x50_partlycloudy_polartwilight;
+    else if (strcmp(icon, "partlycloudy_night") == 0) return met_bitmap_black_50x50_partlycloudy_night;
+    else if (strcmp(icon, "cloudy") == 0) return met_bitmap_black_50x50_cloudy;
+    else if (strcmp(icon, "rainshowers_day") == 0) return met_bitmap_black_50x50_rainshowers_day;
+    else if (strcmp(icon, "rainshowers_polartwilight") == 0) return met_bitmap_black_50x50_rainshowers_polartwilight;
+    else if (strcmp(icon, "rainshowers_night") == 0) return met_bitmap_black_50x50_rainshowers_night;
+    else if (strcmp(icon, "rainshowersandthunder_day") == 0) return met_bitmap_black_50x50_heavyrainshowersandthunder_day;
+    else if (strcmp(icon, "rainshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_rainshowersandthunder_polartwilight;
+    else if (strcmp(icon, "rainshowersandthunder_night") == 0) return met_bitmap_black_50x50_rainshowersandthunder_night;
+    else if (strcmp(icon, "sleetshowers_day") == 0) return met_bitmap_black_50x50_sleetshowers_day;
+    else if (strcmp(icon, "sleetshowers_polartwilight") == 0) return met_bitmap_black_50x50_sleetshowersandthunder_polartwilight;
+    else if (strcmp(icon, "sleetshowers_night") == 0) return met_bitmap_black_50x50_sleetshowers_night;
+    else if (strcmp(icon, "snowshowers_day") == 0) return met_bitmap_black_50x50_snowshowers_day;
+    else if (strcmp(icon, "snowshowers_polartwilight") == 0) return met_bitmap_black_50x50_snowshowers_polartwilight;
+    else if (strcmp(icon, "rain") == 0) return met_bitmap_black_50x50_rain;
+    else if (strcmp(icon, "sleetshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_sleetshowersandthunder_polartwilight;
+    else if (strcmp(icon, "snowshowersandthunder_night") == 0) return met_bitmap_black_50x50_snowshowersandthunder_night;
+    else if (strcmp(icon, "lightrainshowers_night") == 0) return met_bitmap_black_50x50_lightrainshowers_night;
+    else if (strcmp(icon, "heavyrainshowersandthunder_night") == 0) return met_bitmap_black_50x50_heavyrainshowersandthunder_night;
+    else if (strcmp(icon, "heavysleetshowersandthunder_day") == 0) return met_bitmap_black_50x50_heavysleetshowersandthunder_day;
+    else if (strcmp(icon, "lightssnowshowersandthunder_day") == 0) return met_bitmap_black_50x50_lightssnowshowersandthunder_day;
+    else if (strcmp(icon, "heavysnowshowersandthunder_day") == 0) return met_bitmap_black_50x50_heavysnowshowersandthunder_day;
+    else if (strcmp(icon, "lightrainandthunder") == 0) return met_bitmap_black_50x50_lightrainandthunder;
+    else if (strcmp(icon, "lightrainshowers_day") == 0) return met_bitmap_black_50x50_lightrainshowers_day;
+    else if (strcmp(icon, "heavyrainshowers_polartwilight") == 0) return met_bitmap_black_50x50_heavyrainshowers_polartwilight;
+    else if (strcmp(icon, "lightsleetshowers_polartwilight") == 0) return met_bitmap_black_50x50_lightsleetshowers_polartwilight;
+    else if (strcmp(icon, "lightsleetshowers_night") == 0) return met_bitmap_black_50x50_lightsleetshowers_night;
+    else if (strcmp(icon, "heavysleetshowers_day") == 0) return met_bitmap_black_50x50_heavysleetshowers_day;
+    else if (strcmp(icon, "heavysleetshowers_polartwilight") == 0) return met_bitmap_black_50x50_heavysleetshowers_polartwilight;
+    else if (strcmp(icon, "heavysleetshowers_night") == 0) return met_bitmap_black_50x50_heavysleetshowers_night;
+    else if (strcmp(icon, "lightsnowshowers_day") == 0) return met_bitmap_black_50x50_lightsnowshowers_day;
+    else if (strcmp(icon, "lightsnowshowers_polartwilight") == 0) return met_bitmap_black_50x50_lightsnowshowers_polartwilight;
+    else if (strcmp(icon, "lightsnowshowers_night") == 0) return met_bitmap_black_50x50_lightssnowshowersandthunder_night;
+    else if (strcmp(icon, "heavysnowshowers_day") == 0) return met_bitmap_black_50x50_heavysnowshowers_day;
+    else if (strcmp(icon, "heavysnowshowers_polartwilight") == 0) return met_bitmap_black_50x50_heavysnowshowers_polartwilight;
+    else if (strcmp(icon, "lightrain") == 0) return met_bitmap_black_50x50_lightrain;
+    else return NULL;
 }

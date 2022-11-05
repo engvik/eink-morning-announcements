@@ -10,6 +10,7 @@
 #include <GxEPD2_BW.h>
 
 #include "config.h"
+#include "met_icons_black_50x50.cpp"
 
 struct DisplayData {
     JSONVar calendar;
@@ -20,8 +21,9 @@ struct DisplayData {
 
 String buildMainHeaderString(const char* weekday);
 String buildTemperaturesString(String prefix, JSONVar weather);
-String buildUpcomingWeatherString(String prefix, double precip, const char* symbol);
+String buildUpcomingWeatherString(String prefix, double precip);
 String buildLastUpdateString(const char* now);
+const unsigned char* getIcon(const char* icon);
 
 class EinkDisplay {
     public:
@@ -30,6 +32,7 @@ class EinkDisplay {
         void off();
         void refreshScreen();
         void draw(DisplayData *data);
+        void drawBitmap(const char* icon, int x, int y);
 };
 
 #endif
