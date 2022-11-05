@@ -20,6 +20,8 @@ extern int Y_DEFAULT_PADDING;
 extern int X_DEFAULT_SPACING;
 extern int Y_DEFAULT_SPACING;
 
+extern int BITMAP_SIZE;
+
 extern const char* HEADER_MAIN;
 extern const char* HEADER_MOTD;
 extern const char* HEADER_CALENDAR;

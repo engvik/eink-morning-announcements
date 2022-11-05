@@ -26,13 +26,23 @@ String buildLastUpdateString(const char* now);
 const unsigned char* getIcon(const char* icon);
 
 class EinkDisplay {
+    private:
+        int x;
+        int y;
+        int16_t sx;
+        int16_t sy;
+        uint16_t sw;
+        uint16_t sh;
+        
+        void drawText(const char* text);
+        void drawBitmap(const char* icon);
+        void setNextCursorPosition(int x, int y);
     public:
         void init();
         void hibernate();
         void off();
         void refreshScreen();
         void draw(DisplayData *data);
-        void drawBitmap(const char* icon, int x, int y);
 };
 
 #endif

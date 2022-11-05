@@ -29,12 +29,9 @@ void EinkDisplay::refreshScreen() {
 void EinkDisplay::draw(DisplayData *data) {
   Serial.println("Drawing ...");
   
-  // Size of text variables
-  int16_t sx, sy; uint16_t sw, sh;
-
   // X, Y positions
-  int x = X_DEFAULT_PADDING;
-  int y = Y_DEFAULT_PADDING;
+  this->x = X_DEFAULT_PADDING;
+  this->y = Y_DEFAULT_PADDING;
 
   display.setFullWindow();
   display.firstPage();
@@ -44,57 +41,45 @@ void EinkDisplay::draw(DisplayData *data) {
 
     // Main header
     Serial.println("\tMain header ...");
-    display.setFont(&FreeMonoBold18pt7b);
 
     const char* today = data->meta["today"];
-    String mainHeader = buildMainHeaderString(today).c_str();
+    String mainHeader = buildMainHeaderString(today);
 
-    display.setCursor(x, y);
-    display.print(mainHeader);
-    display.getTextBounds(mainHeader, x, y, &sx, &sy, &sw, &sh);
-
-    y = y  + sh + Y_DEFAULT_SPACING;
+    display.setFont(&FreeMonoBold18pt7b);
+    this->drawText(mainHeader.c_str());
+    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
     // MOTD header
     Serial.println("\tMOTD header ...");
+
     display.setFont(&FreeMonoBold12pt7b);
-
-    display.setCursor(x, y);
-    display.print(HEADER_MOTD);
-    display.getTextBounds(HEADER_MOTD, x, y, &sx, &sy, &sw, &sh);
-
-    y = y + sh + Y_DEFAULT_SPACING;
+    this->drawText(HEADER_MOTD);
+    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
     // MOTD
     Serial.println("\tMOTD ...");
     display.setFont(&FreeMonoBold9pt7b);
 
-    display.setCursor(x, y);
-
     if (data->message.hasOwnProperty("message")) {
         const char* message = data->message["message"];
+
         if (strlen(message) == 0) {
             message = MSG_EMPTY_MOTD;
         }
 
-        display.print(message);
-        display.getTextBounds(message, x, y, &sx, &sy, &sw, &sh);
+        this->drawText(message);
     } else {
-        display.print(ERROR_UPDATING);
-        display.getTextBounds(ERROR_UPDATING, x, y, &sx, &sy, &sw, &sh);
+        this->drawText(ERROR_UPDATING);
     }
     
-    y = y + sh + Y_DEFAULT_SPACING;
+    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
      // Calendar
     Serial.println("\tCalendar header ...");
+    
     display.setFont(&FreeMonoBold12pt7b);
-
-    display.setCursor(x, y);
-    display.print(HEADER_CALENDAR);
-    display.getTextBounds(HEADER_CALENDAR, x, y, &sx, &sy, &sw, &sh);
-
-    y = y + sh + Y_DEFAULT_SPACING;
+    this->drawText(HEADER_CALENDAR);
+    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
     // Calendar events
     Serial.println("\tCalendar events ...");
@@ -103,40 +88,25 @@ void EinkDisplay::draw(DisplayData *data) {
     if (JSON.typeof(data->calendar) == "array") {
         if (data->calendar.length() > 0) {
              for (int i = 0; i < data->calendar.length(); i++) {
-                display.setCursor(x, y);
-
                 const char* title = data->calendar[i]["title"];
-
-                display.print(title);
-                display.getTextBounds(title, x, y, &sx, &sy, &sw, &sh);
-    
-                // TODO: Figure out placements ..
-                y = y + sh + Y_DEFAULT_SPACING;
+                this->drawText(title);
+                this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
              }
         } else {
-            display.setCursor(x, y);
-            display.print(MSG_EMPTY_CALENDAR);
-            display.getTextBounds(MSG_EMPTY_CALENDAR, x, y, &sx, &sy, &sw, &sh);
-
-            y = y + sh + Y_DEFAULT_SPACING;
+            this->drawText(MSG_EMPTY_CALENDAR);
+            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
         }
     } else {
-        display.setCursor(x, y);
-        display.print(ERROR_UPDATING);
-        display.getTextBounds(ERROR_UPDATING, x, y, &sx, &sy, &sw, &sh);
-        
-        y = y + sh + Y_DEFAULT_SPACING;
+        this->drawText(ERROR_UPDATING);
+        this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
     }
 
     // Weather
     Serial.println("\tWeather header ...");
     display.setFont(&FreeMonoBold12pt7b);
 
-    display.setCursor(x, y);
-    display.print(HEADER_WEATHER);
-    display.getTextBounds(HEADER_WEATHER, x, y, &sx, &sy, &sw, &sh);
-
-    y = y + sh + Y_DEFAULT_SPACING;
+    this->drawText(HEADER_WEATHER);
+    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
     // Weather data
     Serial.println("\tWeather events ...");
@@ -146,79 +116,77 @@ void EinkDisplay::draw(DisplayData *data) {
         if (data->weather.length() > 0) {
             String temperaturesLine = buildTemperaturesString("Temperatures:", data->weather);
 
-            display.setCursor(x, y);
-            display.print(temperaturesLine);
-            display.getTextBounds(temperaturesLine, x, y, &sx, &sy, &sw, &sh);
-
-            y = y + sh + Y_DEFAULT_SPACING;
+            this->drawText(temperaturesLine.c_str());
+            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
             JSONVar weather = data->weather[0];
             double precip = weather["six_hours"]["precipitation_amount"];
-            String weatherLine = buildUpcomingWeatherString("Next 6 hours:", precip).c_str();
+            String weatherLine = buildUpcomingWeatherString("Next 6 hours:", precip);
 
-            display.setCursor(x, y);
-            display.print(weatherLine);
-            display.getTextBounds(weatherLine, x, y, &sx, &sy, &sw, &sh);
-
-            y = y + sh + Y_DEFAULT_SPACING;
+            this->drawText(weatherLine.c_str());
+            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
             const char* symbol = weather["six_hours"]["symbol_code"];
 
             if (symbol != "") {
-                this->drawBitmap(symbol, x, y);
-                y = y + 50 + Y_DEFAULT_SPACING;
+                this->drawBitmap(symbol);
+                this->setNextCursorPosition(this->x, this->y + BITMAP_SIZE + Y_DEFAULT_SPACING);
             }
 
             precip = weather["twelve_hours"]["precipitation_amount"];
-            weatherLine = buildUpcomingWeatherString("Next 12 hours:", precip).c_str();
+            weatherLine = buildUpcomingWeatherString("Next 12 hours:", precip);
 
-            display.setCursor(x, y);
-            display.print(weatherLine);
-            display.getTextBounds(weatherLine, x, y, &sx, &sy, &sw, &sh);
-
-            y = y + sh + Y_DEFAULT_SPACING;
-
+            this->drawText(weatherLine.c_str());
+            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+            
             symbol = weather["twelve_hours"]["symbol_code"];
+
             if (symbol != "") {
-                this->drawBitmap(symbol, x, y);
-                y = y + 50 + Y_DEFAULT_SPACING;
+                this->drawBitmap(symbol);
+                this->setNextCursorPosition(this->x, this->y + BITMAP_SIZE + Y_DEFAULT_SPACING);
             }
         } else {
-            display.setCursor(x, y);
-            display.print(MSG_EMPTY_WEATHER);
-            display.getTextBounds(MSG_EMPTY_WEATHER, x, y, &sx, &sy, &sw, &sh);
-
-            y = y + sh + Y_DEFAULT_SPACING;
+            this->drawBitmap(MSG_EMPTY_WEATHER);
+            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
         }
     } else {
-        display.setCursor(x, y);
-        display.print(ERROR_UPDATING);
-        display.getTextBounds(ERROR_UPDATING, x, y, &sx, &sy, &sw, &sh);
-
-        y = y + sh + Y_DEFAULT_SPACING;
+        this->drawBitmap(ERROR_UPDATING);
+        this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
     }
 
 
-    // TODO: Place in lower right corner
+    // Last updated
+    Serial.println("\tLast updated ...");
+
     const char* now = data->meta["now"];
-    String lastUpdated = buildLastUpdateString(now).c_str();
+    String lastUpdated = buildLastUpdateString(now);
 
     display.setFont(&FreeMono9pt7b);
-    display.setCursor(x, y);
-    display.print(lastUpdated);
-    display.getTextBounds(lastUpdated, x, y, &sx, &sy, &sw, &sh);
+    this->drawText(lastUpdated.c_str());
   }
   while (display.nextPage());
 }
 
-void EinkDisplay::drawBitmap(const char* icon, int x, int y) {
+
+void EinkDisplay::drawText(const char* text) {
+    display.setCursor(this->x, this->y);
+    display.print(text);
+    display.getTextBounds(text, this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
+}
+
+void EinkDisplay::drawBitmap(const char* icon) {
     const unsigned char* bitmap = getIcon(icon);
     if (bitmap == NULL) {
         Serial.println("Error: icon not found, " + String(icon));
         return;
     }
 
-    display.drawBitmap(x, y, bitmap, 50, 50, GxEPD_BLACK);
+    display.drawBitmap(this->x, this->y, bitmap, BITMAP_SIZE, BITMAP_SIZE, GxEPD_BLACK);
+}
+
+void EinkDisplay::setNextCursorPosition(int x, int y) {
+    this->x = x;
+    this->y = y;
 }
 
 String buildMainHeaderString(const char* weekday) {
