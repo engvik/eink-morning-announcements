@@ -9,4 +9,6 @@ void initWiFi() {
         Serial.print('.');
         delay(1000);
     }
+
+    Serial.print('\n');
 }
