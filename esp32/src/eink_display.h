@@ -33,6 +33,12 @@ class EinkDisplay {
         int16_t sy;
         uint16_t sw;
         uint16_t sh;
+
+        void drawMainHeader(JSONVar meta);
+        void drawMOTD(JSONVar motd);
+        void drawCalendar(JSONVar calendar);
+        void drawWeather(JSONVar weather);
+        void drawLastUpdated(JSONVar meta);
         
         void drawText(const char* text);
         void drawBitmap(const char* icon);

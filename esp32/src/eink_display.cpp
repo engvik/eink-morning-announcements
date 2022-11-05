@@ -39,16 +39,34 @@ void EinkDisplay::draw(DisplayData *data) {
   {
     display.fillScreen(GxEPD_WHITE);
 
+    this->drawMainHeader(data->meta);
+    this->drawMOTD(data->message);
+    this->drawCalendar(data->calendar);
+    this->drawWeather(data->weather);
+    this->drawLastUpdated(data->meta);
+  }
+  while (display.nextPage());
+}
+
+/**
+ * Draws the main header.
+ */
+void EinkDisplay::drawMainHeader(JSONVar meta) {
     // Main header
     Serial.println("\tMain header ...");
 
-    const char* today = data->meta["today"];
+    const char* today = meta["today"];
     String mainHeader = buildMainHeaderString(today);
 
     display.setFont(&FreeMonoBold18pt7b);
     this->drawText(mainHeader.c_str());
     this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+}
 
+/**
+ * Draws the message of the day.
+ */
+void EinkDisplay::drawMOTD(JSONVar motd) {
     // MOTD header
     Serial.println("\tMOTD header ...");
 
@@ -60,8 +78,8 @@ void EinkDisplay::draw(DisplayData *data) {
     Serial.println("\tMOTD ...");
     display.setFont(&FreeMonoBold9pt7b);
 
-    if (data->message.hasOwnProperty("message")) {
-        const char* message = data->message["message"];
+    if (motd.hasOwnProperty("message")) {
+        const char* message = motd["message"];
 
         if (strlen(message) == 0) {
             message = MSG_EMPTY_MOTD;
@@ -74,9 +92,15 @@ void EinkDisplay::draw(DisplayData *data) {
     
     this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
-     // Calendar
+}
+
+/**
+ * Draws the calendar events.
+ */
+void EinkDisplay::drawCalendar(JSONVar calendar) {
     Serial.println("\tCalendar header ...");
     
+    // Calendar header
     display.setFont(&FreeMonoBold12pt7b);
     this->drawText(HEADER_CALENDAR);
     this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
@@ -85,10 +109,10 @@ void EinkDisplay::draw(DisplayData *data) {
     Serial.println("\tCalendar events ...");
     display.setFont(&FreeMonoBold9pt7b);
 
-    if (JSON.typeof(data->calendar) == "array") {
-        if (data->calendar.length() > 0) {
-             for (int i = 0; i < data->calendar.length(); i++) {
-                const char* title = data->calendar[i]["title"];
+    if (JSON.typeof(calendar) == "array") {
+        if (calendar.length() > 0) {
+             for (int i = 0; i < calendar.length(); i++) {
+                const char* title = calendar[i]["title"];
                 this->drawText(title);
                 this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
              }
@@ -100,11 +124,16 @@ void EinkDisplay::draw(DisplayData *data) {
         this->drawText(ERROR_UPDATING);
         this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
     }
+}
 
-    // Weather
+/**
+ * Draws the weather data.
+ */
+void EinkDisplay::drawWeather(JSONVar weather) {
     Serial.println("\tWeather header ...");
-    display.setFont(&FreeMonoBold12pt7b);
 
+    // Weather header
+    display.setFont(&FreeMonoBold12pt7b);
     this->drawText(HEADER_WEATHER);
     this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
@@ -112,28 +141,28 @@ void EinkDisplay::draw(DisplayData *data) {
     Serial.println("\tWeather events ...");
     display.setFont(&FreeMonoBold9pt7b);
 
-    if (JSON.typeof(data->weather) == "array") {
-        if (data->weather.length() > 0) {
-            String temperaturesLine = buildTemperaturesString("Temperatures:", data->weather);
+    if (JSON.typeof(weather) == "array") {
+        if (weather.length() > 0) {
+            String temperaturesLine = buildTemperaturesString("Temperatures:", weather);
 
             this->drawText(temperaturesLine.c_str());
             this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
-            JSONVar weather = data->weather[0];
-            double precip = weather["six_hours"]["precipitation_amount"];
+            JSONVar currentWeather = weather[0];
+            double precip = currentWeather["six_hours"]["precipitation_amount"];
             String weatherLine = buildUpcomingWeatherString("Next 6 hours", precip);
 
             this->drawText(weatherLine.c_str());
             this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
-            const char* symbol = weather["six_hours"]["symbol_code"];
+            const char* symbol = currentWeather["six_hours"]["symbol_code"];
 
             if (symbol != "") {
                 this->drawBitmap(symbol);
                 this->setNextCursorPosition(this->x, this->y + BITMAP_SIZE + Y_DEFAULT_SPACING);
             }
 
-            precip = weather["twelve_hours"]["precipitation_amount"];
+            precip = currentWeather["twelve_hours"]["precipitation_amount"];
             weatherLine = buildUpcomingWeatherString("Next 12 hours", precip);
 
             this->drawText(weatherLine.c_str());
@@ -153,31 +182,40 @@ void EinkDisplay::draw(DisplayData *data) {
         this->drawBitmap(ERROR_UPDATING);
         this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
     }
+}
 
-
-    // Last updated
+/**
+ * Draws the last updated information in the lower right corner.
+ *
+ * Gets the size of the text first and uses it's size with the display width
+ * and height to calculate the position.
+ */
+void EinkDisplay::drawLastUpdated(JSONVar meta) {
     Serial.println("\tLast updated ...");
 
-    const char* now = data->meta["now"];
+    const char* now = meta["now"];
     String lastUpdated = buildLastUpdateString(now);
 
     display.setFont(&FreeMono9pt7b);
-    // Get size of last updated text to be able to calculate position
     display.getTextBounds(lastUpdated.c_str(), this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
-    // Position in lower right corner
     this->setNextCursorPosition(display.width() - this->sw - X_DEFAULT_PADDING, display.height() - Y_DEFAULT_PADDING);
     this->drawText(lastUpdated.c_str());
-  }
-  while (display.nextPage());
 }
 
-
+/**
+ * Draws text to the display by first settings the cursor to the current
+ * position and then drawing the text. Afterwards it updates the displayed text
+ * size for use for calculating the next cursor position.
+ */
 void EinkDisplay::drawText(const char* text) {
     display.setCursor(this->x, this->y);
     display.print(text);
     display.getTextBounds(text, this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
 }
 
+/**
+ * Draws a bitmap icon to the current cursor position.
+ */
 void EinkDisplay::drawBitmap(const char* icon) {
     const unsigned char* bitmap = getIcon(icon);
     if (bitmap == NULL) {
@@ -188,6 +226,9 @@ void EinkDisplay::drawBitmap(const char* icon) {
     display.drawBitmap(this->x, this->y, bitmap, BITMAP_SIZE, BITMAP_SIZE, GxEPD_BLACK);
 }
 
+/**
+ * Updates x and y coordinates.
+ */
 void EinkDisplay::setNextCursorPosition(int x, int y) {
     this->x = x;
     this->y = y;
