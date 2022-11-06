@@ -20,8 +20,8 @@ struct DisplayData {
 };
 
 String buildMainHeaderString(const char* weekday);
-String buildTemperaturesString(String prefix, JSONVar weather);
-String buildUpcomingWeatherString(String prefix, double precip);
+String buildTemperatureHourString(const char* timestamp, double temp);
+String buildPrecipString(double precip);
 String buildLastUpdateString(const char* now);
 const unsigned char* getIcon(const char* icon);
 
@@ -39,6 +39,9 @@ class EinkDisplay {
         void drawCalendar(JSONVar calendar);
         void drawWeather(JSONVar weather);
         void drawLastUpdated(JSONVar meta);
+
+        int drawUpcomingWeather(JSONVar weather);
+        void drawUpcomingWeatherPeriod(const char* period, const char* symbol, double precip);
         
         void drawText(const char* text);
         void drawBitmap(const char* icon);

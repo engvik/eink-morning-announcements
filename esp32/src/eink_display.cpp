@@ -138,42 +138,40 @@ void EinkDisplay::drawWeather(JSONVar weather) {
     this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
     // Weather data
-    Serial.println("\tWeather events ...");
+    Serial.println("\tWeather data ...");
     display.setFont(&FreeMonoBold9pt7b);
 
     if (JSON.typeof(weather) == "array") {
         if (weather.length() > 0) {
-            String temperaturesLine = buildTemperaturesString("Temperatures:", weather);
+            int secondColumnYPos = this->y;
 
-            this->drawText(temperaturesLine.c_str());
-            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+            // Left column
+            int textWidth = this->drawUpcomingWeather(weather);
+          
+            // Set cursor at right column
+            this->setNextCursorPosition(this->x + textWidth + X_DEFAULT_SPACING, secondColumnYPos);
 
-            JSONVar currentWeather = weather[0];
-            double precip = currentWeather["six_hours"]["precipitation_amount"];
-            String weatherLine = buildUpcomingWeatherString("Next 6 hours", precip);
+            int secondColumnXPos = this->x;
+    
+            // Right column
+            const char* symbol = weather[0]["one_hour"]["symbol_code"];
+            double precip = weather[0]["one_hour"]["precipitation_amount"];
+            this->drawUpcomingWeatherPeriod("Next hour", symbol, precip);
 
-            this->drawText(weatherLine.c_str());
-            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+            this->setNextCursorPosition(secondColumnXPos, this->y);
 
-            const char* symbol = currentWeather["six_hours"]["symbol_code"];
+            symbol = weather[0]["six_hours"]["symbol_code"];
+            precip = weather[0]["six_hours"]["precipitation_amount"];
+            this->drawUpcomingWeatherPeriod("Next 6 hours", symbol, precip);
 
-            if (symbol != "") {
-                this->drawBitmap(symbol);
-                this->setNextCursorPosition(this->x, this->y + BITMAP_SIZE + Y_DEFAULT_SPACING);
-            }
+            this->setNextCursorPosition(secondColumnXPos, this->y);
+          
+            symbol = weather[0]["twelve_hours"]["symbol_code"];
+            precip = weather[0]["twelve_hours"]["precipitation_amount"];
+            this->drawUpcomingWeatherPeriod("Next 12 hours", symbol, precip);
 
-            precip = currentWeather["twelve_hours"]["precipitation_amount"];
-            weatherLine = buildUpcomingWeatherString("Next 12 hours", precip);
-
-            this->drawText(weatherLine.c_str());
-            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
-            
-            symbol = weather["twelve_hours"]["symbol_code"];
-
-            if (symbol != "") {
-                this->drawBitmap(symbol);
-                this->setNextCursorPosition(this->x, this->y + BITMAP_SIZE + Y_DEFAULT_SPACING);
-            }
+            // Reset X position
+            this->setNextCursorPosition(X_DEFAULT_PADDING, this->y);
         } else {
             this->drawBitmap(MSG_EMPTY_WEATHER);
             this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
@@ -200,6 +198,53 @@ void EinkDisplay::drawLastUpdated(JSONVar meta) {
     display.getTextBounds(lastUpdated.c_str(), this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
     this->setNextCursorPosition(display.width() - this->sw - X_DEFAULT_PADDING, display.height() - Y_DEFAULT_PADDING);
     this->drawText(lastUpdated.c_str());
+}
+
+/**
+ * Draws the upcoming temepratures and precipitation if above 0. Returns the
+ * widest text width seen. This is used for calculating the placement of the
+ * second column, so nothing overlaps.
+ */
+int EinkDisplay::drawUpcomingWeather(JSONVar weather) {
+    int textWidth = 0;
+
+    for (int i = 0; i < weather.length(); i++) {
+        const char* timestamp = weather[i]["time"];
+        double temp = weather[i]["instant"]["air_temperature"];
+        double precip = weather[i]["one_hour"]["precipitation_amount"];
+        String line = buildTemperatureHourString(timestamp, temp);
+      
+        if (precip > 0.00) {
+            String precipStr = buildPrecipString(precip);
+            line = line + ", " + precipStr;
+        }
+                 
+        this->drawText(line.c_str());
+        this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+
+        if (textWidth < this->sw) {
+            textWidth = this->sw;
+        }
+    }
+
+    return textWidth;
+}
+
+/**
+ * Draws the weather symbol and precipitation for the next period.
+ */
+void EinkDisplay::drawUpcomingWeatherPeriod(const char* period, const char* symbol, double precip) {
+    this->drawText(period);
+    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+
+    if (symbol != "") {
+        this->drawBitmap(symbol);
+        this->setNextCursorPosition(this->x + BITMAP_SIZE + (X_DEFAULT_SPACING / 3), this->y + (BITMAP_SIZE / 2));
+    }
+
+    String precipStr = buildPrecipString(precip);
+    this->drawText(precipStr.c_str());
+    this->setNextCursorPosition(this->x, this->y + (BITMAP_SIZE / 2) + Y_DEFAULT_SPACING);
 }
 
 /**
@@ -246,23 +291,16 @@ String buildMainHeaderString(const char* weekday) {
     return prefixStr + ", it's " + weekdayStr + "!";
 }
 
-String buildTemperaturesString(String prefix, JSONVar weather) {
-    String line = "";
+String buildTemperatureHourString(const char* timestamp, double temp) {
+    String hourStr = String(timestamp).substring(11, 16);
+    String tempStr = String(temp);
 
-    for (int i = 0; i < weather.length(); i++) {
-        const char* timestamp = weather[i]["time"];
-        double temp = weather[i]["instant"]["air_temperature"];
-        String hourStr = String(timestamp).substring(11, 16);
-        String tempStr = String(temp);
-        line = line + hourStr + ":" + tempStr + "C, ";
-    }
-
-    return prefix + line;
+    return hourStr + ": " + tempStr + "C";
 }
 
-String buildUpcomingWeatherString(String prefix, double precip) {
+String buildPrecipString(double precip) {
     String precipStr = String(precip);
-    return prefix + " " + precipStr + " mm";
+    return precipStr + " mm";
 }
 
 String buildLastUpdateString(const char* now) {
@@ -285,7 +323,7 @@ const unsigned char* getIcon(const char* icon) {
     else if (strcmp(icon, "snowshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_heavysnowshowersandthunder_polartwilight;
     else if (strcmp(icon, "rainandthunder") == 0) return met_bitmap_black_50x50_heavyrainandthunder;
     else if (strcmp(icon, "sleetandthunder") == 0) return met_bitmap_black_50x50_heavysleetandthunder;
-    else if (strcmp(icon, "lightrainshowersandthunder_day") == 0) return met_bitmap_black_50x50_lightrainshowers_day;
+    else if (strcmp(icon, "lightrainshowersandthunder_day") == 0) return met_bitmap_black_50x50_lightrainshowersandthunder_day;
     else if (strcmp(icon, "lightrainshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_lightrainshowers_polartwilight;
     else if (strcmp(icon, "heavyrainshowersandthunder_day") == 0) return met_bitmap_black_50x50_heavyrainshowersandthunder_day;
     else if (strcmp(icon, "heavyrainshowersandthunder_polartwilight") == 0) return met_bitmap_black_50x50_heavyrainshowersandthunder_polartwilight;
