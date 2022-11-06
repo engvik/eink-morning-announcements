@@ -40,9 +40,16 @@ void EinkDisplay::draw(DisplayData *data) {
     display.fillScreen(GxEPD_WHITE);
 
     this->drawMainHeader(data->meta);
+
     this->drawMOTD(data->message);
-    this->drawCalendar(data->calendar);
+    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
+
+    this->drawCalendar(data->calendar, data->meta);
+    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
+
     this->drawWeather(data->weather);
+    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
+
     this->drawLastUpdated(data->meta);
   }
   while (display.nextPage());
@@ -60,7 +67,7 @@ void EinkDisplay::drawMainHeader(JSONVar meta) {
 
     display.setFont(&FreeMonoBold18pt7b);
     this->drawText(mainHeader.c_str());
-    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2));
 }
 
 /**
@@ -72,7 +79,7 @@ void EinkDisplay::drawMOTD(JSONVar motd) {
 
     display.setFont(&FreeMonoBold12pt7b);
     this->drawText(HEADER_MOTD);
-    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2));
 
     // MOTD
     Serial.println("\tMOTD ...");
@@ -97,13 +104,13 @@ void EinkDisplay::drawMOTD(JSONVar motd) {
 /**
  * Draws the calendar events.
  */
-void EinkDisplay::drawCalendar(JSONVar calendar) {
+void EinkDisplay::drawCalendar(JSONVar calendar, JSONVar meta) {
     Serial.println("\tCalendar header ...");
     
     // Calendar header
     display.setFont(&FreeMonoBold12pt7b);
     this->drawText(HEADER_CALENDAR);
-    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2));
 
     // Calendar events
     Serial.println("\tCalendar events ...");
@@ -111,9 +118,42 @@ void EinkDisplay::drawCalendar(JSONVar calendar) {
 
     if (JSON.typeof(calendar) == "array") {
         if (calendar.length() > 0) {
+            String prevDay = "";
+
              for (int i = 0; i < calendar.length(); i++) {
                 const char* title = calendar[i]["title"];
-                this->drawText(title);
+                const char* location = calendar[i]["location"];
+                const char* start = calendar[i]["start"];
+                const char* end = calendar[i]["end"];
+
+                String titleStr = String(title);
+                String locationStr = String(location);
+                String startDate = String(start).substring(0, 10);
+                String startHour = String(start).substring(11, 16);
+                String endHour = String(end).substring(11, 16);
+                String endDate = String(end).substring(0, 10);
+
+                String event = "";
+
+                const char* startDay = meta["date_to_weekday"][startDate];
+                const char* endDay = meta["date_to_weekday"][endDate];
+                String startDayStr = String(startDay);
+                String endDayStr = String(endDay);
+
+                if (prevDay != startDayStr && startDayStr != "") {
+                    this->drawText(startDayStr.c_str());
+                    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+                }
+                
+                prevDay = startDayStr;
+
+                event = startHour + " - " + endHour + ": " + titleStr;
+               
+                if (locationStr != "") {
+                    event = event + " (" + location + ")";
+                }
+
+                this->drawText(event.c_str());
                 this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
              }
         } else {
@@ -135,7 +175,7 @@ void EinkDisplay::drawWeather(JSONVar weather) {
     // Weather header
     display.setFont(&FreeMonoBold12pt7b);
     this->drawText(HEADER_WEATHER);
-    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2));
 
     // Weather data
     Serial.println("\tWeather data ...");

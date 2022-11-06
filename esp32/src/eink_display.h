@@ -36,7 +36,7 @@ class EinkDisplay {
 
         void drawMainHeader(JSONVar meta);
         void drawMOTD(JSONVar motd);
-        void drawCalendar(JSONVar calendar);
+        void drawCalendar(JSONVar calendar, JSONVar meta);
         void drawWeather(JSONVar weather);
         void drawLastUpdated(JSONVar meta);
 
