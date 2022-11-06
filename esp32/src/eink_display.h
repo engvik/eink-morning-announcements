@@ -29,6 +29,8 @@ class EinkDisplay {
     private:
         int x;
         int y;
+        int width;
+        int height;
         int16_t sx;
         int16_t sy;
         uint16_t sw;

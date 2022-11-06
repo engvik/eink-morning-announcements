@@ -17,11 +17,6 @@ int Y_DEFAULT_SPACING = 10;
 
 int BITMAP_SIZE = 50;
 
-const char* HEADER_MAIN = "Hello";
-const char* HEADER_MOTD = "MOTD:";
-const char* HEADER_CALENDAR = "Calendar:";
-const char* HEADER_WEATHER = "Weather:";
-
 const char* ERROR_UPDATING = "Unable to update :-(";
 
 const char* MSG_EMPTY_MOTD = "No message today!";

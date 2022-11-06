@@ -33,6 +33,10 @@ void EinkDisplay::draw(DisplayData *data) {
   this->x = X_DEFAULT_PADDING;
   this->y = Y_DEFAULT_PADDING;
 
+  // Display width and height
+  this->width = display.width();
+  this->height = display.height();
+
   display.setFullWindow();
   display.firstPage();
   do
@@ -40,14 +44,19 @@ void EinkDisplay::draw(DisplayData *data) {
     display.fillScreen(GxEPD_WHITE);
 
     this->drawMainHeader(data->meta);
+    display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
+    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 
     this->drawMOTD(data->message);
+    display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
     this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
 
     this->drawCalendar(data->calendar, data->meta);
+    display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
     this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
 
     this->drawWeather(data->weather);
+    display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
     this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
 
     this->drawLastUpdated(data->meta);
@@ -67,21 +76,13 @@ void EinkDisplay::drawMainHeader(JSONVar meta) {
 
     display.setFont(&FreeMonoBold18pt7b);
     this->drawText(mainHeader.c_str());
-    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2));
+    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 }
 
 /**
  * Draws the message of the day.
  */
 void EinkDisplay::drawMOTD(JSONVar motd) {
-    // MOTD header
-    Serial.println("\tMOTD header ...");
-
-    display.setFont(&FreeMonoBold12pt7b);
-    this->drawText(HEADER_MOTD);
-    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2));
-
-    // MOTD
     Serial.println("\tMOTD ...");
     display.setFont(&FreeMonoBold9pt7b);
 
@@ -105,14 +106,6 @@ void EinkDisplay::drawMOTD(JSONVar motd) {
  * Draws the calendar events.
  */
 void EinkDisplay::drawCalendar(JSONVar calendar, JSONVar meta) {
-    Serial.println("\tCalendar header ...");
-    
-    // Calendar header
-    display.setFont(&FreeMonoBold12pt7b);
-    this->drawText(HEADER_CALENDAR);
-    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2));
-
-    // Calendar events
     Serial.println("\tCalendar events ...");
     display.setFont(&FreeMonoBold9pt7b);
 
@@ -170,14 +163,6 @@ void EinkDisplay::drawCalendar(JSONVar calendar, JSONVar meta) {
  * Draws the weather data.
  */
 void EinkDisplay::drawWeather(JSONVar weather) {
-    Serial.println("\tWeather header ...");
-
-    // Weather header
-    display.setFont(&FreeMonoBold12pt7b);
-    this->drawText(HEADER_WEATHER);
-    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2));
-
-    // Weather data
     Serial.println("\tWeather data ...");
     display.setFont(&FreeMonoBold9pt7b);
 
@@ -236,7 +221,7 @@ void EinkDisplay::drawLastUpdated(JSONVar meta) {
 
     display.setFont(&FreeMono9pt7b);
     display.getTextBounds(lastUpdated.c_str(), this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
-    this->setNextCursorPosition(display.width() - this->sw - X_DEFAULT_PADDING, display.height() - Y_DEFAULT_PADDING);
+    this->setNextCursorPosition(this->width - this->sw - X_DEFAULT_PADDING, this->height - Y_DEFAULT_PADDING);
     this->drawText(lastUpdated.c_str());
 }
 
@@ -275,7 +260,7 @@ int EinkDisplay::drawUpcomingWeather(JSONVar weather) {
  */
 void EinkDisplay::drawUpcomingWeatherPeriod(const char* period, const char* symbol, double precip) {
     this->drawText(period);
-    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+    this->setNextCursorPosition(this->x, this->y + this->sh);
 
     if (symbol != "") {
         this->drawBitmap(symbol);
@@ -320,7 +305,7 @@ void EinkDisplay::setNextCursorPosition(int x, int y) {
 }
 
 String buildMainHeaderString(const char* weekday) {
-    String prefixStr = String(HEADER_MAIN);
+    String prefixStr = "Hello";
 
     if (strcmp(weekday, "") == 0) {
         return prefixStr + "!";
