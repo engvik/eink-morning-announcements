@@ -6,7 +6,6 @@
 #include <Fonts/FreeMono9pt7b.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <Fonts/FreeMonoBold12pt7b.h>
-#include <Fonts/FreeMonoBold18pt7b.h>
 #include <GxEPD2_BW.h>
 
 #include "config.h"
@@ -19,7 +18,7 @@ struct DisplayData {
     JSONVar weather;
 };
 
-String buildMainHeaderString(const char* weekday);
+String buildMainHeaderString(JSONVar meta);
 String buildTemperatureHourString(const char* timestamp, double temp);
 String buildPrecipString(double precip);
 String buildLastUpdateString(const char* now);

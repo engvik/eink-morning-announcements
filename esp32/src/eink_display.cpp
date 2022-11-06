@@ -56,7 +56,7 @@ void EinkDisplay::draw(DisplayData *data) {
     this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
 
     this->drawWeather(data->weather);
-    display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
+    display.drawFastHLine(X_DEFAULT_PADDING, this->y + Y_DEFAULT_PADDING, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
     this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
 
     this->drawLastUpdated(data->meta);
@@ -71,10 +71,9 @@ void EinkDisplay::drawMainHeader(JSONVar meta) {
     // Main header
     Serial.println("\tMain header ...");
 
-    const char* today = meta["today"];
-    String mainHeader = buildMainHeaderString(today);
+    String mainHeader = buildMainHeaderString(meta);
 
-    display.setFont(&FreeMonoBold18pt7b);
+    display.setFont(&FreeMonoBold12pt7b);
     this->drawText(mainHeader.c_str());
     this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
 }
@@ -304,16 +303,20 @@ void EinkDisplay::setNextCursorPosition(int x, int y) {
     this->y = y;
 }
 
-String buildMainHeaderString(const char* weekday) {
-    String prefixStr = "Hello";
-
-    if (strcmp(weekday, "") == 0) {
-        return prefixStr + "!";
-    }
+String buildMainHeaderString(JSONVar meta) {
+    const char* today = meta["today"];
+    const char* month = meta["month"];
+    int date = meta["date"];
+    int week = meta["week"];
+    int year = meta["year"];
     
-    String weekdayStr = String(weekday);
+    String weekdayStr = String(today);
+    String dateStr = String(date);
+    String weekStr = String(week);
+    String monthStr = String(month);
+    String yearStr = String(year);
 
-    return prefixStr + ", it's " + weekdayStr + "!";
+    return weekdayStr + " " + dateStr + " " + monthStr + " " + yearStr + " - Week " + weekStr;
 }
 
 String buildTemperatureHourString(const char* timestamp, double temp) {
