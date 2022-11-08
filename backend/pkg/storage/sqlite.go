@@ -56,16 +56,19 @@ func (c *SQLite) SetCalendarEvents(ctx context.Context, events []calendar.Event)
 }
 
 func (c *SQLite) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error) {
+	now := time.Now()
 	rows, err := c.db.QueryContext(
 		ctx,
 		`
 		SELECT *
 		FROM events
 		WHERE start >= ?
+		AND end <= ?
 		ORDER BY start ASC
 		LIMIT 10
 		`,
-		time.Now().UnixMicro(),
+		now.UnixMicro(),
+		now.Add(time.Hour*24*3).UnixMicro(),
 	)
 	if err != nil {
 		return []calendar.Event{}, err
