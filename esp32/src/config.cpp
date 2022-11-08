@@ -12,13 +12,10 @@ int PIN_BUSY = 15;
 
 int X_DEFAULT_PADDING = 20;
 int Y_DEFAULT_PADDING = 20;
-int X_DEFAULT_SPACING = 10;
+int X_DEFAULT_SPACING = 50;
 int Y_DEFAULT_SPACING = 10;
 
-const char* HEADER_MAIN = "Good morning";
-const char* HEADER_MOTD = "MOTD:";
-const char* HEADER_CALENDAR = "Calendar:";
-const char* HEADER_WEATHER = "Weather:";
+int BITMAP_SIZE = 50;
 
 const char* ERROR_UPDATING = "Unable to update :-(";
 

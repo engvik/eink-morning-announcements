@@ -6,15 +6,25 @@ type Meta struct {
 	Today         string            `json:"today"`
 	DateToWeekday map[string]string `json:"date_to_weekday"`
 	Now           time.Time         `json:"now"`
+	Date          int               `json:"date"`
+	Week          int               `json:"week"`
+	Month         string            `json:"month"`
+	Year          int               `json:"year"`
 }
 
 func GetMeta() Meta {
 	now := time.Now()
+	year, month, date := now.Date()
+	_, week := now.ISOWeek()
 
 	return Meta{
 		Today:         now.Weekday().String(),
 		DateToWeekday: makeDateToWeekdayMap(now),
 		Now:           now,
+		Date:          date,
+		Week:          week,
+		Month:         month.String(),
+		Year:          year,
 	}
 }
 
