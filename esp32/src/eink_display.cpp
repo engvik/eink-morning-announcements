@@ -49,7 +49,7 @@ void EinkDisplay::draw(DisplayData *data) {
 
     this->drawMOTD(data->message);
     display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
-    this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
+    this->setNextCursorPosition(this->x, this->y + (Y_DEFAULT_SPACING*3)); // Add padding
 
     this->drawCalendar(data->calendar, data->meta);
     display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
