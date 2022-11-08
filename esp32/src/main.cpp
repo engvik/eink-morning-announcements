@@ -38,10 +38,10 @@ void setup()
     
     EinkDisplay ed;
     ed.init();
-    delay(5000);
+    delay(50);
     Serial.println("Refreshing Eink Display ..");
     ed.refreshScreen();
-    delay(5000);
+    delay(50);
     ed.draw(&data);
     ed.off();
 }
