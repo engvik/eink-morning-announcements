@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/cors"
-
 	"github.com/engvik/eink/backend/internal/config"
 )
 
@@ -49,23 +47,4 @@ func (http *HTTP) Request(req *http.Request) ([]byte, int, error) {
 
 func (http *HTTP) UserAgent() string {
 	return "eink/1.0.0 github.com/engvik/eink (will be public)"
-}
-
-func CORSHandler() func(next http.Handler) http.Handler {
-	return cors.Handler(cors.Options{
-		// Allow options requests to pass through to the middlewares
-		AllowedOrigins: []string{"http://localhost:5173"},
-		AllowedMethods: []string{
-			"GET",
-			"POST",
-			"OPTIONS",
-		},
-		// Default go-chi headers + our custom header for identifying source
-		AllowedHeaders: []string{
-			"Origin",
-			"Accept",
-			"Content-Type",
-			"If-None-Match",
-		},
-	})
 }
