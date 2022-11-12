@@ -25,6 +25,10 @@ func New(cfg *config.Config) *Server {
 	router := chi.NewRouter()
 	router.Use(transport.CORSHandler())
 
+	if cfg.Authorization != "" {
+		router.Use(transport.NewAuthMiddleware(cfg.Authorization))
+	}
+
 	return &Server{
 		port:   cfg.Port,
 		router: router,
