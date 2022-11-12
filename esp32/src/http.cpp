@@ -1,11 +1,14 @@
 #include "http.h"
 
-
 String httpGET(const char* serverName) {
     WiFiClient client;
     HTTPClient http;
 
     http.begin(client, serverName);
+
+    if (BACKEND_AUTHORIZATION_HEADER != "") {
+        http.addHeader("Authorization", BACKEND_AUTHORIZATION_HEADER);
+    }
 
     int httpStatusCode = http.GET();
 

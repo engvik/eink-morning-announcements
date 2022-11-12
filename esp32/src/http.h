@@ -3,6 +3,8 @@
 
 #include <HTTPClient.h>
 
+#include "config.h"
+
 String httpGET(const char* serverName);
 
 #endif
