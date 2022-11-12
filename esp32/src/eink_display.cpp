@@ -30,7 +30,7 @@ void EinkDisplay::draw(DisplayData *data) {
   Serial.println("Drawing ...");
   
   // X, Y positions
-  this->x = X_DEFAULT_PADDING;
+  this->x = 0;
   this->y = Y_DEFAULT_PADDING;
 
   // Display width and height
@@ -45,7 +45,7 @@ void EinkDisplay::draw(DisplayData *data) {
 
     this->drawMainHeader(data->meta);
     display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
-    this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+    this->setNextCursorPosition(X_DEFAULT_PADDING, this->y + this->sh + Y_DEFAULT_SPACING);
 
     this->drawMOTD(data->message);
     display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
@@ -59,6 +59,9 @@ void EinkDisplay::draw(DisplayData *data) {
     display.drawFastHLine(X_DEFAULT_PADDING, this->y + Y_DEFAULT_PADDING, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
     this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
 
+    display.setFont(&FreeMono9pt7b);
+
+    this->drawBattery(data->battery);
     this->drawLastUpdated(data->meta);
   }
   while (display.nextPage());
@@ -206,6 +209,34 @@ void EinkDisplay::drawWeather(JSONVar weather) {
     }
 }
 
+
+/**
+ * Draw the battery level. Calculates percentage based on the current battery
+ * voltage.
+ */
+void EinkDisplay::drawBattery(float voltage) {
+    Serial.println("\tBattery ...");
+
+    int percentage = -1;
+
+    if (voltage >= 4.1) percentage = 100;
+    else if (voltage >= 4.0) percentage = 90;
+    else if (voltage >= 3.9) percentage = 80;
+    else if (voltage >= 3.8) percentage = 75;
+    else if (voltage >= 3.7) percentage = 60;
+    else if (voltage >= 3.6) percentage = 50;
+    else if (voltage >= 3.5) percentage = 35;
+    else if (voltage >= 3.4) percentage = 25;
+    else if (voltage >= 3.3) percentage = 10;
+    else if (voltage <= 3.2) percentage = 0;
+
+    String batteryStr = String(percentage) + "%";
+
+    this->setNextCursorPosition(X_DEFAULT_PADDING, this->height - Y_DEFAULT_PADDING);
+
+    this->drawText(batteryStr.c_str());
+}
+
 /**
  * Draws the last updated information in the lower right corner.
  *
@@ -218,9 +249,8 @@ void EinkDisplay::drawLastUpdated(JSONVar meta) {
     const char* now = meta["now"];
     String lastUpdated = buildLastUpdateString(now);
 
-    display.setFont(&FreeMono9pt7b);
     display.getTextBounds(lastUpdated.c_str(), this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
-    this->setNextCursorPosition(this->width - this->sw - X_DEFAULT_PADDING, this->height - Y_DEFAULT_PADDING);
+    this->setNextCursorPosition(this->width - this->sw - X_DEFAULT_PADDING, this->y);
     this->drawText(lastUpdated.c_str());
 }
 
@@ -316,7 +346,7 @@ String buildMainHeaderString(JSONVar meta) {
     String monthStr = String(month);
     String yearStr = String(year);
 
-    return weekdayStr + " " + dateStr + " " + monthStr + " " + yearStr + " - Week " + weekStr;
+    return weekdayStr + " " + dateStr + " " + monthStr + " " + yearStr + " Week " + weekStr;
 }
 
 String buildTemperatureHourString(const char* timestamp, double temp) {
@@ -334,7 +364,7 @@ String buildPrecipString(double precip) {
 String buildLastUpdateString(const char* now) {
     String nowStr = String(now).substring(0, 19);
 
-    return "Last update: " + nowStr;
+    return nowStr;
 }
 
 const unsigned char* getIcon(const char* icon) {

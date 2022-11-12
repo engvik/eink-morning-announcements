@@ -3,12 +3,15 @@
 const char* WIFI_SSID = "ssid";
 const char* WIFI_PASSWORD = "password";
 
-// Eink Display
+// Pins
 
 int PIN_CS = 5;
 int PIN_DC = 0;
 int PIN_RST = 2;
 int PIN_BUSY = 15;
+int PIN_BATTERY = 35;
+
+// Eink Display
 
 int X_DEFAULT_PADDING = 20;
 int Y_DEFAULT_PADDING = 20;
