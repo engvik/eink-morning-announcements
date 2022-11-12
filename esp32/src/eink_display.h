@@ -16,6 +16,7 @@ struct DisplayData {
     JSONVar message;
     JSONVar meta;
     JSONVar weather;
+    float battery;
 };
 
 String buildMainHeaderString(JSONVar meta);
@@ -39,6 +40,7 @@ class EinkDisplay {
         void drawMOTD(JSONVar motd);
         void drawCalendar(JSONVar calendar, JSONVar meta);
         void drawWeather(JSONVar weather);
+        void drawBattery(float voltage);
         void drawLastUpdated(JSONVar meta);
 
         int drawUpcomingWeather(JSONVar weather);

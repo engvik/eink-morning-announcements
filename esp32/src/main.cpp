@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Arduino_JSON.h>
 
+#include "battery.h"
 #include "eink_display.h"
 #include "http.h"
 #include "wifi.h"
@@ -32,6 +33,7 @@ void setup()
     data.message = JSON.parse(rawMessage);
     data.meta = JSON.parse(rawMeta);
     data.weather = JSON.parse(rawWeather);
+    data.battery = getBatteryVoltage();
 
     // Init display
     Serial.println("Setting up Eink Display ..");

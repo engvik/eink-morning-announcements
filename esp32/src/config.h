@@ -6,12 +6,15 @@
 extern const char* WIFI_SSID;
 extern const char* WIFI_PASSWORD;
 
-// Eink Display
+// Pins
 
 extern int PIN_CS;
 extern int PIN_DC;
 extern int PIN_RST;
 extern int PIN_BUSY;
+extern int PIN_BATTERY;
+
+// Eink Display
 
 extern int X_DEFAULT_PADDING;
 extern int Y_DEFAULT_PADDING;
