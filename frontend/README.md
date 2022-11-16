@@ -1,7 +1,6 @@
 # Frontend
 
-The frontend is a Svelte application, which is totally overkill for this. I
-just wanted to write something using Svelte.
+The frontend is a Svelte application, which is totally overkill for this.
 
 ## Run locally
 

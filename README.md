@@ -1,6 +1,8 @@
-# eink
+# eink-morning-announcements
 
-eink screen displaying calender events and custom user messages
+Morning announcements on a eink display! Calendar, weather and custom messages.
+
+This is built with a [Lolin D32 Pro](https://www.wemos.cc/en/latest/d32/d32_pro.html), connected to a [Waveshare 7.5" with a e-Paper Driver HAT](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm), powered by a 3.7v 1800 mAh LiPo battery.
 
 # Credits
 
