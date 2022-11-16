@@ -46,5 +46,5 @@ func (http *HTTP) Request(req *http.Request) ([]byte, int, error) {
 }
 
 func (http *HTTP) UserAgent() string {
-	return "eink/1.0.0 github.com/engvik/eink-morning-announcements"
+	return "eink-morning-announcments/1.0.0 github.com/engvik/eink-morning-announcements"
 }
