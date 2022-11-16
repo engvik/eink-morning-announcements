@@ -6,7 +6,7 @@ This is built with a [Lolin D32 Pro](https://www.wemos.cc/en/latest/d32/d32_pro.
 
 # Credits
 
-Inspired by [kristiantm](https://www.instructables.com/member/kristiantm/)'s [Instructable](https://www.instructables.com/E-Ink-Family-Calendar-Using-ESP32/).
+Inspired by [kristiantm](https://www.instructables.com/member/kristiantm/)'s [Instructable](https://www.instructables.com/E-Ink-Family-Calendar-Using-ESP32/) ([GitHub](https://github.com/kristiantm/eink-family-calendar-esp32)).
 
 #  Structure
 
