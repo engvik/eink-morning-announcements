@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/engvik/eink/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
 type HTTP struct {
@@ -46,5 +46,5 @@ func (http *HTTP) Request(req *http.Request) ([]byte, int, error) {
 }
 
 func (http *HTTP) UserAgent() string {
-	return "eink/1.0.0 github.com/engvik/eink (will be public)"
+	return "eink/1.0.0 github.com/engvik/eink-morning-announcements"
 }

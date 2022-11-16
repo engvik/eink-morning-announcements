@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/engvik/eink/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
 type fetcher interface {

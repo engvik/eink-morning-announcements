@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/engvik/eink/backend/pkg/calendar"
-	"github.com/engvik/eink/backend/pkg/message"
-	"github.com/engvik/eink/backend/pkg/weather"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/message"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
 )
 
 type store interface {

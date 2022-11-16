@@ -8,10 +8,10 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/engvik/eink/backend/internal/config"
-	"github.com/engvik/eink/backend/pkg/calendar"
-	"github.com/engvik/eink/backend/pkg/message"
-	"github.com/engvik/eink/backend/pkg/weather"
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/message"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
 )
 
 type SQLite struct {

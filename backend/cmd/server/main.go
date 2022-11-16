@@ -6,21 +6,21 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 
-	"github.com/engvik/eink/backend/internal/config"
-	"github.com/engvik/eink/backend/internal/server"
-	"github.com/engvik/eink/backend/internal/transport"
-	"github.com/engvik/eink/backend/pkg/calendar"
-	"github.com/engvik/eink/backend/pkg/message"
-	"github.com/engvik/eink/backend/pkg/meta"
-	"github.com/engvik/eink/backend/pkg/storage"
-	"github.com/engvik/eink/backend/pkg/tasks"
-	"github.com/engvik/eink/backend/pkg/weather"
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/server"
+	"github.com/engvik/eink-morning-announcements/backend/internal/transport"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/message"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/meta"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/storage"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/tasks"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
 )
 
 func main() {
 	var cfg config.Config
 
-	if err := envconfig.Process("eink-backend", &cfg); err != nil {
+	if err := envconfig.Process("eink-morning-announcements-backend", &cfg); err != nil {
 		log.Fatal("Error processing env vars:", err)
 	}
 

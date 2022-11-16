@@ -1,4 +1,4 @@
-module github.com/engvik/eink/backend
+module github.com/engvik/eink-morning-announcements/backend
 
 go 1.19
 
