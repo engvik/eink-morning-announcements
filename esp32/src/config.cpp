@@ -1,3 +1,8 @@
+// Deep sleep
+
+int SLEEP_UNTIL_MORNING = 14 * 60 * 60; // 14 hours
+int SLEEP_UNTIL_HOME = 10 * 60 * 60; // 10 hours
+
 // WiFi
 
 const char* WIFI_SSID = "ssid";

@@ -1,6 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+// Deep sleep
+
+extern int SLEEP_UNTIL_MORNING;
+extern int SLEEP_UNTIL_HOME;
+
 // WiFi
 
 extern const char* WIFI_SSID;

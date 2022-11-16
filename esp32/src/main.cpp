@@ -6,6 +6,8 @@
 #include "http.h"
 #include "wifi.h"
 
+RTC_DATA_ATTR int wake_mode = 1;
+
 void setup()
 {
     // Init serial
@@ -40,12 +42,23 @@ void setup()
     
     EinkDisplay ed;
     ed.init();
-    delay(50);
     Serial.println("Refreshing Eink Display ..");
     ed.refreshScreen();
-    delay(50);
     ed.draw(&data);
     ed.off();
+
+    // Deep sleep
+
+    if (wake_mode == 1) {
+        wake_mode = 0;
+        esp_sleep_enable_timer_wakeup(SLEEP_UNTIL_MORNING * 1000000);
+    } else {
+        wake_mode = 1;
+        esp_sleep_enable_timer_wakeup(SLEEP_UNTIL_HOME * 1000000);
+    }
+
+    Serial.flush();
+    esp_deep_sleep_start();
 }
 
 void loop() {};
