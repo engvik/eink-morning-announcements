@@ -29,3 +29,6 @@ dist-ssr
 # platformio
 esp32/.pio
 esp32/.vscode/*
+
+backend/server
+frontend/.env.production
