@@ -7,9 +7,18 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func NewAuthMiddleware(auth string) func(next http.Handler) http.Handler {
+func NewAuthMiddleware(auth string, allowUnauthenticated []string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			endpoint := r.URL.String()
+
+			for _, allowed := range allowUnauthenticated {
+				if allowed == endpoint {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+
 			splitHeader := strings.Split(r.Header.Get("Authorization"), "Bearer")
 
 			if len(splitHeader) != 2 {

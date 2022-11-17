@@ -26,7 +26,10 @@ func New(cfg *config.Config) *Server {
 	router.Use(transport.CORSHandler())
 
 	if cfg.Authorization != "" {
-		router.Use(transport.NewAuthMiddleware(cfg.Authorization))
+		allowUnauthenticated := []string{
+			"/api/message",
+		}
+		router.Use(transport.NewAuthMiddleware(cfg.Authorization, allowUnauthenticated))
 	}
 
 	return &Server{
