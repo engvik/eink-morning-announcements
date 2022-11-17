@@ -9,9 +9,20 @@ tasks:
       CALENDAR_URL: "todo"
       WEATHER_URL: "https://api.met.no/weatherapi/locationforecast/2.0"
       SQLITE_PATH: "storage.db"
+  build-backend:
+    cmds:
+      - go build -a -ldflags '-s -w' -trimpath -installsuffix cgo -o server cmd/server/main.go 
+    env:
+      GO111MODULE: "on"
+      CGO_ENABLED: 0
+    dir: backend/
   run-frontend:
     cmds:
       - npm run dev
+    dir: frontend/
+  build-frontend:
+    cmds:
+      - npm run build
     dir: frontend/
   build-esp:
     cmds:
