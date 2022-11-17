@@ -6,7 +6,7 @@
     let error = '';
 
     async function getCurrentMessage() {
-        const res = await fetch("http://localhost:8080/api/message");
+        const res = await fetch(import.meta.env.VITE_BACKEND_BASE_URL + "/api/message");
         
         if (res.status != 200) {
             if (res.status == 404) {
@@ -26,7 +26,7 @@
     }
 
     async function updateMessage() {
-        const res = await fetch("http://localhost:8080/api/message", {
+        const res = await fetch(import.meta.env.VITE_BACKEND_BASE_URL + "/api/message", {
             method: 'POST',
             body: JSON.stringify({message})
         });
