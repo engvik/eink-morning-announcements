@@ -39,6 +39,8 @@ extern const char* MSG_EMPTY_MOTD;
 extern const char* MSG_EMPTY_CALENDAR;
 extern const char* MSG_EMPTY_WEATHER;
 
+extern int TEXT_CUTOFF_THRESHOLD;
+
 // HTTP Backend
 
 extern const char* BACKEND_CALENDAR_ENDPOINT;

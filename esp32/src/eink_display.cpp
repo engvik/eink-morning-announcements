@@ -31,7 +31,7 @@ void EinkDisplay::draw(DisplayData *data) {
   
   // X, Y positions
   this->x = 0;
-  this->y = Y_DEFAULT_PADDING;
+  this->y = Y_DEFAULT_PADDING * 3;
 
   // Display width and height
   this->width = display.width();
@@ -44,19 +44,19 @@ void EinkDisplay::draw(DisplayData *data) {
     display.fillScreen(GxEPD_WHITE);
 
     this->drawMainHeader(data->meta);
-    display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
-    this->setNextCursorPosition(X_DEFAULT_PADDING, this->y + this->sh + Y_DEFAULT_SPACING);
+    display.drawFastHLine(0, this->y, this->width - (X_DEFAULT_SPACING), GxEPD_BLACK);
+    this->setNextCursorPosition(0, this->y + this->sh + Y_DEFAULT_SPACING);
 
     this->drawMOTD(data->message);
-    display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
+    display.drawFastHLine(0, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
     this->setNextCursorPosition(this->x, this->y + (Y_DEFAULT_SPACING*3)); // Add padding
 
     this->drawCalendar(data->calendar, data->meta);
-    display.drawFastHLine(X_DEFAULT_PADDING, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
+    display.drawFastHLine(0, this->y, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
     this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
 
     this->drawWeather(data->weather);
-    display.drawFastHLine(X_DEFAULT_PADDING, this->y + Y_DEFAULT_PADDING, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
+    display.drawFastHLine(0, this->y + Y_DEFAULT_PADDING, this->width - (X_DEFAULT_PADDING*2), GxEPD_BLACK);
     this->setNextCursorPosition(this->x, this->y + this->sh + (Y_DEFAULT_SPACING*2)); // Add padding
 
     display.setFont(&FreeMono9pt7b);
@@ -232,7 +232,7 @@ void EinkDisplay::drawBattery(float voltage) {
 
     String batteryStr = String(percentage) + "%";
 
-    this->setNextCursorPosition(X_DEFAULT_PADDING, this->height - Y_DEFAULT_PADDING);
+    this->setNextCursorPosition(0, this->height - (Y_DEFAULT_PADDING*5));
 
     this->drawText(batteryStr.c_str());
 }
@@ -250,7 +250,7 @@ void EinkDisplay::drawLastUpdated(JSONVar meta) {
     String lastUpdated = buildLastUpdateString(now);
 
     display.getTextBounds(lastUpdated.c_str(), this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
-    this->setNextCursorPosition(this->width - this->sw - X_DEFAULT_PADDING, this->y);
+    this->setNextCursorPosition(this->width - this->sw - (X_DEFAULT_PADDING*2), this->y);
     this->drawText(lastUpdated.c_str());
 }
 
@@ -302,14 +302,39 @@ void EinkDisplay::drawUpcomingWeatherPeriod(const char* period, const char* symb
 }
 
 /**
- * Draws text to the display by first settings the cursor to the current
- * position and then drawing the text. Afterwards it updates the displayed text
- * size for use for calculating the next cursor position.
+ * Draws text to the display. If the current text fills more than the width of
+ * the display, split it into multiple lines.
  */
 void EinkDisplay::drawText(const char* text) {
+    display.getTextBounds(text, this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
+    
+    if ((this->sx + this->sw + X_DEFAULT_SPACING) > this->width) {
+        String tmp = String(text);
+        int textWidth = tmp.length();
+
+        // Keep splitting the text into multiple lines as long as it's above
+        // the cutoff threshold. To make things simpler, user the Arduino
+        // String as there is no need to optimize that much.
+        while (textWidth > TEXT_CUTOFF_THRESHOLD) {
+            int splitPoint = tmp.substring(0, TEXT_CUTOFF_THRESHOLD).lastIndexOf(' ');
+
+            String splitText = tmp.substring(0, splitPoint);
+
+            display.setCursor(this->x, this->y);
+            display.print(splitText.c_str());
+            display.getTextBounds(splitText, this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
+            this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
+            
+            tmp = tmp.substring(splitPoint+1, textWidth);
+            textWidth = tmp.length();
+        }
+
+        // Draw the rest of the string regularily.
+        text = tmp.c_str();
+    }
+
     display.setCursor(this->x, this->y);
     display.print(text);
-    display.getTextBounds(text, this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
 }
 
 /**
@@ -346,7 +371,7 @@ String buildMainHeaderString(JSONVar meta) {
     String monthStr = String(month);
     String yearStr = String(year);
 
-    return weekdayStr + " " + dateStr + " " + monthStr + " " + yearStr + " Week " + weekStr;
+    return weekdayStr + " " + dateStr + " " + monthStr + " " + yearStr + " (W " + weekStr + ")";
 }
 
 String buildTemperatureHourString(const char* timestamp, double temp) {
