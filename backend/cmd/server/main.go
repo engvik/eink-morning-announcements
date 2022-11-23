@@ -51,7 +51,7 @@ func main() {
 	messageHandler := message.NewHTTPHandler(storage)
 
 	// Meta
-	metaHandler := meta.NewHTTPHandler()
+	metaHandler := meta.NewHTTPHandler(&cfg)
 
 	// Create HTTP server
 	s := server.New(&cfg)

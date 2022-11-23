@@ -12,10 +12,19 @@ type Meta struct {
 	Year          int               `json:"year"`
 }
 
-func GetMeta() Meta {
+func GetMeta(location string) (Meta, error) {
 	now := time.Now()
 	year, month, date := now.Date()
 	_, week := now.ISOWeek()
+
+	if location != "" {
+		location, err := time.LoadLocation("Europe/Oslo")
+		if err != nil {
+			return Meta{}, err
+		}
+
+		now = now.In(location)
+	}
 
 	return Meta{
 		Today:         now.Weekday().String(),
@@ -25,7 +34,7 @@ func GetMeta() Meta {
 		Week:          week,
 		Month:         month.String(),
 		Year:          year,
-	}
+	}, nil
 }
 
 func makeDateToWeekdayMap(now time.Time) map[string]string {

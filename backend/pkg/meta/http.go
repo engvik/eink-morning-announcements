@@ -6,22 +6,33 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
-func NewHTTPHandler() http.Handler {
+func NewHTTPHandler(cfg *config.Config) http.Handler {
 	r := chi.NewRouter()
 
-	h := &handler{}
+	h := &handler{location: cfg.Location}
 
 	r.Get("/", h.getMeta)
 
 	return r
 }
 
-type handler struct{}
+type handler struct {
+	location string
+}
 
 func (h *handler) getMeta(w http.ResponseWriter, r *http.Request) {
-	meta := GetMeta()
+	meta, err := GetMeta(h.location)
+	if err != nil {
+		log.Printf("error setting location: %s\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
 	res, err := json.Marshal(meta)
 	if err != nil {
 		log.Printf("error marshaling message: %s\n", err)
