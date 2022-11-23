@@ -86,7 +86,7 @@ CREATE TABLE events (
 
 ```sql
 CREATE TABLE forecasts (
-  time INTEGER,
+  time INTEGER PRIMARY KEY NOT NULL,
   instant_air_pressure_at_sea_level REAL,
   instant_air_temperature REAL,
   instant_cloud_area_fraction REAL,
@@ -107,5 +107,5 @@ CREATE TABLE forecasts (
 CREATE TABLE messages (
   time INTEGER,
   message TEXT
-)
+);
 ```
