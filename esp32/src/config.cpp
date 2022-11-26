@@ -1,7 +1,6 @@
 // Deep sleep
 
-int SLEEP_UNTIL_MORNING = 14 * 60 * 60; // 14 hours
-int SLEEP_UNTIL_HOME = 10 * 60 * 60; // 10 hours
+int SLEEP_TIME = 3600; // 1 hour
 
 // WiFi
 
@@ -40,4 +39,3 @@ const char* BACKEND_MESSAGE_ENDPOINT = "http://192.168.1.1:8080/api/message";
 const char* BACKEND_META_ENDPOINT = "http://192.168.1.1:8080/api/meta";
 const char* BACKEND_WEATHER_ENDPOINT = "http://192.168.1.1:8080/api/weather";
 const char* BACKEND_AUTHORIZATION_HEADER = "";
-

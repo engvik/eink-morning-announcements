@@ -3,8 +3,8 @@
 
 // Deep sleep
 
-extern int SLEEP_UNTIL_MORNING;
-extern int SLEEP_UNTIL_HOME;
+#define uS_TO_S_FACTOR 1000000ULL
+extern int SLEEP_TIME;
 
 // WiFi
 

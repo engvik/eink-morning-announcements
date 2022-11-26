@@ -6,8 +6,6 @@
 #include "http.h"
 #include "wifi.h"
 
-RTC_DATA_ATTR int wake_mode = 1;
-
 void setup()
 {
     // Init serial
@@ -48,15 +46,7 @@ void setup()
     ed.off();
 
     // Deep sleep
-
-    if (wake_mode == 1) {
-        wake_mode = 0;
-        esp_sleep_enable_timer_wakeup(SLEEP_UNTIL_MORNING * 1000000);
-    } else {
-        wake_mode = 1;
-        esp_sleep_enable_timer_wakeup(SLEEP_UNTIL_HOME * 1000000);
-    }
-
+    esp_sleep_enable_timer_wakeup(SLEEP_TIME * uS_TO_S_FACTOR);
     Serial.flush();
     esp_deep_sleep_start();
 }
