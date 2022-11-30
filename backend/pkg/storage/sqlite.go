@@ -15,7 +15,8 @@ import (
 )
 
 type SQLite struct {
-	db *sql.DB
+	db       *sql.DB
+	location *time.Location
 }
 
 func NewSQLiteClient(cfg *config.Config) (*SQLite, error) {
@@ -24,7 +25,15 @@ func NewSQLiteClient(cfg *config.Config) (*SQLite, error) {
 		return nil, err
 	}
 
-	return &SQLite{db: db}, nil
+	location, err := time.LoadLocation(cfg.Location)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SQLite{
+		db:       db,
+		location: location,
+	}, nil
 }
 
 func (c *SQLite) SetCalendarEvents(ctx context.Context, events []calendar.Event) error {
@@ -96,8 +105,8 @@ func (c *SQLite) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error
 			events,
 			calendar.Event{
 				ID:          id,
-				Start:       time.UnixMicro(start),
-				End:         time.UnixMicro(end),
+				Start:       time.UnixMicro(start).In(c.location),
+				End:         time.UnixMicro(end).In(c.location),
 				Title:       title,
 				Description: description,
 				Location:    location,
@@ -210,7 +219,7 @@ func (c *SQLite) GetWeatherForecasts(ctx context.Context) ([]weather.Forecast, e
 		forecasts = append(
 			forecasts,
 			weather.Forecast{
-				Time: time.UnixMicro(timestamp),
+				Time: time.UnixMicro(timestamp).In(c.location),
 				Instant: weather.InstantForecast{
 					AirPressureAtSeaLevel: instantAirPressureAtSeaLevel,
 					AirTemperature:        instantAirTemperature,
@@ -270,7 +279,7 @@ func (c *SQLite) GetMessage(ctx context.Context) (message.Message, error) {
 	}
 
 	return message.Message{
-		Time:    time.UnixMicro(timestamp),
+		Time:    time.UnixMicro(timestamp).In(c.location),
 		Message: msg,
 	}, nil
 }
