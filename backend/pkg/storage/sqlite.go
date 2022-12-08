@@ -74,7 +74,7 @@ func (c *SQLite) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error
 		WHERE start >= ?
 		AND end <= ?
 		ORDER BY start ASC
-		LIMIT 10
+		LIMIT 5
 		`,
 		now.UnixMicro(),
 		now.Add(time.Hour*24*3).UnixMicro(),
