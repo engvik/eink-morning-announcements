@@ -367,7 +367,7 @@ String buildMainHeaderString(JSONVar meta) {
     String monthStr = String(month);
     String yearStr = String(year);
 
-    return weekdayStr + " " + dateStr + " " + monthStr + " " + yearStr + " (W " + weekStr + ")";
+    return weekdayStr + " " + dateStr + " " + monthStr + " " + yearStr + " W " + weekStr;
 }
 
 String buildTemperatureHourString(const char* timestamp, double temp) {
