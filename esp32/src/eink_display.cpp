@@ -172,7 +172,7 @@ void EinkDisplay::drawWeather(JSONVar weather) {
             int textWidth = this->drawUpcomingWeather(weather);
           
             // Set cursor at right column
-            this->setNextCursorPosition(this->x + textWidth + X_DEFAULT_SPACING, secondColumnYPos);
+            this->setNextCursorPosition(this->x + textWidth + (X_DEFAULT_SPACING-10), secondColumnYPos);
 
             int secondColumnXPos = this->x;
     
