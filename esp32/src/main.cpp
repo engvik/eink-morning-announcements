@@ -46,7 +46,17 @@ void setup()
     ed.off();
 
     // Deep sleep
-    esp_sleep_enable_timer_wakeup(SLEEP_TIME * uS_TO_S_FACTOR);
+    const char* now = data.meta["now"];
+    int hour = String(now).substring(11, 16).toInt();
+
+    // Sleep for six times SLEEP_TIME at midnight, otherwise update every
+    // SLEEP_TIME.
+    if (hour == 0) {
+        esp_sleep_enable_timer_wakeup(LONG_SLEEP_TIME * uS_TO_S_FACTOR);
+    } else {
+        esp_sleep_enable_timer_wakeup(SLEEP_TIME * uS_TO_S_FACTOR);
+    }
+
     Serial.flush();
     esp_deep_sleep_start();
 }

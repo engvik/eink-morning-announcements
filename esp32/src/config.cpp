@@ -1,6 +1,7 @@
 // Deep sleep
 
-int SLEEP_TIME = 3600; // 1 hour
+int SLEEP_TIME = 3600;       // 1 hour
+int LONG_SLEEP_TIME = 21600; // 6 hours
 
 // WiFi
 

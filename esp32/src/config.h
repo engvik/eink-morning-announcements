@@ -5,6 +5,7 @@
 
 #define uS_TO_S_FACTOR 1000000ULL
 extern int SLEEP_TIME;
+extern int LONG_SLEEP_TIME;
 
 // WiFi
 
