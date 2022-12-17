@@ -125,15 +125,11 @@ void EinkDisplay::drawCalendar(JSONVar calendar, JSONVar meta) {
                 String locationStr = String(location);
                 String startDate = String(start).substring(0, 10);
                 String startHour = String(start).substring(11, 16);
-                String endHour = String(end).substring(11, 16);
-                String endDate = String(end).substring(0, 10);
 
                 String event = "";
 
                 const char* startDay = meta["date_to_weekday"][startDate];
-                const char* endDay = meta["date_to_weekday"][endDate];
                 String startDayStr = String(startDay);
-                String endDayStr = String(endDay);
 
                 if (prevDay != startDayStr && startDayStr != "") {
                     this->drawText(startDayStr.c_str());
@@ -142,7 +138,7 @@ void EinkDisplay::drawCalendar(JSONVar calendar, JSONVar meta) {
                 
                 prevDay = startDayStr;
 
-                event = startHour + " - " + endHour + ": " + titleStr;
+                event = startHour + ": " + titleStr;
                
                 if (locationStr != "") {
                     event = event + " (" + location + ")";
