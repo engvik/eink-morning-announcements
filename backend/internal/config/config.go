@@ -19,4 +19,6 @@ type Config struct {
 	Authorization           string        `envconfig:"AUTHORIZATION"`
 	WeatherLocationLat      float64       `envconfig:"WEATHER_LOCATION_LAT" default:"59.89"`
 	WeatherLocationLon      float64       `envconfig:"WEATHER_LOCATION_LON" default:"10.66"`
+	CalendarFetchEvents     int           `envconfig:"CALENDAR_FETCH_EVENTS" default:"3"`
+	WeatherFetchEorecasts   int           `envconfig:"WEATHER_FETCH_FORECASTS" default:"10"`
 }

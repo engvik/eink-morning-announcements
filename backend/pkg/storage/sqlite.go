@@ -15,8 +15,10 @@ import (
 )
 
 type SQLite struct {
-	db       *sql.DB
-	location *time.Location
+	db                       *sql.DB
+	location                 *time.Location
+	numCalendarFetchEvents   int
+	numWeatherFetchForecasts int
 }
 
 func NewSQLiteClient(cfg *config.Config) (*SQLite, error) {
@@ -31,8 +33,10 @@ func NewSQLiteClient(cfg *config.Config) (*SQLite, error) {
 	}
 
 	return &SQLite{
-		db:       db,
-		location: location,
+		db:                       db,
+		location:                 location,
+		numCalendarFetchEvents:   cfg.CalendarFetchEvents,
+		numWeatherFetchForecasts: cfg.WeatherFetchEorecasts,
 	}, nil
 }
 
@@ -73,9 +77,10 @@ func (c *SQLite) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error
 		FROM events
 		WHERE start >= ?
 		ORDER BY start ASC
-		LIMIT 3
+		LIMIT ?
 		`,
 		now.UnixMicro(),
+		c.numCalendarFetchEvents,
 	)
 	if err != nil {
 		return []calendar.Event{}, err
@@ -169,9 +174,10 @@ func (c *SQLite) GetWeatherForecasts(ctx context.Context) ([]weather.Forecast, e
 		FROM forecasts
 		WHERE time >= ?
 		ORDER BY time ASC
-		LIMIT 10
+		LIMIT ?
 		`,
 		time.Now().UnixMicro(),
+		c.numWeatherFetchForecasts,
 	)
 	if err != nil {
 		return []weather.Forecast{}, err
