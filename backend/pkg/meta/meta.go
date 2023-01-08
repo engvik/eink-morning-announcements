@@ -1,6 +1,9 @@
 package meta
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 type Meta struct {
 	Today         string            `json:"today"`
@@ -41,12 +44,14 @@ func makeDateToWeekdayMap(now time.Time) map[string]string {
 	dateToWeekday := make(map[string]string, 0)
 	t := now
 
-	// Create map for the upcoming week
-	for i := 0; i < 7; i++ {
+	// Create map for the upcoming two weeks
+	for i := 0; i < 14; i++ {
 		ft := t.Format("2006-01-02")
 		dateToWeekday[ft] = t.Weekday().String()
 		t = t.AddDate(0, 0, 1)
 	}
+
+	log.Println(dateToWeekday)
 
 	return dateToWeekday
 }
