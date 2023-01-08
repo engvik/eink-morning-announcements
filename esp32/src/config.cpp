@@ -2,6 +2,7 @@
 
 int SLEEP_TIME = 3600;       // 1 hour
 int LONG_SLEEP_TIME = 21600; // 6 hours
+int LONG_SLEEP_HOUR = 23;    // Long sleep after the update at 23:00.
 
 // WiFi
 

@@ -51,7 +51,7 @@ void setup()
 
     // Sleep for six times SLEEP_TIME at midnight, otherwise update every
     // SLEEP_TIME.
-    if (hour == 0) {
+    if (hour == LONG_SLEEP_HOUR) {
         esp_sleep_enable_timer_wakeup(LONG_SLEEP_TIME * uS_TO_S_FACTOR);
     } else {
         esp_sleep_enable_timer_wakeup(SLEEP_TIME * uS_TO_S_FACTOR);
