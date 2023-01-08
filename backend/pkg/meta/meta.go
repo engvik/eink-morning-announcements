@@ -1,7 +1,6 @@
 package meta
 
 import (
-	"log"
 	"time"
 )
 
@@ -50,8 +49,6 @@ func makeDateToWeekdayMap(now time.Time) map[string]string {
 		dateToWeekday[ft] = t.Weekday().String()
 		t = t.AddDate(0, 0, 1)
 	}
-
-	log.Println(dateToWeekday)
 
 	return dateToWeekday
 }
