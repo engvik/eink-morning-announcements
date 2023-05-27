@@ -98,16 +98,24 @@ func createEvent(eStart time.Time, e *ics.VEvent) (Event, error) {
 		return Event{}, nil
 	}
 
-	summary := e.GetProperty(ics.ComponentProperty(ics.PropertySummary))
-	description := e.GetProperty(ics.ComponentProperty(ics.PropertyDescription))
-	location := e.GetProperty(ics.ComponentProperty(ics.PropertyLocation))
+	summaryProperty := e.GetProperty(ics.ComponentProperty(ics.PropertySummary))
+	descriptionProperty := e.GetProperty(ics.ComponentProperty(ics.PropertyDescription))
+	locationProperty := e.GetProperty(ics.ComponentProperty(ics.PropertyLocation))
 
 	return Event{
 		Start:       eStart,
 		End:         eEnd,
 		ID:          e.Id(),
-		Title:       summary.Value,
-		Description: description.Value,
-		Location:    location.Value,
+		Title:       getPropertyString(summaryProperty),
+		Description: getPropertyString(descriptionProperty),
+		Location:    getPropertyString(locationProperty),
 	}, nil
+}
+
+func getPropertyString(p *ics.IANAProperty) string {
+	if p == nil {
+		return ""
+	}
+
+	return p.Value
 }
