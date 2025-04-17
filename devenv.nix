@@ -6,6 +6,7 @@
 {
   packages = [
     pkgs.platformio
+    pkgs.go-task
   ];
 
   languages.cplusplus.enable = true;
