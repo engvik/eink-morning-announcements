@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 	"github.com/engvik/eink-morning-announcements/backend/internal/transport"
