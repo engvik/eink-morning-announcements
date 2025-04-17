@@ -7,12 +7,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
-var (
-	ErrNoMessages = errors.New("No messages")
-)
+var ErrNoMessages = errors.New("No messages")
 
 type service interface {
 	SetMessage(context.Context, Message) error
