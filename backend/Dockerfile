@@ -11,7 +11,7 @@ RUN go build -mod=readonly -v -o /build/server cmd/server/main.go
 
 #--
 
-FROM gcr.io/distroless/static:nonroot
+FROM alpine:3.21
 
 COPY --from=builder /build/server /app/server
 
