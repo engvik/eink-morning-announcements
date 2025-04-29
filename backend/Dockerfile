@@ -13,6 +13,8 @@ RUN go build -mod=readonly -v -o /build/server cmd/server/main.go
 
 FROM alpine:3.21
 
+RUN apk --no-cache add sqlite tzdata
+
 COPY --from=builder /build/server /app/server
 
 CMD ["/app/server"]
