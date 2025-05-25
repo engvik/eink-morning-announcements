@@ -6,14 +6,13 @@ COPY . ./
 
 RUN go mod download
 
-ENV CGO_ENABLED=0
-RUN go build -mod=readonly -v -o /build/server cmd/server/main.go
+RUN CGO_ENABLED=1 GOOS=linux go build -mod=readonly -v -o /build/server cmd/server/main.go
 
 #--
 
-FROM alpine:3.21
+FROM debian:bookworm-slim
 
-RUN apk --no-cache add sqlite tzdata
+RUN apt-get update && apt-get install -y sqlite3 tzdata
 
 COPY --from=builder /build/server /app/server
 
