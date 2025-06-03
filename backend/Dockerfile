@@ -12,7 +12,7 @@ RUN CGO_ENABLED=1 GOOS=linux go build -mod=readonly -v -o /build/server cmd/serv
 
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y sqlite3 tzdata
+RUN apt-get update && apt-get install -y sqlite3 tzdata && apt-get install -y ca-certificates 
 
 COPY --from=builder /build/server /app/server
 
