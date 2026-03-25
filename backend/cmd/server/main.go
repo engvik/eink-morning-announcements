@@ -6,15 +6,15 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 
-	"github.com/engvik/eink-morning-announcements/backend/internal/config"
-	"github.com/engvik/eink-morning-announcements/backend/internal/server"
-	"github.com/engvik/eink-morning-announcements/backend/internal/transport"
-	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
-	"github.com/engvik/eink-morning-announcements/backend/pkg/message"
-	"github.com/engvik/eink-morning-announcements/backend/pkg/meta"
-	"github.com/engvik/eink-morning-announcements/backend/pkg/storage"
-	"github.com/engvik/eink-morning-announcements/backend/pkg/tasks"
-	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
+	"codeberg.org/engvik/eink-morning-announcements/backend/internal/config"
+	"codeberg.org/engvik/eink-morning-announcements/backend/internal/server"
+	"codeberg.org/engvik/eink-morning-announcements/backend/internal/transport"
+	"codeberg.org/engvik/eink-morning-announcements/backend/pkg/calendar"
+	"codeberg.org/engvik/eink-morning-announcements/backend/pkg/message"
+	"codeberg.org/engvik/eink-morning-announcements/backend/pkg/meta"
+	"codeberg.org/engvik/eink-morning-announcements/backend/pkg/storage"
+	"codeberg.org/engvik/eink-morning-announcements/backend/pkg/tasks"
+	"codeberg.org/engvik/eink-morning-announcements/backend/pkg/weather"
 )
 
 func main() {
