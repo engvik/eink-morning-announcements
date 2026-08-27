@@ -20,7 +20,8 @@ type Fetcher struct {
 }
 
 func NewFetcher(http *transport.HTTP, cfg *config.Config) *Fetcher {
-	weatherEndpoint := fmt.Sprintf("%s/compact?lat=%f&lon=%f", cfg.WeatherURL, cfg.WeatherLocationLat, cfg.WeatherLocationLon)
+	// The MET API terms of service require coordinates truncated to max 4 decimals.
+	weatherEndpoint := fmt.Sprintf("%s/compact?lat=%.4f&lon=%.4f", cfg.WeatherURL, cfg.WeatherLocationLat, cfg.WeatherLocationLon)
 
 	return &Fetcher{
 		Endpoint: weatherEndpoint,
