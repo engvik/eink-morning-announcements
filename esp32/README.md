@@ -6,16 +6,16 @@ The code running on the ESP32, built and uploaded with [PlatformIO](https://plat
 
 The default suggestions from [GxEPD2](https://github.com/ZinggJM/GxEPD2):
 
-|Waveshare | LOLIN D32 Pro | 
-|----------|---------------|
-|Vcc       | 3V            |
-|GND       | GND           | 
-|DIN       | 23 (MOSI)     | 
-|CLK       | 18 (SCK)      |
-|CS        | 5             | 
-|DC        | 0             | 
-|RST       | 2             | 
-|BUSY      | 15            | 
+| Waveshare | LOLIN D32 Pro |
+| --------- | ------------- |
+| Vcc       | 3V            |
+| GND       | GND           |
+| DIN       | 23 (MOSI)     |
+| CLK       | 18 (SCK)      |
+| CS        | 5             |
+| DC        | 0             |
+| RST       | 2             |
+| BUSY      | 15            |
 
 ## Build
 
