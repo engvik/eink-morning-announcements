@@ -45,7 +45,7 @@ func (p *Parser) Parse(cal string) ([]Event, error) {
 				parsed, err := rrule.ParseRRule(rule.Value)
 				parsed.Dtstart = eStart // Set start date to recurring event start
 				if err != nil {
-					log.Println("Unable to parse RRULE: %s", err)
+					log.Println("Unable to parse RRULE:", err)
 					continue
 				}
 
