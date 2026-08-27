@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
@@ -42,8 +43,14 @@ func (f *Fetcher) Fetch(ctx context.Context) ([]Forecast, error) {
 		return []Forecast{}, err
 	}
 
-	if status != http.StatusOK {
-		return []Forecast{}, fmt.Errorf("Unexpected HTTP status %d:", status)
+	// The MET API answers 203 when the requested product version is deprecated.
+	// The body is still valid, so keep going, but make the notice visible.
+	switch status {
+	case http.StatusOK:
+	case http.StatusNonAuthoritativeInfo:
+		log.Printf("Weather API version is deprecated, see %s\n", f.Endpoint)
+	default:
+		return []Forecast{}, fmt.Errorf("Unexpected HTTP status %d", status)
 	}
 
 	var respJSON forecastResponse
