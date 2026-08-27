@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"codeberg.org/engvik/eink-morning-announcements/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
 type httpClient interface {

@@ -9,7 +9,7 @@ import (
 	ics "github.com/arran4/golang-ical"
 	"github.com/stephens2424/rrule"
 
-	"codeberg.org/engvik/eink-morning-announcements/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
 type Parser struct {

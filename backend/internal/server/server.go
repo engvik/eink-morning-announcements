@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"codeberg.org/engvik/eink-morning-announcements/backend/internal/config"
-	"codeberg.org/engvik/eink-morning-announcements/backend/internal/transport"
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/transport"
 )
 
 type Server struct {
