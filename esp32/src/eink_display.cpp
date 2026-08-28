@@ -303,9 +303,11 @@ void EinkDisplay::drawUpcomingWeatherPeriod(const char* period, const char* symb
  */
 void EinkDisplay::drawText(const char* text) {
     display.getTextBounds(text, this->x, this->y, &this->sx, &this->sy, &this->sw, &this->sh);
-    
+
+    String tmp;
+
     if ((this->sx + this->sw + X_DEFAULT_SPACING) > this->width) {
-        String tmp = String(text);
+        tmp = String(text);
         int textWidth = tmp.length();
 
         // Keep splitting the text into multiple lines as long as it's above
