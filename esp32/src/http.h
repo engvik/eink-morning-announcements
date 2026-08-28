@@ -2,6 +2,7 @@
 #define HTTP_H
 
 #include <HTTPClient.h>
+#include <WiFi.h>
 
 #include "config.h"
 
