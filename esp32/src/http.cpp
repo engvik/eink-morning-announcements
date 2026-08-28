@@ -6,7 +6,7 @@ String httpGET(const char* serverName) {
 
     http.begin(client, serverName);
 
-    if (BACKEND_AUTHORIZATION_HEADER != "") {
+    if (BACKEND_AUTHORIZATION_HEADER[0] != '\0') {
         http.addHeader("Authorization", BACKEND_AUTHORIZATION_HEADER);
     }
 
