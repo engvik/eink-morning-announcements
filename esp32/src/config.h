@@ -1,54 +1,57 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
+
+#include <cstdint>
+
+static_assert(sizeof(CFG_WIFI_SSID) > 1, "WIFI_SSID is empty, set it in the environment");
+static_assert(sizeof(CFG_WIFI_PASSWORD) > 1, "WIFI_PASSWORD is empty, set it in the environment");
+static_assert(sizeof(CFG_BACKEND_HOST) > 1, "BACKEND_HOST is empty, set it in the environment");
 
 // Deep sleep
 
-#define uS_TO_S_FACTOR 1000000ULL
-extern int SLEEP_TIME;
-extern int LONG_SLEEP_TIME;
-extern int LONG_SLEEP_HOUR;
+inline constexpr std::uint64_t uS_TO_S_FACTOR = 1000000ULL;
+
+inline constexpr int SLEEP_TIME = 3600;       // 1 hour
+inline constexpr int LONG_SLEEP_TIME = 21600; // 6 hours
+inline constexpr int LONG_SLEEP_HOUR = 23;    // Long sleep after the update at 23:00.
 
 // WiFi
 
-extern const char* WIFI_SSID;
-extern const char* WIFI_PASSWORD;
+inline constexpr const char* WIFI_SSID = CFG_WIFI_SSID;
+inline constexpr const char* WIFI_PASSWORD = CFG_WIFI_PASSWORD;
 
 // Pins
 
-extern int PIN_CS;
-extern int PIN_DC;
-extern int PIN_RST;
-extern int PIN_BUSY;
-extern int PIN_BATTERY;
+inline constexpr int PIN_CS = 5;
+inline constexpr int PIN_DC = 0;
+inline constexpr int PIN_RST = 2;
+inline constexpr int PIN_BUSY = 15;
+inline constexpr int PIN_BATTERY = 35;
 
 // Eink Display
 
-extern int X_DEFAULT_PADDING;
-extern int Y_DEFAULT_PADDING;
-extern int X_DEFAULT_SPACING;
-extern int Y_DEFAULT_SPACING;
+inline constexpr int X_DEFAULT_PADDING = 25;
+inline constexpr int Y_DEFAULT_PADDING = 20;
+inline constexpr int X_DEFAULT_SPACING = 50;
+inline constexpr int Y_DEFAULT_SPACING = 10;
 
-extern int BITMAP_SIZE;
+inline constexpr int BITMAP_SIZE = 50;
 
-extern const char* HEADER_MAIN;
-extern const char* HEADER_MOTD;
-extern const char* HEADER_CALENDAR;
-extern const char* HEADER_WEATHER;
+inline constexpr const char* ERROR_UPDATING = "Unable to update :-(";
 
-extern const char* ERROR_UPDATING;
+inline constexpr const char* MSG_EMPTY_MOTD = "No message today!";
+inline constexpr const char* MSG_EMPTY_CALENDAR = "Nothing going on today!";
+inline constexpr const char* MSG_EMPTY_WEATHER = "No weather reports today!";
 
-extern const char* MSG_EMPTY_MOTD;
-extern const char* MSG_EMPTY_CALENDAR;
-extern const char* MSG_EMPTY_WEATHER;
-
-extern int TEXT_CUTOFF_THRESHOLD;
+inline constexpr int TEXT_CUTOFF_THRESHOLD = 39;
 
 // HTTP Backend
 
-extern const char* BACKEND_CALENDAR_ENDPOINT;
-extern const char* BACKEND_MESSAGE_ENDPOINT;
-extern const char* BACKEND_META_ENDPOINT;
-extern const char* BACKEND_WEATHER_ENDPOINT;
-extern const char* BACKEND_AUTHORIZATION_HEADER;
+// Adjacent string literals are concatenated by the preprocessor, so the host
+// stays the only secret and the paths stay readable in tracked source.
+inline constexpr const char* BACKEND_CALENDAR_ENDPOINT = CFG_BACKEND_HOST "/api/calendar";
+inline constexpr const char* BACKEND_MESSAGE_ENDPOINT = CFG_BACKEND_HOST "/api/message";
+inline constexpr const char* BACKEND_META_ENDPOINT = CFG_BACKEND_HOST "/api/meta";
+inline constexpr const char* BACKEND_WEATHER_ENDPOINT = CFG_BACKEND_HOST "/api/weather";
 
-#endif
+// Optional - an empty token means no Authorization header is sent.
+inline constexpr const char* BACKEND_AUTHORIZATION_HEADER = CFG_BACKEND_TOKEN;
