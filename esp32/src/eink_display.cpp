@@ -12,10 +12,6 @@ void EinkDisplay::hibernate() {
   display.hibernate();
 }
 
-void EinkDisplay::off() {
-    display.powerOff();
-}
-
 void EinkDisplay::refreshScreen() {
   display.setFullWindow();
   display.firstPage();

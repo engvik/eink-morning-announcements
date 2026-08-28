@@ -52,7 +52,6 @@ class EinkDisplay {
     public:
         void init();
         void hibernate();
-        void off();
         void refreshScreen();
         void draw(DisplayData *data);
 };

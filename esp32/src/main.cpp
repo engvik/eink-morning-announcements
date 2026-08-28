@@ -54,7 +54,7 @@ void setup()
     Serial.println("Refreshing Eink Display ..");
     ed.refreshScreen();
     ed.draw(&data);
-    ed.off();
+    ed.hibernate();
 
     // Deep sleep
     const char* now = data.meta["now"];
