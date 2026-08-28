@@ -21,6 +21,13 @@ The default suggestions from [GxEPD2](https://github.com/ZinggJM/GxEPD2):
 
 From repository root folder: `task build-esp`
 
+Secrets are read from the environment
+
+- `WIFI_SSID` - WiFi network name
+- `WIFI_PASSWORD` - WiFi password
+- `BACKEND_HOST` - backend base URL, e.g. `http://192.168.1.1:8080`
+- `BACKEND_TOKEN` - optional value for the `Authorization` header
+
 ## Build and upload
 
 From repository root folder: `task upload-esp`
