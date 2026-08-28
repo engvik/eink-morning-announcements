@@ -4,6 +4,6 @@
 #include <WiFi.h>
 #include "config.h"
 
-void initWiFi();
+bool initWiFi();
 
 #endif

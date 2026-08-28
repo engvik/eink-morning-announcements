@@ -6,6 +6,13 @@
 #include "http.h"
 #include "wifi.h"
 
+static void deepSleep(std::uint64_t seconds)
+{
+    esp_sleep_enable_timer_wakeup(seconds * uS_TO_S_FACTOR);
+    Serial.flush();
+    esp_deep_sleep_start();
+}
+
 void setup()
 {
     // Init serial
@@ -13,7 +20,11 @@ void setup()
 
     // Init WiFi
     Serial.println("Setting up WiFi ..");
-    initWiFi();
+
+    if (!initWiFi()) {
+        Serial.println("Unable to connect to WiFi, sleeping ..");
+        deepSleep(SLEEP_TIME);
+    }
 
     // Fetch data from backend
     Serial.println("Fetching calendar data ..");
@@ -52,13 +63,10 @@ void setup()
     // Sleep for six times SLEEP_TIME at midnight, otherwise update every
     // SLEEP_TIME.
     if (hour == LONG_SLEEP_HOUR) {
-        esp_sleep_enable_timer_wakeup(LONG_SLEEP_TIME * uS_TO_S_FACTOR);
+        deepSleep(LONG_SLEEP_TIME);
     } else {
-        esp_sleep_enable_timer_wakeup(SLEEP_TIME * uS_TO_S_FACTOR);
+        deepSleep(SLEEP_TIME);
     }
-
-    Serial.flush();
-    esp_deep_sleep_start();
 }
 
 void loop() {};

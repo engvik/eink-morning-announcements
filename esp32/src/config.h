@@ -19,6 +19,8 @@ inline constexpr int LONG_SLEEP_HOUR = 23;    // Long sleep after the update at 
 inline constexpr const char* WIFI_SSID = CFG_WIFI_SSID;
 inline constexpr const char* WIFI_PASSWORD = CFG_WIFI_PASSWORD;
 
+inline constexpr int WIFI_MAX_ATTEMPTS = 5;
+
 // Pins
 
 inline constexpr int PIN_CS = 5;
