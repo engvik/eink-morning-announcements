@@ -287,7 +287,7 @@ void EinkDisplay::drawUpcomingWeatherPeriod(const char* period, const char* symb
     this->drawText(period);
     this->setNextCursorPosition(this->x, this->y + this->sh);
 
-    if (symbol != "") {
+    if (symbol != nullptr && symbol[0] != '\0') {
         this->drawBitmap(symbol);
         this->setNextCursorPosition(this->x + BITMAP_SIZE + (X_DEFAULT_SPACING / 3), this->y + (BITMAP_SIZE / 2));
     }
