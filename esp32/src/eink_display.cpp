@@ -1,5 +1,7 @@
 #include "eink_display.h"
 
+#include "battery.h"
+
 GxEPD2_BW<GxEPD2_750_T7, GxEPD2_750_T7::HEIGHT> display(GxEPD2_750_T7(PIN_CS, PIN_DC, PIN_RST, PIN_BUSY));
 
 void EinkDisplay::init() {
@@ -209,20 +211,7 @@ void EinkDisplay::drawWeather(JSONVar weather) {
 void EinkDisplay::drawBattery(float voltage) {
     Serial.println("\tBattery ...");
 
-    int percentage = -1;
-
-    if (voltage >= 4.1) percentage = 100;
-    else if (voltage >= 4.0) percentage = 90;
-    else if (voltage >= 3.9) percentage = 80;
-    else if (voltage >= 3.8) percentage = 75;
-    else if (voltage >= 3.7) percentage = 60;
-    else if (voltage >= 3.6) percentage = 50;
-    else if (voltage >= 3.5) percentage = 35;
-    else if (voltage >= 3.4) percentage = 25;
-    else if (voltage >= 3.3) percentage = 10;
-    else if (voltage <= 3.2) percentage = 0;
-
-    String batteryStr = String(percentage) + "%";
+    String batteryStr = String(getBatteryPercentage(voltage)) + "%";
 
     this->setNextCursorPosition(0, this->height - (Y_DEFAULT_PADDING*5));
 

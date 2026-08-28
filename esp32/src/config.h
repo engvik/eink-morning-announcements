@@ -29,6 +29,11 @@ inline constexpr int PIN_RST = 2;
 inline constexpr int PIN_BUSY = 15;
 inline constexpr int PIN_BATTERY = 35;
 
+// Battery
+
+inline constexpr int BATTERY_SAMPLES = 16;
+inline constexpr float BATTERY_DIVIDER_RATIO = 2.0f; // 100k/100k divider on PIN_BATTERY
+
 // Eink Display
 
 inline constexpr int X_DEFAULT_PADDING = 25;

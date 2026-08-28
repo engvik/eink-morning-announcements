@@ -6,5 +6,6 @@
 #include "config.h"
 
 float getBatteryVoltage();
+int getBatteryPercentage(float voltage);
 
 #endif
