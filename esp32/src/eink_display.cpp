@@ -196,11 +196,11 @@ void EinkDisplay::drawWeather(JSONVar weather) {
             // Reset X position
             this->setNextCursorPosition(X_DEFAULT_PADDING, this->y);
         } else {
-            this->drawBitmap(MSG_EMPTY_WEATHER);
+            this->drawText(MSG_EMPTY_WEATHER);
             this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
         }
     } else {
-        this->drawBitmap(ERROR_UPDATING);
+        this->drawText(ERROR_UPDATING);
         this->setNextCursorPosition(this->x, this->y + this->sh + Y_DEFAULT_SPACING);
     }
 }
