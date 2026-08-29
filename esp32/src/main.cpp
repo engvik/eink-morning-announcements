@@ -27,23 +27,25 @@ void setup()
     }
 
     // Fetch data from backend
+    BackendClient backend;
+
     Serial.println("Fetching calendar data ..");
-    String rawCalendar = httpGET(BACKEND_CALENDAR_ENDPOINT);
+    HttpResponse rawCalendar = backend.get(BACKEND_CALENDAR_ENDPOINT);
 
     Serial.println("Fetching message ..");
-    String rawMessage = httpGET(BACKEND_MESSAGE_ENDPOINT);
+    HttpResponse rawMessage = backend.get(BACKEND_MESSAGE_ENDPOINT);
 
     Serial.println("Fetching meta data ..");
-    String rawMeta = httpGET(BACKEND_META_ENDPOINT);
+    HttpResponse rawMeta = backend.get(BACKEND_META_ENDPOINT);
 
     Serial.println("Fetching weather data ..");
-    String rawWeather = httpGET(BACKEND_WEATHER_ENDPOINT);
+    HttpResponse rawWeather = backend.get(BACKEND_WEATHER_ENDPOINT);
 
     struct DisplayData data;
-    data.calendar = JSON.parse(rawCalendar);
-    data.message = JSON.parse(rawMessage);
-    data.meta = JSON.parse(rawMeta);
-    data.weather = JSON.parse(rawWeather);
+    data.calendar = JSON.parse(rawCalendar.body);
+    data.message = JSON.parse(rawMessage.body);
+    data.meta = JSON.parse(rawMeta.body);
+    data.weather = JSON.parse(rawWeather.body);
     data.battery = getBatteryVoltage();
 
     // Init display

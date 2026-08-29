@@ -6,6 +6,24 @@
 
 #include "config.h"
 
-String httpGET(const char* serverName);
+struct HttpResponse {
+    // 0 means no request sent, negative means transport error, positive means HTTP
+    int status = 0;
+    String body;
+
+    bool ok() const { return status == HTTP_CODE_OK; }
+};
+
+// BackendClient is a simple HTTP client that can send GET requests to a
+// backend server.
+class BackendClient {
+    public:
+        HttpResponse get(const char* url);
+
+    private:
+        WiFiClient client;
+        HTTPClient http;
+        bool authorizationSet = false;
+};
 
 #endif
