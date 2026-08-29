@@ -23,7 +23,6 @@ class BackendClient {
     private:
         WiFiClient client;
         HTTPClient http;
-        bool authorizationSet = false;
 };
 
 #endif
