@@ -60,7 +60,7 @@ void setup()
 
     // Deep sleep
     const char* now = data.meta["now"];
-    int hour = String(now).substring(11, 16).toInt();
+    int hour = String(now).substring(11, 13).toInt();
 
     // Sleep for six times SLEEP_TIME at midnight, otherwise update every
     // SLEEP_TIME.
