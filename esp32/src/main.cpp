@@ -6,7 +6,7 @@
 #include "http.h"
 #include "wifi.h"
 
-static void deepSleep(std::uint64_t seconds) {
+[[noreturn]] static void deepSleep(std::uint64_t seconds) {
   esp_sleep_enable_timer_wakeup(seconds * uS_TO_S_FACTOR);
   Serial.flush();
   esp_deep_sleep_start();
