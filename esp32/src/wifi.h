@@ -1,10 +1,7 @@
-#ifndef WIFI_H
-#define WIFI_H
+#pragma once
 
 #include <WiFi.h>
 
 #include "config.h"
 
 bool initWiFi();
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef BATTERY_H
-#define BATTERY_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -7,5 +6,3 @@
 
 float getBatteryVoltage();
 int getBatteryPercentage(float voltage);
-
-#endif

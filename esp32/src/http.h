@@ -1,5 +1,4 @@
-#ifndef HTTP_H
-#define HTTP_H
+#pragma once
 
 #include <HTTPClient.h>
 #include <WiFi.h>
@@ -25,5 +24,3 @@ class BackendClient {
   WiFiClient client;
   HTTPClient http;
 };
-
-#endif

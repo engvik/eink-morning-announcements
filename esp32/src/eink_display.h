@@ -1,5 +1,4 @@
-#ifndef EINK_DISPLAY_H
-#define EINK_DISPLAY_H
+#pragma once
 
 #include <Adafruit_GFX.h>
 #include <Arduino_JSON.h>
@@ -57,5 +56,3 @@ class EinkDisplay {
   void refreshScreen();
   void draw(DisplayData* data);
 };
-
-#endif
