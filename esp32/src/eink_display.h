@@ -9,7 +9,7 @@
 #include <GxEPD2_BW.h>
 
 #include "config.h"
-#include "met_icons_black_50x50.cpp"
+#include "met_icons_black_50x50.h"
 
 struct DisplayData {
   JSONVar calendar;
