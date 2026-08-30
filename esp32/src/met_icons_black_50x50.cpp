@@ -1,3 +1,4 @@
+// clang-format off
 #include <pgmspace.h>
 
 // 'snowshowers_night', 50x50px

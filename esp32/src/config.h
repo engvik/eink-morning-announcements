@@ -2,17 +2,21 @@
 
 #include <cstdint>
 
-static_assert(sizeof(CFG_WIFI_SSID) > 1, "WIFI_SSID is empty, set it in the environment");
-static_assert(sizeof(CFG_WIFI_PASSWORD) > 1, "WIFI_PASSWORD is empty, set it in the environment");
-static_assert(sizeof(CFG_BACKEND_HOST) > 1, "BACKEND_HOST is empty, set it in the environment");
+static_assert(sizeof(CFG_WIFI_SSID) > 1,
+              "WIFI_SSID is empty, set it in the environment");
+static_assert(sizeof(CFG_WIFI_PASSWORD) > 1,
+              "WIFI_PASSWORD is empty, set it in the environment");
+static_assert(sizeof(CFG_BACKEND_HOST) > 1,
+              "BACKEND_HOST is empty, set it in the environment");
 
 // Deep sleep
 
 inline constexpr std::uint64_t uS_TO_S_FACTOR = 1000000ULL;
 
-inline constexpr int SLEEP_TIME = 3600;       // 1 hour
-inline constexpr int LONG_SLEEP_TIME = 21600; // 6 hours
-inline constexpr int LONG_SLEEP_HOUR = 23;    // Long sleep after the update at 23:00.
+inline constexpr int SLEEP_TIME = 3600;        // 1 hour
+inline constexpr int LONG_SLEEP_TIME = 21600;  // 6 hours
+// Long sleep after the update at 23:00.
+inline constexpr int LONG_SLEEP_HOUR = 23;
 
 // WiFi
 
@@ -32,7 +36,8 @@ inline constexpr int PIN_BATTERY = 35;
 // Battery
 
 inline constexpr int BATTERY_SAMPLES = 16;
-inline constexpr float BATTERY_DIVIDER_RATIO = 2.0f; // 100k/100k divider on PIN_BATTERY
+// 100k/100k divider on PIN_BATTERY
+inline constexpr float BATTERY_DIVIDER_RATIO = 2.0f;
 
 // Eink Display
 
@@ -53,12 +58,14 @@ inline constexpr int TEXT_CUTOFF_THRESHOLD = 39;
 
 // HTTP Backend
 
-// Adjacent string literals are concatenated by the preprocessor, so the host
-// stays the only secret and the paths stay readable in tracked source.
-inline constexpr const char* BACKEND_CALENDAR_ENDPOINT = CFG_BACKEND_HOST "/api/calendar";
-inline constexpr const char* BACKEND_MESSAGE_ENDPOINT = CFG_BACKEND_HOST "/api/message";
-inline constexpr const char* BACKEND_META_ENDPOINT = CFG_BACKEND_HOST "/api/meta";
-inline constexpr const char* BACKEND_WEATHER_ENDPOINT = CFG_BACKEND_HOST "/api/weather";
+inline constexpr const char* BACKEND_CALENDAR_ENDPOINT =
+    CFG_BACKEND_HOST "/api/calendar";
+inline constexpr const char* BACKEND_MESSAGE_ENDPOINT =
+    CFG_BACKEND_HOST "/api/message";
+inline constexpr const char* BACKEND_META_ENDPOINT =
+    CFG_BACKEND_HOST "/api/meta";
+inline constexpr const char* BACKEND_WEATHER_ENDPOINT =
+    CFG_BACKEND_HOST "/api/weather";
 
-// Optional - an empty token means no Authorization header is sent.
+// Optional, an empty token means no Authorization header is sent.
 inline constexpr const char* BACKEND_AUTHORIZATION_HEADER = CFG_BACKEND_TOKEN;

@@ -7,22 +7,23 @@
 #include "config.h"
 
 struct HttpResponse {
-    // 0 means no request sent, negative means transport error, positive means HTTP
-    int status = 0;
-    String body;
+  // 0 means no request sent, negative means transport error, positive means
+  // HTTP
+  int status = 0;
+  String body;
 
-    bool ok() const { return status == HTTP_CODE_OK; }
+  bool ok() const { return status == HTTP_CODE_OK; }
 };
 
 // BackendClient is a simple HTTP client that can send GET requests to a
 // backend server.
 class BackendClient {
-    public:
-        HttpResponse get(const char* url);
+ public:
+  HttpResponse get(const char* url);
 
-    private:
-        WiFiClient client;
-        HTTPClient http;
+ private:
+  WiFiClient client;
+  HTTPClient http;
 };
 
 #endif
