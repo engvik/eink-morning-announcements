@@ -11,7 +11,7 @@ struct HttpResponse {
   int status = 0;
   String body;
 
-  bool ok() const { return status == HTTP_CODE_OK; }
+  constexpr bool ok() const noexcept { return status == HTTP_CODE_OK; }
 };
 
 // BackendClient is a simple HTTP client that can send GET requests to a
