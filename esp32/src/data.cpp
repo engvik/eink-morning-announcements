@@ -17,10 +17,23 @@ DisplayData fetchDisplayData(BackendClient& backend) {
   HttpResponse rawWeather = backend.get(BACKEND_WEATHER_ENDPOINT);
 
   DisplayData data;
-  data.calendar = JSON.parse(rawCalendar.body);
-  data.message = JSON.parse(rawMessage.body);
-  data.meta = JSON.parse(rawMeta.body);
-  data.weather = JSON.parse(rawWeather.body);
+
+  if (rawCalendar.ok()) {
+    data.calendar = JSON.parse(rawCalendar.body);
+  }
+
+  if (rawMessage.ok()) {
+    data.message = JSON.parse(rawMessage.body);
+  }
+
+  if (rawMeta.ok()) {
+    data.meta = JSON.parse(rawMeta.body);
+  }
+
+  if (rawWeather.ok()) {
+    data.weather = JSON.parse(rawWeather.body);
+  }
+
   data.battery = getBatteryVoltage();
 
   return data;
