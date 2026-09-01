@@ -8,15 +8,8 @@
 #include <GxEPD2_BW.h>
 
 #include "config.h"
+#include "data.h"
 #include "met_icons_black_50x50.h"
-
-struct DisplayData {
-  JSONVar calendar;
-  JSONVar message;
-  JSONVar meta;
-  JSONVar weather;
-  float battery;
-};
 
 String buildMainHeaderString(JSONVar meta);
 String buildTemperatureHourString(const char* timestamp, double temp);

@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Arduino_JSON.h>
 
-#include "battery.h"
+#include "data.h"
 #include "eink_display.h"
 #include "http.h"
 #include "wifi.h"
@@ -26,25 +26,7 @@ void setup() {
 
   // Fetch data from backend
   BackendClient backend;
-
-  Serial.println("Fetching calendar data ..");
-  HttpResponse rawCalendar = backend.get(BACKEND_CALENDAR_ENDPOINT);
-
-  Serial.println("Fetching message ..");
-  HttpResponse rawMessage = backend.get(BACKEND_MESSAGE_ENDPOINT);
-
-  Serial.println("Fetching meta data ..");
-  HttpResponse rawMeta = backend.get(BACKEND_META_ENDPOINT);
-
-  Serial.println("Fetching weather data ..");
-  HttpResponse rawWeather = backend.get(BACKEND_WEATHER_ENDPOINT);
-
-  struct DisplayData data;
-  data.calendar = JSON.parse(rawCalendar.body);
-  data.message = JSON.parse(rawMessage.body);
-  data.meta = JSON.parse(rawMeta.body);
-  data.weather = JSON.parse(rawWeather.body);
-  data.battery = getBatteryVoltage();
+  DisplayData data = fetchDisplayData(backend);
 
   // Init display
   Serial.println("Setting up Eink Display ..");
@@ -69,4 +51,4 @@ void setup() {
   }
 }
 
-void loop() {};
+void loop() {}
