@@ -1,5 +1,7 @@
 #include "battery.h"
 
+namespace {
+
 struct BatteryLevel {
   float voltage;
   int percentage;
@@ -9,6 +11,8 @@ constexpr BatteryLevel BATTERY_CURVE[] = {
     {4.1f, 100}, {4.0f, 90}, {3.9f, 80}, {3.8f, 75}, {3.7f, 60},
     {3.6f, 50},  {3.5f, 35}, {3.4f, 25}, {3.3f, 10},
 };
+
+}  // namespace
 
 float getBatteryVoltage() {
   std::uint32_t total = 0;
