@@ -14,7 +14,7 @@
 
 void setup() {
   // Init serial
-  Serial.begin(115200);
+  Serial.begin(SERIAL_BAUD);
 
   // Init WiFi
   Serial.println("Setting up WiFi ..");

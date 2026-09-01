@@ -9,6 +9,10 @@ static_assert(sizeof(CFG_WIFI_PASSWORD) > 1,
 static_assert(sizeof(CFG_BACKEND_HOST) > 1,
               "BACKEND_HOST is empty, set it in the environment");
 
+// Serial
+
+inline constexpr int SERIAL_BAUD = 115200;
+
 // Deep sleep
 
 inline constexpr std::uint64_t uS_TO_S_FACTOR = 1000000ULL;
