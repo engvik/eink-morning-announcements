@@ -28,13 +28,13 @@ func main() {
 
 	httpClient := transport.NewHTTPClient(&cfg)
 
-	sqlClient, err := storage.NewSQLiteClient(&cfg)
+	storageClient, err := storage.NewClient(&cfg)
 	if err != nil {
-		log.Fatal("Error creating SQLite client:", err)
+		log.Fatal("Error creating storage client:", err)
 	}
-	defer sqlClient.Close()
+	defer storageClient.Close()
 
-	storage := storage.New(sqlClient)
+	storage := storage.New(storageClient)
 
 	// Calendar
 	calendarFetcher := calendar.NewFetcher(httpClient, &cfg)

@@ -2,8 +2,6 @@ package storage
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
@@ -63,12 +61,5 @@ func (s *Storage) SetMessage(ctx context.Context, m message.Message) error {
 }
 
 func (s *Storage) GetMessage(ctx context.Context) (message.Message, error) {
-	m, err := s.client.GetMessage(ctx)
-	if errors.Is(err, sql.ErrNoRows) {
-		return m, message.ErrNoMessages
-	} else if err != nil {
-		return m, err
-	}
-
-	return m, nil
+	return s.client.GetMessage(ctx)
 }
