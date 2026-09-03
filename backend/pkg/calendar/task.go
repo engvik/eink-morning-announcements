@@ -43,32 +43,40 @@ func (t *Task) Name() string {
 	return "Calendar"
 }
 
-func (t *Task) Run() {
+func (t *Task) Run(ctx context.Context) {
 	ticker := time.NewTicker(t.updateInterval)
 	defer ticker.Stop()
 
+	// Update immediately, otherwise nothing is served until the first tick.
+	t.update(ctx)
+
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case <-ticker.C:
-			ctx, cancel := context.WithTimeout(context.Background(), t.timeout)
-
-			body, err := t.Fetcher.Fetch(ctx)
-			if err != nil {
-				log.Printf("Error fetching calendar: %s\n", err)
-				continue
-			}
-
-			events, err := t.Parser.Parse(string(body))
-			if err != nil {
-				log.Printf("Error parsing calendar: %s\n", err)
-				continue
-			}
-
-			if err := t.Storage.SetCalendarEvents(ctx, events); err != nil {
-				log.Printf("Error storing calendar events: %s\n", err)
-			}
-
-			cancel()
+			t.update(ctx)
 		}
+	}
+}
+
+func (t *Task) update(ctx context.Context) {
+	ctx, cancel := context.WithTimeout(ctx, t.timeout)
+	defer cancel()
+
+	body, err := t.Fetcher.Fetch(ctx)
+	if err != nil {
+		log.Printf("Error fetching calendar: %s\n", err)
+		return
+	}
+
+	events, err := t.Parser.Parse(string(body))
+	if err != nil {
+		log.Printf("Error parsing calendar: %s\n", err)
+		return
+	}
+
+	if err := t.Storage.SetCalendarEvents(ctx, events); err != nil {
+		log.Printf("Error storing calendar events: %s\n", err)
 	}
 }

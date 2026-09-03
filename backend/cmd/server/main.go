@@ -63,7 +63,7 @@ func main() {
 	s.MountRoute("/api/meta", metaHandler)
 
 	// Start background tasks
-	tasks.Start(calendarTask, weatherTask)
+	tasks.Start(ctx, calendarTask, weatherTask)
 
 	// Start HTTP server
 	s.Serve(ctx)

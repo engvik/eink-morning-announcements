@@ -37,26 +37,34 @@ func (t *Task) Name() string {
 	return "Weather"
 }
 
-func (t *Task) Run() {
+func (t *Task) Run(ctx context.Context) {
 	ticker := time.NewTicker(t.updateInterval)
 	defer ticker.Stop()
 
+	// Update immediately, otherwise nothing is served until the first tick.
+	t.update(ctx)
+
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case <-ticker.C:
-			ctx, cancel := context.WithTimeout(context.Background(), t.timeout)
-
-			forecasts, err := t.Fetcher.Fetch(ctx)
-			if err != nil {
-				log.Printf("Error fetching weather data: %s\n", err)
-				continue
-			}
-
-			if err := t.Storage.SetWeatherForecasts(ctx, forecasts); err != nil {
-				log.Printf("Error storing weather forecast: %s\n", err)
-			}
-
-			cancel()
+			t.update(ctx)
 		}
+	}
+}
+
+func (t *Task) update(ctx context.Context) {
+	ctx, cancel := context.WithTimeout(ctx, t.timeout)
+	defer cancel()
+
+	forecasts, err := t.Fetcher.Fetch(ctx)
+	if err != nil {
+		log.Printf("Error fetching weather data: %s\n", err)
+		return
+	}
+
+	if err := t.Storage.SetWeatherForecasts(ctx, forecasts); err != nil {
+		log.Printf("Error storing weather forecast: %s\n", err)
 	}
 }
