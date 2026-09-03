@@ -1,7 +1,6 @@
 package calendar
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -43,11 +42,12 @@ func (p *Parser) Parse(cal string) ([]Event, error) {
 			rule := e.GetProperty(ics.ComponentProperty(ics.PropertyRrule))
 			if rule != nil {
 				parsed, err := rrule.ParseRRule(rule.Value)
-				parsed.Dtstart = eStart // Set start date to recurring event start
 				if err != nil {
 					log.Println("Unable to parse RRULE:", err)
 					continue
 				}
+
+				parsed.Dtstart = eStart // Set start date to recurring event start
 
 				// Iterate until there are an event in the future and add it if
 				// it's withing the  peek period.
@@ -68,34 +68,25 @@ func (p *Parser) Parse(cal string) ([]Event, error) {
 				}
 
 				if nextEvent != nil {
-					event, err := createEvent(*nextEvent, e)
-					if err != nil {
-						return events, fmt.Errorf("Unable to create recurring event: %w", err)
-					}
-
-					events = append(events, event)
+					events = append(events, createEvent(*nextEvent, e))
 				}
 			}
 		}
 
 		// Find upcoming events
 		if eStart.After(now) && eStart.Before(peek) {
-			event, err := createEvent(eStart, e)
-			if err != nil {
-				return events, fmt.Errorf("Unable to create event: %w", err)
-			}
-
-			events = append(events, event)
+			events = append(events, createEvent(eStart, e))
 		}
 	}
 
 	return events, nil
 }
 
-func createEvent(eStart time.Time, e *ics.VEvent) (Event, error) {
+func createEvent(eStart time.Time, e *ics.VEvent) Event {
+	// An event with neither DTEND nor DURATION is zero-length per RFC 5545.
 	eEnd, err := e.GetEndAt()
 	if err != nil {
-		return Event{}, nil
+		eEnd = eStart
 	}
 
 	summaryProperty := e.GetProperty(ics.ComponentProperty(ics.PropertySummary))
@@ -109,7 +100,7 @@ func createEvent(eStart time.Time, e *ics.VEvent) (Event, error) {
 		Title:       getPropertyString(summaryProperty),
 		Description: getPropertyString(descriptionProperty),
 		Location:    getPropertyString(locationProperty),
-	}, nil
+	}
 }
 
 func getPropertyString(p *ics.IANAProperty) string {
