@@ -46,7 +46,7 @@
       description = "Build the backend binary";
       exec = ''
         cd "$DEVENV_ROOT/backend"
-        GO111MODULE=on CGO_ENABLED=1 \
+        GO111MODULE=on CGO_ENABLED=0 \
           go build -a -ldflags '-s -w' -trimpath -installsuffix cgo -o server cmd/server/main.go
       '';
     };

@@ -10,7 +10,7 @@ import (
 	"slices"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/message"
@@ -25,7 +25,7 @@ type SQLite struct {
 }
 
 func NewSQLiteClient(cfg *config.Config) (*SQLite, error) {
-	db, err := sql.Open("sqlite3", cfg.SQLitePath)
+	db, err := sql.Open("sqlite", cfg.SQLitePath)
 	if err != nil {
 		return nil, err
 	}
