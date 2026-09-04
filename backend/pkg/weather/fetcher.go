@@ -22,7 +22,7 @@ type Fetcher struct {
 
 func NewFetcher(http *transport.HTTP, cfg *config.Config) *Fetcher {
 	// The MET API terms of service require coordinates truncated to max 4 decimals.
-	weatherEndpoint := fmt.Sprintf("%s/compact?lat=%.4f&lon=%.4f", cfg.WeatherURL, cfg.WeatherLocationLat, cfg.WeatherLocationLon)
+	weatherEndpoint := fmt.Sprintf("%s/complete?lat=%.4f&lon=%.4f", cfg.WeatherURL, cfg.WeatherLocationLat, cfg.WeatherLocationLon)
 
 	return &Fetcher{
 		Endpoint: weatherEndpoint,
@@ -63,19 +63,11 @@ func (f *Fetcher) Fetch(ctx context.Context) ([]Forecast, error) {
 
 	for _, forecast := range respJSON.Properties.Timeseries {
 		forecasts = append(forecasts, Forecast{
-			Time:    forecast.Time,
-			Instant: forecast.Data.Instant.Details,
-			OneHour: PeriodForecast{
-				SymbolCode:          forecast.Data.OneHour.Summary.SymbolCode,
-				PrecipitationAmount: forecast.Data.OneHour.Details.PrecipitationAmount,
-			},
-			SixHours: PeriodForecast{
-				SymbolCode:          forecast.Data.SixHours.Summary.SymbolCode,
-				PrecipitationAmount: forecast.Data.SixHours.Details.PrecipitationAmount,
-			},
-			TwelveHours: PeriodForecast{
-				SymbolCode: forecast.Data.TwelveHours.Summary.SymbolCode,
-			},
+			Time:        forecast.Time,
+			Instant:     forecast.Data.Instant.Details,
+			OneHour:     forecast.Data.OneHour.forecast(),
+			SixHours:    forecast.Data.SixHours.forecast(),
+			TwelveHours: forecast.Data.TwelveHours.forecast(),
 		})
 	}
 
