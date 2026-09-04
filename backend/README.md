@@ -14,13 +14,17 @@ From repository root folder: `task run-backend`
 To write a new task, implement the following interface:
 
 ```go
-    Name() string       // Should return the task name.
-    Run()               // Should implement the task runner itself. Note that
-                        // tasks runs in it's own Go routine, so it must
-                        // block otherwise the task will just exit.
+    Name() string           // Should return the task name.
+    Run(context.Context)    // Should implement the task runner itself. Note
+                            // that tasks runs in it's own Go routine, so it
+                            // must block otherwise the task will just exit.
+                            // Return when the context is cancelled.
 ```
 
-Then it can be passed into `tasks.Start(...tasks)`
+Then it can be passed into `tasks.Start(ctx, ...tasks)`
+
+Tasks update once on startup and then on every tick, so a fresh process serves
+real data immediately instead of waiting out the first interval.
 
 ## API
 
@@ -32,11 +36,11 @@ Get calendar events.
 
 Get weather forecasts.
 
-### GET /api/messages
+### GET /api/message
 
 Get latest message.
 
-### POST /api/messages
+### POST /api/message
 
 Create a new message.
 
@@ -46,60 +50,47 @@ Payload:
 { "message": "my-message" }
 ```
 
-## Database
+### GET /api/meta
 
-The backend uses a `sqlite` database as it should be enough for this
-application, but hopefully it should be pretty easy to write support for
-antoher database.
+Get the current date, ISO week and a date-to-weekday map for the coming two
+weeks.
 
-As long as it fulfills the interface,
+## Storage
+
+Storage is split by whether the data can be fetched again.
+
+Calendar events and weather forecasts are a **cache**, both are re-fetchable
+from the ICS feed and MET, so they are held in memory (`storage.Memory`) and
+never persisted. Each fetch replaces the previous set, which is also what keeps
+past entries from piling up.
+
+The message is **not** a cache. It is written from the frontend and exists
+nowhere else, so it is persisted in `sqlite` (`storage.SQLite`).
+
+`storage.Client` composes the two and is what gets passed to `storage.New`. To
+swap either half, implement the interface and compose your own:
 
 ```go
     SetCalendarEvents(context.Context, []calendar.Event) error
     GetCalendarEvents(context.Context) ([]calendar.Event, error)
     SetWeatherForecasts(context.Context, []weather.Forecast) error
-    GetWeatherForecasts(context.Context) ([]weather.Forecast, error
+    GetWeatherForecasts(context.Context) ([]weather.Forecast, error)
     SetMessage(context.Context, message.Message) error
     GetMessage(context.Context) (message.Message, error)
 ```
 
-it can be passed into `storage.New(myDBClientImplementation)`, and it should
-just work.
+### Migrations
+
+The schema is defined in `pkg/storage/migrations/*.sql`, embedded into the binary
+and applied by `NewSQLiteClient` on open. `PRAGMA user_version` records how many
+have run.
+
+```
+migrations/
+  001_initial.sql
+```
 
 ### Tables
-
-#### Calendar events
-
-```sql
-CREATE TABLE events (
-   id TEXT PRIMARY KEY NOT NULL,
-   start INTEGER,
-   end INTEGER,
-   title TEXT,
-   description TEXT,
-   location TEXT
-);
-```
-
-
-#### Weather forecasts
-
-```sql
-CREATE TABLE forecasts (
-  time INTEGER PRIMARY KEY NOT NULL,
-  instant_air_pressure_at_sea_level REAL,
-  instant_air_temperature REAL,
-  instant_cloud_area_fraction REAL,
-  instant_relative_humidity REAL,
-  instant_wind_from_direction REAL,
-  instant_wind_speed REAL,
-  one_hour_symbol_code TEXT,
-  one_hour_precipitation_amount REAL,
-  six_hours_symbol_code TEXT,
-  six_hours_precipitation_amount REAL,
-  twelve_hours_symbol_code TEXT
-);
-```
 
 #### Messages
 
