@@ -7,7 +7,7 @@ The backend is a Go application that performs two things:
 
 ## Run locally
 
-From repository root folder: `task run-backend`
+From repository root folder: `devenv up`
 
 ## Tasks
 
