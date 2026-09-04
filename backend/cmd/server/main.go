@@ -39,12 +39,12 @@ func main() {
 	// Calendar
 	calendarFetcher := calendar.NewFetcher(httpClient, &cfg)
 	calendarParser := calendar.NewParser(&cfg)
-	calendarTask := calendar.NewTask(storage, calendarFetcher, calendarParser, &cfg)
-	calendarHandler := calendar.NewHTTPHandler(storage)
+	calendarTask := calendar.NewTask(&cfg, storage, calendarFetcher, calendarParser)
+	calendarHandler := calendar.NewHTTPHandler(&cfg, storage)
 
 	// Weather
-	weatherFetcher := weather.NewFetcher(httpClient, &cfg)
-	weatherTask := weather.NewTask(weatherFetcher, storage, &cfg)
+	weatherFetcher := weather.NewFetcher(&cfg, httpClient)
+	weatherTask := weather.NewTask(&cfg, weatherFetcher, storage)
 	weatherHandler := weather.NewHTTPHandler(&cfg, storage)
 
 	// Message

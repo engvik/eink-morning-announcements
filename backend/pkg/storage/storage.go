@@ -10,8 +10,8 @@ import (
 )
 
 type store interface {
-	SetCalendarEvents(context.Context, []calendar.Event) error
-	GetCalendarEvents(context.Context) ([]calendar.Event, error)
+	SetCalendarEvents(context.Context, calendar.Events) error
+	GetCalendarEvents(context.Context) (calendar.Events, error)
 	SetWeatherForecasts(context.Context, weather.Forecasts) error
 	GetWeatherForecasts(context.Context) (weather.Forecasts, error)
 	SetMessage(context.Context, message.Message) error
@@ -28,7 +28,7 @@ func New(c store) *Storage {
 	}
 }
 
-func (s *Storage) SetCalendarEvents(ctx context.Context, events []calendar.Event) error {
+func (s *Storage) SetCalendarEvents(ctx context.Context, events calendar.Events) error {
 	if len(events) == 0 {
 		return fmt.Errorf("no data")
 	}
@@ -36,7 +36,7 @@ func (s *Storage) SetCalendarEvents(ctx context.Context, events []calendar.Event
 	return s.client.SetCalendarEvents(ctx, events)
 }
 
-func (s *Storage) GetCalendarEvents(ctx context.Context) ([]calendar.Event, error) {
+func (s *Storage) GetCalendarEvents(ctx context.Context) (calendar.Events, error) {
 	return s.client.GetCalendarEvents(ctx)
 }
 

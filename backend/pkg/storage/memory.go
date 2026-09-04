@@ -17,11 +17,10 @@ import (
 // accumulating.
 type Memory struct {
 	mu        sync.RWMutex
-	events    []calendar.Event
+	events    calendar.Events
 	forecasts weather.Forecasts
 
-	location               *time.Location
-	numCalendarFetchEvents int
+	location *time.Location
 }
 
 func NewMemoryClient(cfg *config.Config) (*Memory, error) {
@@ -31,12 +30,11 @@ func NewMemoryClient(cfg *config.Config) (*Memory, error) {
 	}
 
 	return &Memory{
-		location:               location,
-		numCalendarFetchEvents: cfg.CalendarFetchEvents,
+		location: location,
 	}, nil
 }
 
-func (c *Memory) SetCalendarEvents(_ context.Context, events []calendar.Event) error {
+func (c *Memory) SetCalendarEvents(_ context.Context, events calendar.Events) error {
 	slices.SortFunc(events, func(a, b calendar.Event) int {
 		return a.Start.Compare(b.Start)
 	})
@@ -49,20 +47,18 @@ func (c *Memory) SetCalendarEvents(_ context.Context, events []calendar.Event) e
 	return nil
 }
 
-func (c *Memory) GetCalendarEvents(_ context.Context) ([]calendar.Event, error) {
+func (c *Memory) GetCalendarEvents(_ context.Context) (calendar.Events, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	now := time.Now()
-	events := make([]calendar.Event, 0, c.numCalendarFetchEvents)
+	events := make(calendar.Events, 0, len(c.events))
 
+	// The whole remaining series is returned; callers that only want the next
+	// few limit it themselves. The total count needs all of it.
 	for _, e := range c.events {
 		if e.Start.Before(now) {
 			continue
-		}
-
-		if len(events) == c.numCalendarFetchEvents {
-			break
 		}
 
 		e.Start = e.Start.In(c.location)

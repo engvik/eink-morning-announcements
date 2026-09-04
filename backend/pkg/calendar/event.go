@@ -10,3 +10,15 @@ type Event struct {
 	Description string    `json:"description"`
 	Location    string    `json:"location"`
 }
+
+// Events is a series ordered ascending by start time.
+type Events []Event
+
+// Limit returns at most n events from the front of the series.
+func (e Events) Limit(n int) Events {
+	if len(e) < n {
+		return e
+	}
+
+	return e[:n]
+}

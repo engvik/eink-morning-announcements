@@ -13,12 +13,12 @@ type fetcher interface {
 }
 
 type parser interface {
-	Parse(string) ([]Event, error)
+	Parse(string) (Events, error)
 }
 
 type store interface {
-	SetCalendarEvents(context.Context, []Event) error
-	GetCalendarEvents(context.Context) ([]Event, error)
+	SetCalendarEvents(context.Context, Events) error
+	GetCalendarEvents(context.Context) (Events, error)
 }
 
 type Task struct {
@@ -29,7 +29,7 @@ type Task struct {
 	timeout        time.Duration
 }
 
-func NewTask(s store, f fetcher, p parser, cfg *config.Config) *Task {
+func NewTask(cfg *config.Config, s store, f fetcher, p parser) *Task {
 	return &Task{
 		Fetcher:        f,
 		Parser:         p,

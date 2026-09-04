@@ -24,7 +24,7 @@ type Task struct {
 	timeout        time.Duration
 }
 
-func NewTask(f fetcher, s store, cfg *config.Config) *Task {
+func NewTask(cfg *config.Config, f fetcher, s store) *Task {
 	return &Task{
 		Fetcher:        f,
 		Storage:        s,

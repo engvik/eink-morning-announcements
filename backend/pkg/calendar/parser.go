@@ -21,13 +21,13 @@ func NewParser(cfg *config.Config) *Parser {
 	}
 }
 
-func (p *Parser) Parse(cal string) ([]Event, error) {
+func (p *Parser) Parse(cal string) (Events, error) {
 	calendar, err := ics.ParseCalendar(strings.NewReader(cal))
 	if err != nil {
-		return []Event{}, err
+		return Events{}, err
 	}
 
-	events := make([]Event, 0)
+	events := make(Events, 0)
 	now := time.Now()
 	peek := now.Add(p.Peek)
 
