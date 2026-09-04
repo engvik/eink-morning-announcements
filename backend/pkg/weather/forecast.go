@@ -10,6 +10,79 @@ type Forecast struct {
 	TwelveHours PeriodForecast  `json:"twelve_hours"`
 }
 
+// Forecasts is a series ordered ascending by time.
+type Forecasts []Forecast
+
+// Limit returns at most n forecasts from the front of the series.
+func (f Forecasts) Limit(n int) Forecasts {
+	if len(f) < n {
+		return f
+	}
+
+	return f[:n]
+}
+
+// Summarize groups the series by calendar date. The forecasts must already be
+// converted to the display location. The first day is today, and covers only
+// the hours remaining in it.
+//
+// MET switches from hourly to six-hourly entries a couple of days out, so
+// precipitation is summed by walking forward and taking whichever period block
+// is present, skipping entries an earlier longer block already covered. A
+// six-hour block straddling midnight counts towards the day it starts in.
+func (f Forecasts) Summarize() []Day {
+	days := make([]Day, 0, 10)
+	index := make(map[string]int, 10)
+
+	var coveredUntil time.Time
+
+	for _, forecast := range f {
+		date := forecast.Time.Format(time.DateOnly)
+
+		i, ok := index[date]
+		if !ok {
+			days = append(days, Day{
+				Date:              date,
+				AirTemperatureMin: forecast.Instant.AirTemperature,
+				AirTemperatureMax: forecast.Instant.AirTemperature,
+			})
+
+			i = len(days) - 1
+			index[date] = i
+		}
+
+		day := &days[i]
+
+		day.AirTemperatureMin = min(day.AirTemperatureMin, forecast.Instant.AirTemperature)
+		day.AirTemperatureMax = max(day.AirTemperatureMax, forecast.Instant.AirTemperature)
+		day.UltravioletIndexMax = max(day.UltravioletIndexMax, forecast.Instant.UltravioletIndexClearSky)
+
+		if forecast.Time.Before(coveredUntil) {
+			continue
+		}
+
+		switch {
+		case forecast.OneHour.SymbolCode != "":
+			day.PrecipitationAmount += forecast.OneHour.PrecipitationAmount
+			coveredUntil = forecast.Time.Add(time.Hour)
+		case forecast.SixHours.SymbolCode != "":
+			day.PrecipitationAmount += forecast.SixHours.PrecipitationAmount
+			coveredUntil = forecast.Time.Add(6 * time.Hour)
+		}
+	}
+
+	return days
+}
+
+// Day aggregates every forecast falling on one calendar date.
+type Day struct {
+	Date                string  `json:"date"`
+	AirTemperatureMin   float64 `json:"air_temperature_min"`
+	AirTemperatureMax   float64 `json:"air_temperature_max"`
+	PrecipitationAmount float64 `json:"precipitation_amount"`
+	UltravioletIndexMax float64 `json:"ultraviolet_index_max"`
+}
+
 // InstantForecast describes conditions at the forecast timestamp itself.
 type InstantForecast struct {
 	AirPressureAtSeaLevel    float64 `json:"air_pressure_at_sea_level"`

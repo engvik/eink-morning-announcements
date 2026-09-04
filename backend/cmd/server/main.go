@@ -45,7 +45,7 @@ func main() {
 	// Weather
 	weatherFetcher := weather.NewFetcher(httpClient, &cfg)
 	weatherTask := weather.NewTask(weatherFetcher, storage, &cfg)
-	weatherHandler := weather.NewHTTPHandler(storage)
+	weatherHandler := weather.NewHTTPHandler(&cfg, storage)
 
 	// Message
 	messageHandler := message.NewHTTPHandler(storage)

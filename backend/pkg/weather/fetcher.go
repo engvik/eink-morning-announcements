@@ -30,17 +30,17 @@ func NewFetcher(http *transport.HTTP, cfg *config.Config) *Fetcher {
 	}
 }
 
-func (f *Fetcher) Fetch(ctx context.Context) ([]Forecast, error) {
+func (f *Fetcher) Fetch(ctx context.Context) (Forecasts, error) {
 	req, err := http.NewRequest(http.MethodGet, f.Endpoint, nil)
 	if err != nil {
-		return []Forecast{}, fmt.Errorf("Error creating request: %w", err)
+		return Forecasts{}, fmt.Errorf("Error creating request: %w", err)
 	}
 
 	req = req.WithContext(ctx)
 
 	body, status, err := f.HTTP.Request(req)
 	if err != nil {
-		return []Forecast{}, err
+		return Forecasts{}, err
 	}
 
 	// The MET API answers 203 when the requested product version is deprecated.
@@ -50,16 +50,16 @@ func (f *Fetcher) Fetch(ctx context.Context) ([]Forecast, error) {
 	case http.StatusNonAuthoritativeInfo:
 		log.Printf("Weather API version is deprecated, see %s\n", f.Endpoint)
 	default:
-		return []Forecast{}, fmt.Errorf("Unexpected HTTP status %d", status)
+		return Forecasts{}, fmt.Errorf("Unexpected HTTP status %d", status)
 	}
 
 	var respJSON forecastResponse
 
 	if err := json.Unmarshal(body, &respJSON); err != nil {
-		return []Forecast{}, fmt.Errorf("Error unmarshaling JSON: %w", err)
+		return Forecasts{}, fmt.Errorf("Error unmarshaling JSON: %w", err)
 	}
 
-	forecasts := make([]Forecast, 0, len(respJSON.Properties.Timeseries))
+	forecasts := make(Forecasts, 0, len(respJSON.Properties.Timeseries))
 
 	for _, forecast := range respJSON.Properties.Timeseries {
 		forecasts = append(forecasts, Forecast{

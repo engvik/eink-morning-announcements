@@ -18,11 +18,10 @@ import (
 type Memory struct {
 	mu        sync.RWMutex
 	events    []calendar.Event
-	forecasts []weather.Forecast
+	forecasts weather.Forecasts
 
-	location                 *time.Location
-	numCalendarFetchEvents   int
-	numWeatherFetchForecasts int
+	location               *time.Location
+	numCalendarFetchEvents int
 }
 
 func NewMemoryClient(cfg *config.Config) (*Memory, error) {
@@ -32,9 +31,8 @@ func NewMemoryClient(cfg *config.Config) (*Memory, error) {
 	}
 
 	return &Memory{
-		location:                 location,
-		numCalendarFetchEvents:   cfg.CalendarFetchEvents,
-		numWeatherFetchForecasts: cfg.WeatherFetchEorecasts,
+		location:               location,
+		numCalendarFetchEvents: cfg.CalendarFetchEvents,
 	}, nil
 }
 
@@ -76,7 +74,7 @@ func (c *Memory) GetCalendarEvents(_ context.Context) ([]calendar.Event, error) 
 	return events, nil
 }
 
-func (c *Memory) SetWeatherForecasts(_ context.Context, forecasts []weather.Forecast) error {
+func (c *Memory) SetWeatherForecasts(_ context.Context, forecasts weather.Forecasts) error {
 	slices.SortFunc(forecasts, func(a, b weather.Forecast) int {
 		return a.Time.Compare(b.Time)
 	})
@@ -89,20 +87,16 @@ func (c *Memory) SetWeatherForecasts(_ context.Context, forecasts []weather.Fore
 	return nil
 }
 
-func (c *Memory) GetWeatherForecasts(_ context.Context) ([]weather.Forecast, error) {
+func (c *Memory) GetWeatherForecasts(_ context.Context) (weather.Forecasts, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	now := time.Now()
-	forecasts := make([]weather.Forecast, 0, c.numWeatherFetchForecasts)
+	forecasts := make(weather.Forecasts, 0, len(c.forecasts))
 
 	for _, f := range c.forecasts {
 		if f.Time.Before(now) {
 			continue
-		}
-
-		if len(forecasts) == c.numWeatherFetchForecasts {
-			break
 		}
 
 		f.Time = f.Time.In(c.location)

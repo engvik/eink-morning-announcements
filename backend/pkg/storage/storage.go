@@ -12,8 +12,8 @@ import (
 type store interface {
 	SetCalendarEvents(context.Context, []calendar.Event) error
 	GetCalendarEvents(context.Context) ([]calendar.Event, error)
-	SetWeatherForecasts(context.Context, []weather.Forecast) error
-	GetWeatherForecasts(context.Context) ([]weather.Forecast, error)
+	SetWeatherForecasts(context.Context, weather.Forecasts) error
+	GetWeatherForecasts(context.Context) (weather.Forecasts, error)
 	SetMessage(context.Context, message.Message) error
 	GetMessage(context.Context) (message.Message, error)
 }
@@ -40,7 +40,7 @@ func (s *Storage) GetCalendarEvents(ctx context.Context) ([]calendar.Event, erro
 	return s.client.GetCalendarEvents(ctx)
 }
 
-func (s *Storage) SetWeatherForecasts(ctx context.Context, forecasts []weather.Forecast) error {
+func (s *Storage) SetWeatherForecasts(ctx context.Context, forecasts weather.Forecasts) error {
 	if len(forecasts) == 0 {
 		return fmt.Errorf("no data")
 	}
@@ -48,7 +48,7 @@ func (s *Storage) SetWeatherForecasts(ctx context.Context, forecasts []weather.F
 	return s.client.SetWeatherForecasts(ctx, forecasts)
 }
 
-func (s *Storage) GetWeatherForecasts(ctx context.Context) ([]weather.Forecast, error) {
+func (s *Storage) GetWeatherForecasts(ctx context.Context) (weather.Forecasts, error) {
 	return s.client.GetWeatherForecasts(ctx)
 }
 

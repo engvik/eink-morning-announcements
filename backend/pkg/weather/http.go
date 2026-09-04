@@ -7,16 +7,18 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
 type service interface {
-	GetWeatherForecasts(context.Context) ([]Forecast, error)
+	GetWeatherForecasts(context.Context) (Forecasts, error)
 }
 
-func NewHTTPHandler(s service) http.Handler {
+func NewHTTPHandler(cfg *config.Config, s service) http.Handler {
 	r := chi.NewRouter()
 
-	h := &handler{service: s}
+	h := &handler{service: s, numForecasts: cfg.WeatherFetchEorecasts}
 
 	r.Get("/", h.getWeatherForecasts)
 
@@ -24,7 +26,15 @@ func NewHTTPHandler(s service) http.Handler {
 }
 
 type handler struct {
-	service service
+	service      service
+	numForecasts int
+}
+
+// response carries the next few hours for the hourly strip, plus per-day
+// aggregates covering the whole series.
+type response struct {
+	Forecasts Forecasts `json:"forecasts"`
+	Days      []Day     `json:"days"`
 }
 
 func (h *handler) getWeatherForecasts(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +46,10 @@ func (h *handler) getWeatherForecasts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := json.Marshal(forecasts)
+	res, err := json.Marshal(response{
+		Forecasts: forecasts.Limit(h.numForecasts),
+		Days:      forecasts.Summarize(),
+	})
 	if err != nil {
 		log.Printf("error marshaling forecasts: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)

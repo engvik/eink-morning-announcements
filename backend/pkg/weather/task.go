@@ -9,12 +9,12 @@ import (
 )
 
 type fetcher interface {
-	Fetch(context.Context) ([]Forecast, error)
+	Fetch(context.Context) (Forecasts, error)
 }
 
 type store interface {
-	SetWeatherForecasts(context.Context, []Forecast) error
-	GetWeatherForecasts(context.Context) ([]Forecast, error)
+	SetWeatherForecasts(context.Context, Forecasts) error
+	GetWeatherForecasts(context.Context) (Forecasts, error)
 }
 
 type Task struct {
