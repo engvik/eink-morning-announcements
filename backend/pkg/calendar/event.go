@@ -9,9 +9,9 @@ type Event struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Location    string    `json:"location"`
+	AllDay      bool      `json:"all_day"`
 }
 
-// Events is a series ordered ascending by start time.
 type Events []Event
 
 // Limit returns at most n events from the front of the series.

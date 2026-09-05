@@ -83,10 +83,16 @@ func (p *Parser) Parse(cal string) (Events, error) {
 }
 
 func createEvent(eStart time.Time, e *ics.VEvent) Event {
-	// An event with neither DTEND nor DURATION is zero-length per RFC 5545.
+	allDay := isAllDay(e)
+
 	eEnd, err := e.GetEndAt()
 	if err != nil {
+		// Without DTEND or DURATION an event is zero-length, except an all-day
+		// one, which lasts a day. RFC 5545.
 		eEnd = eStart
+		if allDay {
+			eEnd = eStart.AddDate(0, 0, 1)
+		}
 	}
 
 	summaryProperty := e.GetProperty(ics.ComponentProperty(ics.PropertySummary))
@@ -100,7 +106,16 @@ func createEvent(eStart time.Time, e *ics.VEvent) Event {
 		Title:       getPropertyString(summaryProperty),
 		Description: getPropertyString(descriptionProperty),
 		Location:    getPropertyString(locationProperty),
+		AllDay:      allDay,
 	}
+}
+
+// isAllDay reports whether DTSTART is a date rather than a timestamp, which is
+// how iCalendar marks an event as covering whole days.
+func isAllDay(e *ics.VEvent) bool {
+	p := e.GetProperty(ics.ComponentPropertyDtStart)
+
+	return p != nil && p.GetValueType() == ics.ValueDataTypeDate
 }
 
 func getPropertyString(p *ics.IANAProperty) string {
