@@ -73,9 +73,12 @@ func (p *Parser) Parse(cal string) (Events, error) {
 			}
 		}
 
-		// Find upcoming events
-		if eStart.After(now) && eStart.Before(peek) {
-			events = append(events, createEvent(eStart, e))
+		// Find events that have not ended yet.
+		if eStart.Before(peek) {
+			event := createEvent(eStart, e)
+			if event.End.After(now) {
+				events = append(events, event)
+			}
 		}
 	}
 

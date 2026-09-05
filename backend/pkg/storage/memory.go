@@ -54,10 +54,9 @@ func (c *Memory) GetCalendarEvents(_ context.Context) (calendar.Events, error) {
 	now := time.Now()
 	events := make(calendar.Events, 0, len(c.events))
 
-	// The whole remaining series is returned; callers that only want the next
-	// few limit it themselves. The total count needs all of it.
+	// The whole remaining series is returned.
 	for _, e := range c.events {
-		if e.Start.Before(now) {
+		if !e.End.After(now) {
 			continue
 		}
 
