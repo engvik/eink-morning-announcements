@@ -14,6 +14,7 @@ type Config struct {
 	Port                    string        `envconfig:"PORT" default:"8080"`
 	CalendarURL             string        `envconfig:"CALENDAR_URL" required:"true"`
 	WeatherURL              string        `envconfig:"WEATHER_URL" required:"true"`
+	SunURL                  string        `envconfig:"SUN_URL" required:"true"`
 	SQLitePath              string        `envconfig:"SQLITE_PATH" required:"true"`
 	Location                string        `envconfig:"LOCATION" default:"Europe/Oslo"`
 	Authorization           string        `envconfig:"AUTHORIZATION"`

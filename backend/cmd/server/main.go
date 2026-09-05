@@ -43,7 +43,11 @@ func main() {
 	calendarHandler := calendar.NewHTTPHandler(&cfg, storage)
 
 	// Weather
-	weatherFetcher := weather.NewFetcher(&cfg, httpClient)
+	weatherFetcher, err := weather.NewFetcher(&cfg, httpClient)
+	if err != nil {
+		log.Fatal("Error creating weather fetcher:", err)
+	}
+
 	weatherTask := weather.NewTask(&cfg, weatherFetcher, storage)
 	weatherHandler := weather.NewHTTPHandler(&cfg, storage)
 
@@ -51,7 +55,7 @@ func main() {
 	messageHandler := message.NewHTTPHandler(storage)
 
 	// Meta
-	metaHandler := meta.NewHTTPHandler(&cfg)
+	metaHandler := meta.NewHTTPHandler(&cfg, storage)
 
 	// Create HTTP server
 	s := server.New(&cfg)

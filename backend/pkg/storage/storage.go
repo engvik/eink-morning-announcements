@@ -16,6 +16,8 @@ type store interface {
 	GetWeatherForecasts(context.Context) (weather.Forecasts, error)
 	SetMessage(context.Context, message.Message) error
 	GetMessage(context.Context) (message.Message, error)
+	SetSun(context.Context, weather.Sun) error
+	GetSun(context.Context) (weather.Sun, error)
 }
 
 type Storage struct {
@@ -62,4 +64,12 @@ func (s *Storage) SetMessage(ctx context.Context, m message.Message) error {
 
 func (s *Storage) GetMessage(ctx context.Context) (message.Message, error) {
 	return s.client.GetMessage(ctx)
+}
+
+func (s *Storage) SetSun(ctx context.Context, sun weather.Sun) error {
+	return s.client.SetSun(ctx, sun)
+}
+
+func (s *Storage) GetSun(ctx context.Context) (weather.Sun, error) {
+	return s.client.GetSun(ctx)
 }

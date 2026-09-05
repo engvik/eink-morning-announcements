@@ -19,6 +19,7 @@ type Memory struct {
 	mu        sync.RWMutex
 	events    calendar.Events
 	forecasts weather.Forecasts
+	sun       weather.Sun
 
 	location *time.Location
 }
@@ -100,4 +101,20 @@ func (c *Memory) GetWeatherForecasts(_ context.Context) (weather.Forecasts, erro
 	}
 
 	return forecasts, nil
+}
+
+func (c *Memory) SetSun(_ context.Context, sun weather.Sun) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.sun = sun
+
+	return nil
+}
+
+func (c *Memory) GetSun(_ context.Context) (weather.Sun, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	return c.sun, nil
 }

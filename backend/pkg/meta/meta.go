@@ -2,6 +2,8 @@ package meta
 
 import (
 	"time"
+
+	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
 )
 
 type Meta struct {
@@ -12,9 +14,11 @@ type Meta struct {
 	Week          int               `json:"week"`
 	Month         string            `json:"month"`
 	Year          int               `json:"year"`
+	Sunrise       time.Time         `json:"sunrise"`
+	Sunset        time.Time         `json:"sunset"`
 }
 
-func GetMeta(location string) (Meta, error) {
+func GetMeta(location string, sun weather.Sun) (Meta, error) {
 	now := time.Now()
 	year, month, date := now.Date()
 	_, week := now.ISOWeek()
@@ -36,6 +40,8 @@ func GetMeta(location string) (Meta, error) {
 		Week:          week,
 		Month:         month.String(),
 		Year:          year,
+		Sunrise:       sun.Sunrise,
+		Sunset:        sun.Sunset,
 	}, nil
 }
 

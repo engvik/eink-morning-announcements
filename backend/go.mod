@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/stephens2424/rrule v1.2.0
+	golang.org/x/sync v0.22.0
 	modernc.org/sqlite v1.58.0
 )
 

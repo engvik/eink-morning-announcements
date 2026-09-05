@@ -2,19 +2,25 @@ package weather
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
 type fetcher interface {
 	Fetch(context.Context) (Forecasts, error)
+	FetchSun(context.Context) (Sun, error)
 }
 
 type store interface {
 	SetWeatherForecasts(context.Context, Forecasts) error
 	GetWeatherForecasts(context.Context) (Forecasts, error)
+	SetSun(context.Context, Sun) error
+	GetSun(context.Context) (Sun, error)
 }
 
 type Task struct {
@@ -58,13 +64,36 @@ func (t *Task) update(ctx context.Context) {
 	ctx, cancel := context.WithTimeout(ctx, t.timeout)
 	defer cancel()
 
-	forecasts, err := t.Fetcher.Fetch(ctx)
-	if err != nil {
-		log.Printf("Error fetching weather data: %s\n", err)
-		return
-	}
+	// Forecasts and sunrise are available on separate MET APIs.
+	var g errgroup.Group
 
-	if err := t.Storage.SetWeatherForecasts(ctx, forecasts); err != nil {
-		log.Printf("Error storing weather forecast: %s\n", err)
+	g.Go(func() error {
+		forecasts, err := t.Fetcher.Fetch(ctx)
+		if err != nil {
+			return fmt.Errorf("fetching forecasts: %w", err)
+		}
+
+		if err := t.Storage.SetWeatherForecasts(ctx, forecasts); err != nil {
+			return fmt.Errorf("storing forecasts: %w", err)
+		}
+
+		return nil
+	})
+
+	g.Go(func() error {
+		sun, err := t.Fetcher.FetchSun(ctx)
+		if err != nil {
+			return fmt.Errorf("fetching sun: %w", err)
+		}
+
+		if err := t.Storage.SetSun(ctx, sun); err != nil {
+			return fmt.Errorf("storing sun: %w", err)
+		}
+
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		log.Printf("Error updating weather: %s\n", err)
 	}
 }
