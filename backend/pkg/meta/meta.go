@@ -20,17 +20,18 @@ type Meta struct {
 
 func GetMeta(location string, sun weather.Sun) (Meta, error) {
 	now := time.Now()
-	year, month, date := now.Date()
-	_, week := now.ISOWeek()
 
 	if location != "" {
-		location, err := time.LoadLocation("Europe/Oslo")
+		loc, err := time.LoadLocation(location)
 		if err != nil {
 			return Meta{}, err
 		}
 
-		now = now.In(location)
+		now = now.In(loc)
 	}
+
+	year, month, date := now.Date()
+	_, week := now.ISOWeek()
 
 	return Meta{
 		Today:         now.Weekday().String(),
