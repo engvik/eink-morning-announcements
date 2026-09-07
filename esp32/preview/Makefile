@@ -5,7 +5,7 @@ GFX := ../.pio/libdeps/lolin_d32_pro/Adafruit GFX Library
 
 CXX ?= c++
 # ARDUINO must be >= 100 or Adafruit_GFX.h reaches for the pre-1.0 WProgram.h.
-CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -DARDUINO=10805 -Ishim -I"$(GFX)" -I.
+CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -DARDUINO=10805 -Ishim -I"$(GFX)" -I. -I../src
 OUT := preview
 OUTPUT ?= preview.png
 
