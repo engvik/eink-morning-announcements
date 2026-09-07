@@ -38,3 +38,22 @@ The weather icons in `esp32/src/met_icons_black_50x50.cpp` come from
 [met-bitmap-icons](https://github.com/engvik/met-bitmap-icons) and are derived
 from the MET Norway / Yr weather symbols, licensed under the MIT License,
 copyright (c) 2015-2017 Yr.
+
+The bitmap fonts in `esp32/src/fonts/` are rendered from two typefaces, both
+licensed under the [SIL Open Font License 1.1](https://scripts.sil.org/OFL).
+Rasterising outlines into bitmaps makes these Modified Versions under OFL
+section 1, and section 5 requires that they "must be distributed entirely under
+this license, and must not be distributed under any other license".
+
+**Those files are therefore covered by the OFL and not by this project's AGPL.**
+The carve-out is limited to `esp32/src/fonts/`; everything else in the
+repository, including the firmware that draws with them, remains AGPL. Bundling
+the two in one binary is explicitly permitted, as the OFL requirement does not
+extend to works produced with the fonts.
+
+- [Archivo](https://github.com/Omnibus-Type/Archivo), copyright 2020 The
+  Archivo Project Authors. See `esp32/src/fonts/OFL-Archivo.txt`.
+- The `Mono*` fonts derive from [IBM Plex Mono](https://github.com/IBM/plex),
+  copyright (c) 2017 IBM Corp. with Reserved Font Name "Plex". The licence
+  forbids a Modified Version from carrying that name, hence the neutral naming.
+  See `esp32/src/fonts/OFL-IBMPlexMono.txt`.
