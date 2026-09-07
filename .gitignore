@@ -30,6 +30,10 @@ dist-ssr
 esp32/.pio
 esp32/.vscode/*
 
+# host preview build
+esp32/preview/preview
+esp32/preview/*.png
+
 backend/server
 frontend/.env.production
 
