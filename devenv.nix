@@ -42,6 +42,14 @@
       '';
     };
 
+    preview-esp = {
+      description = "Render the display to a PNG without flashing";
+      exec = ''
+        cd "$DEVENV_ROOT/esp32/preview"
+        make run OUTPUT="''${1:-preview.png}"
+      '';
+    };
+
     build-backend = {
       description = "Build the backend binary";
       exec = ''
