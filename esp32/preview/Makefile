@@ -5,13 +5,15 @@ GFX := ../.pio/libdeps/lolin_d32_pro/Adafruit GFX Library
 
 CXX ?= c++
 # ARDUINO must be >= 100 or Adafruit_GFX.h reaches for the pre-1.0 WProgram.h.
-CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -DARDUINO=10805 -Ishim -I"$(GFX)" -I. -I../src
+CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -DARDUINO=10805 -DPREVIEW_HOST \
+            -Ishim -I"$(GFX)" -I. -I../src
 OUT := preview
 OUTPUT ?= preview.png
 
 # The library path contains a space, so it stays inside the recipe rather than
 # in a prerequisite list.
-DEPS := main.cpp png.h shim/Arduino.h shim/Print.h
+DEPS := main.cpp png.h shim/Arduino.h shim/Print.h \
+        ../src/ui/text.cpp ../src/ui/text.h ../src/ui/theme.h
 
 .PHONY: all run clean
 
@@ -22,7 +24,8 @@ $(OUT): $(DEPS)
 		echo "Adafruit GFX not found. Run 'pio run -e lolin_d32_pro' in esp32/ first."; \
 		exit 1; \
 	}
-	$(CXX) $(CXXFLAGS) -o $(OUT) main.cpp "$(GFX)/Adafruit_GFX.cpp"
+	$(CXX) $(CXXFLAGS) -o $(OUT) main.cpp ../src/ui/text.cpp \
+		"$(GFX)/Adafruit_GFX.cpp"
 
 run: $(OUT)
 	./$(OUT) $(OUTPUT)
