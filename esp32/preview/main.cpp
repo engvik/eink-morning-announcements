@@ -6,11 +6,32 @@
 #include <cstdio>
 #include <string>
 
+#include "icons/met_icons_black_24x24.h"
+#include "icons/met_icons_black_44x44.h"
 #include "png.h"
 #include "ui/text.h"
 #include "ui/theme.h"
 
 namespace {
+
+struct Sample {
+  const unsigned char *small;
+  const unsigned char *large;
+};
+
+#define SAMPLE(name)                                     \
+  {                                                      \
+    met_bitmap_black_24x24_##name, met_bitmap_black_44x44_##name \
+  }
+
+// A spread across the set: clear, partial, overcast, wet, frozen, night.
+const Sample SAMPLES[] = {
+    SAMPLE(clearsky_day),  SAMPLE(fair_day),   SAMPLE(partlycloudy_day),
+    SAMPLE(cloudy),        SAMPLE(lightrain),  SAMPLE(rain),
+    SAMPLE(heavyrain),     SAMPLE(sleet),      SAMPLE(snow),
+    SAMPLE(heavysnow),     SAMPLE(fog),        SAMPLE(rainandthunder),
+    SAMPLE(clearsky_night), SAMPLE(partlycloudy_night),
+};
 
 void rule(GFXcanvas1 &canvas, int16_t y) {
   canvas.drawFastHLine(ui::CONTENT_X, y, ui::CONTENT_WIDTH, ui::INK);
@@ -28,91 +49,82 @@ int main(int argc, char **argv) {
   GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
   canvas.fillScreen(ui::PAPER);
 
-  const int16_t right = ui::CONTENT_X + ui::CONTENT_WIDTH;
-
-  ui::drawLeft(canvas, ui::STYLE_LABEL, ui::CONTENT_X, 34, "TEXT HELPERS");
+  ui::drawLeft(canvas, ui::STYLE_LABEL, ui::CONTENT_X, 34, "WEATHER ICONS");
   rule(canvas, 44);
 
-  // UTF-8 written as ordinary strings, no escapes.
-  ui::drawLeft(canvas, ui::STYLE_TITLE, ui::CONTENT_X, 82, "Blåbær på Vestlandet");
-  caption(canvas, 102, "utf-8 title, ÆØÅ æøå");
+  // Hero size, as the weather band uses it.
+  caption(canvas, 66, "44x44 hero");
 
-  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, 132,
-               "LOW 12° · FEELS 19° - 2.7 MM - 30%");
-  caption(canvas, 152, "symbols: degree, middot, hyphen, ellipsis");
+  int16_t x = ui::CONTENT_X;
+  for (const Sample &sample : SAMPLES) {
+    if (x + ui::HERO_ICON_SIZE > ui::CONTENT_X + ui::CONTENT_WIDTH) break;
 
-  rule(canvas, 166);
-
-  // Tracking. The same string at three tracking values.
-  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, 196, "HOUR BY HOUR");
-  caption(canvas, 214, "STYLE_META, tracking 0");
-
-  ui::drawLeft(canvas, ui::STYLE_META_WIDE, ui::CONTENT_X, 240, "HOUR BY HOUR");
-  caption(canvas, 258, "STYLE_META_WIDE, tracking 1");
-
-  ui::drawLeft(canvas, ui::STYLE_LABEL, ui::CONTENT_X, 284, "HOUR BY HOUR");
-  caption(canvas, 302, "STYLE_LABEL, tracking 2");
-
-  rule(canvas, 316);
-
-  // Alignment. A tick marks each anchor so drift is visible.
-  ui::drawLeft(canvas, ui::STYLE_TIME, ui::CONTENT_X, 346, "left edge");
-  canvas.drawFastVLine(ui::CONTENT_X, 350, 6, ui::INK);
-
-  ui::drawRight(canvas, ui::STYLE_TIME, right, 372, "right edge");
-  canvas.drawFastVLine(right - 1, 376, 6, ui::INK);
-
-  const int16_t centre = ui::CONTENT_X + ui::CONTENT_WIDTH / 2;
-  ui::drawCentred(canvas, ui::STYLE_TIME, centre, 398, "centred");
-  canvas.drawFastVLine(centre, 402, 6, ui::INK);
-
-  caption(canvas, 420, "alignment, ticks mark the anchors");
-
-  rule(canvas, 434);
-
-  // Truncation. A column that most of these overrun.
-  constexpr int16_t COLUMN = 200;
-  canvas.drawFastVLine(ui::CONTENT_X + COLUMN, 452, 92, ui::INK);
-
-  const char *samples[] = {
-      "Fits easily",
-      "This one is right at the edge",
-      "A considerably longer string that cannot fit the column",
-      "Ærlig ørret på åsen i overmorgen ved sjøen",
-  };
-
-  int16_t y = 466;
-  for (const char *sample : samples) {
-    ui::drawTruncated(canvas, ui::STYLE_SUBTITLE, ui::CONTENT_X, y, COLUMN, sample);
-    y += 22;
+    canvas.drawBitmap(x, 76, sample.large, ui::HERO_ICON_SIZE,
+                      ui::HERO_ICON_SIZE, ui::INK);
+    x += ui::HERO_ICON_SIZE + 6;
   }
 
-  caption(canvas, 562, "truncation to the rule, ellipsis when clipped");
+  rule(canvas, 134);
 
-  rule(canvas, 576);
+  // The hourly strip geometry: five 88px columns with dividers between them.
+  caption(canvas, 156, "24x24 strip, five 88px columns");
 
-  // Measurement must agree with what was drawn.
-  const char *probe = "Måler 123 °";
-  const int16_t width = ui::measure(ui::STYLE_TITLE, probe);
+  const int16_t top = 168;
+  for (int16_t column = 0; column < ui::HOUR_COLUMNS; column++) {
+    const int16_t left = ui::CONTENT_X + column * ui::HOUR_COLUMN_WIDTH;
+    const int16_t centre = left + ui::HOUR_COLUMN_WIDTH / 2;
 
-  ui::drawLeft(canvas, ui::STYLE_TITLE, ui::CONTENT_X, 610, probe);
-  canvas.drawRect(ui::CONTENT_X - 1, 592, width + 2, 22, ui::INK);
+    if (column > 0) {
+      canvas.drawFastVLine(left, top, 112, ui::INK);
+    }
 
-  char line[80];
-  snprintf(line, sizeof(line), "measure() = %d px, box drawn to match", width);
-  caption(canvas, 634, line);
+    char hour[3];
+    snprintf(hour, sizeof(hour), "%02d", 8 + column * 2);
 
-  // Baselines on the 20px agenda rhythm, to check row spacing.
-  rule(canvas, 650);
-  ui::drawLeft(canvas, ui::STYLE_LABEL, ui::CONTENT_X, 676, "20PX ROWS");
+    ui::drawCentred(canvas, ui::STYLE_META_WIDE, centre, top + 16, hour);
+    canvas.drawBitmap(centre - ui::HOUR_ICON_SIZE / 2, top + 24,
+                      SAMPLES[column].small, ui::HOUR_ICON_SIZE,
+                      ui::HOUR_ICON_SIZE, ui::INK);
+    ui::drawCentred(canvas, ui::STYLE_TITLE, centre, top + 74, "16");
+    ui::drawCentred(canvas, ui::STYLE_META, centre, top + 96,
+                    column < 2 ? "-" : "0.4");
+    ui::drawCentred(canvas, ui::STYLE_META_WIDE, centre, top + 112,
+                    column < 2 ? "" : "30%");
+  }
 
-  for (int16_t row = 0; row < 5; row++) {
-    const int16_t baseline = 700 + row * ui::ROW_HEIGHT;
+  rule(canvas, 296);
 
-    ui::drawLeft(canvas, ui::STYLE_TIME, ui::CONTENT_X, baseline, "00:00");
-    ui::drawTruncated(canvas, ui::STYLE_TITLE, ui::CONTENT_X + ui::TODAY_TIME_WIDTH,
-                      baseline, ui::CONTENT_WIDTH - ui::TODAY_TIME_WIDTH,
-                      "Row title at the agenda rhythm");
+  // A wider sweep at strip size, to spot any icon that packs wrong.
+  caption(canvas, 318, "24x24 sweep");
+
+  int16_t gx = ui::CONTENT_X;
+  int16_t gy = 328;
+  for (const Sample &sample : SAMPLES) {
+    canvas.drawBitmap(gx, gy, sample.small, ui::HOUR_ICON_SIZE,
+                      ui::HOUR_ICON_SIZE, ui::INK);
+
+    gx += ui::HOUR_ICON_SIZE + 6;
+    if (gx + ui::HOUR_ICON_SIZE > ui::CONTENT_X + ui::CONTENT_WIDTH) {
+      gx = ui::CONTENT_X;
+      gy += ui::HOUR_ICON_SIZE + 6;
+    }
+  }
+
+  rule(canvas, 400);
+
+  // Both sizes side by side, so the detail lost at 24 is visible.
+  caption(canvas, 422, "44 and 24 compared");
+
+  int16_t cx = ui::CONTENT_X;
+  for (const Sample &sample : SAMPLES) {
+    if (cx + ui::HERO_ICON_SIZE > ui::CONTENT_X + ui::CONTENT_WIDTH) break;
+
+    canvas.drawBitmap(cx, 432, sample.large, ui::HERO_ICON_SIZE,
+                      ui::HERO_ICON_SIZE, ui::INK);
+    canvas.drawBitmap(cx + (ui::HERO_ICON_SIZE - ui::HOUR_ICON_SIZE) / 2, 482,
+                      sample.small, ui::HOUR_ICON_SIZE, ui::HOUR_ICON_SIZE,
+                      ui::INK);
+    cx += ui::HERO_ICON_SIZE + 10;
   }
 
   if (!png::write(out, canvas.getBuffer(), ui::PANEL_WIDTH, ui::PANEL_HEIGHT)) {

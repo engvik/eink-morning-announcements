@@ -13,7 +13,8 @@ OUTPUT ?= preview.png
 # The library path contains a space, so it stays inside the recipe rather than
 # in a prerequisite list.
 DEPS := main.cpp png.h shim/Arduino.h shim/Print.h \
-        ../src/ui/text.cpp ../src/ui/text.h ../src/ui/theme.h
+        ../src/ui/text.cpp ../src/ui/text.h ../src/ui/theme.h \
+        ../src/icons/met_icons_black_24x24.cpp ../src/icons/met_icons_black_44x44.cpp
 
 .PHONY: all run clean
 
@@ -25,6 +26,8 @@ $(OUT): $(DEPS)
 		exit 1; \
 	}
 	$(CXX) $(CXXFLAGS) -o $(OUT) main.cpp ../src/ui/text.cpp \
+		../src/icons/met_icons_black_24x24.cpp \
+		../src/icons/met_icons_black_44x44.cpp \
 		"$(GFX)/Adafruit_GFX.cpp"
 
 run: $(OUT)
