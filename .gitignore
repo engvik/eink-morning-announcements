@@ -34,8 +34,9 @@ esp32/.vscode/*
 esp32/preview/preview
 esp32/preview/*.png
 
-# font sources, fetched on demand by tools/genfonts.py
+# sources fetched on demand by the generators in esp32/tools
 esp32/tools/.fonts
+esp32/tools/.icons
 
 backend/server
 frontend/.env.production
