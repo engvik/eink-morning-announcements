@@ -6,44 +6,18 @@
 #include <cstdio>
 #include <string>
 
-#include "fonts/ArchivoBlack56.h"
-#include "fonts/ArchivoBold19.h"
-#include "fonts/ArchivoSemiBold16.h"
-#include "fonts/MonoRegular13.h"
-#include "fonts/MonoSemiBold15.h"
 #include "png.h"
+#include "ui/text.h"
+#include "ui/theme.h"
 
 namespace {
 
-// The panel is 800x480 rotated to portrait.
-constexpr int16_t kWidth = 480;
-constexpr int16_t kHeight = 800;
-
-// A set bit is ink. On the device this maps to GxEPD_BLACK.
-constexpr uint16_t kInk = 1;
-constexpr uint16_t kPaper = 0;
-
-// The generated fonts place these just above ASCII.
-constexpr char kAe = 0x7F, kOe = 0x80, kAa = 0x81;
-constexpr char kAeUpper = 0x82, kOeUpper = 0x83, kAaUpper = 0x84;
-constexpr char kMiddot = 0x85, kEmDash = 0x86, kEnDash = 0x87;
-constexpr char kDegree = 0x88, kEllipsis = 0x89;
-
-void note(GFXcanvas1 &canvas, int16_t y, const char *text) {
-  canvas.setFont(&MonoRegular13);
-  canvas.setCursor(20, y);
-  canvas.print(text);
+void rule(GFXcanvas1 &canvas, int16_t y) {
+  canvas.drawFastHLine(ui::CONTENT_X, y, ui::CONTENT_WIDTH, ui::INK);
 }
 
-// Ink height of a string, for comparing a face against the comp.
-int16_t inkHeight(GFXcanvas1 &canvas, const GFXfont *font, const char *text) {
-  int16_t x1, y1;
-  uint16_t w, h;
-
-  canvas.setFont(font);
-  canvas.getTextBounds(text, 0, 100, &x1, &y1, &w, &h);
-
-  return static_cast<int16_t>(h);
+void caption(GFXcanvas1 &canvas, int16_t baseline, const char *text) {
+  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, baseline, text);
 }
 
 }  // namespace
@@ -51,101 +25,102 @@ int16_t inkHeight(GFXcanvas1 &canvas, const GFXfont *font, const char *text) {
 int main(int argc, char **argv) {
   const std::string out = argc > 1 ? argv[1] : "preview.png";
 
-  GFXcanvas1 canvas(kWidth, kHeight);
-  canvas.fillScreen(kPaper);
-  canvas.setTextColor(kInk);
+  GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
+  canvas.fillScreen(ui::PAPER);
 
-  note(canvas, 30, "SPECIMEN - FIVE FACES");
-  canvas.drawFastHLine(20, 40, kWidth - 40, kInk);
+  const int16_t right = ui::CONTENT_X + ui::CONTENT_WIDTH;
 
-  // F1: hero numerals, digits and degree only.
-  canvas.setFont(&ArchivoBlack56);
-  canvas.setCursor(20, 110);
-  canvas.print("08");
-  canvas.print(kDegree);
+  ui::drawLeft(canvas, ui::STYLE_LABEL, ui::CONTENT_X, 34, "TEXT HELPERS");
+  rule(canvas, 44);
 
-  note(canvas, 132, "F1 ArchivoBlack56");
+  // UTF-8 written as ordinary strings, no escapes.
+  ui::drawLeft(canvas, ui::STYLE_TITLE, ui::CONTENT_X, 82, "Blåbær på Vestlandet");
+  caption(canvas, 102, "utf-8 title, ÆØÅ æøå");
 
-  // F2: primary titles.
-  canvas.setFont(&ArchivoBold19);
-  canvas.setCursor(20, 178);
-  canvas.print("The quick brown fox 0123");
-  canvas.setCursor(20, 202);
-  canvas.print(kAe);
-  canvas.print(kOe);
-  canvas.print(kAa);
-  canvas.print(" ");
-  canvas.print(kAeUpper);
-  canvas.print(kOeUpper);
-  canvas.print(kAaUpper);
+  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, 132,
+               "LOW 12° · FEELS 19° - 2.7 MM - 30%");
+  caption(canvas, 152, "symbols: degree, middot, hyphen, ellipsis");
 
-  note(canvas, 224, "F2 ArchivoBold19");
+  rule(canvas, 166);
 
-  // F3: secondary titles.
-  canvas.setFont(&ArchivoSemiBold16);
-  canvas.setCursor(20, 264);
-  canvas.print("The quick brown fox ");
-  canvas.print(kAe);
-  canvas.print(kOe);
-  canvas.print(kAa);
+  // Tracking. The same string at three tracking values.
+  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, 196, "HOUR BY HOUR");
+  caption(canvas, 214, "STYLE_META, tracking 0");
 
-  note(canvas, 286, "F3 ArchivoSemiBold16");
+  ui::drawLeft(canvas, ui::STYLE_META_WIDE, ui::CONTENT_X, 240, "HOUR BY HOUR");
+  caption(canvas, 258, "STYLE_META_WIDE, tracking 1");
 
-  // F4: times and day keys.
-  canvas.setFont(&MonoSemiBold15);
-  canvas.setCursor(20, 326);
-  canvas.print("00:00-00:00  ABC 00");
+  ui::drawLeft(canvas, ui::STYLE_LABEL, ui::CONTENT_X, 284, "HOUR BY HOUR");
+  caption(canvas, 302, "STYLE_LABEL, tracking 2");
 
-  note(canvas, 348, "F4 MonoSemiBold15");
+  rule(canvas, 316);
 
-  // F5: labels, meta and every symbol in the set.
-  canvas.setFont(&MonoRegular13);
-  canvas.setCursor(20, 388);
-  canvas.print("ABCDEFGHIJKLM abcdefghijklm 0123456789");
-  canvas.setCursor(20, 408);
-  canvas.print("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
-  canvas.setCursor(20, 428);
-  canvas.print(kAe);
-  canvas.print(kOe);
-  canvas.print(kAa);
-  canvas.print(" ");
-  canvas.print(kAeUpper);
-  canvas.print(kOeUpper);
-  canvas.print(kAaUpper);
-  canvas.print("  ");
-  canvas.print(kMiddot);
-  canvas.print(" ");
-  canvas.print(kEmDash);
-  canvas.print(" ");
-  canvas.print(kEnDash);
-  canvas.print(" ");
-  canvas.print(kDegree);
-  canvas.print(" ");
-  canvas.print(kEllipsis);
+  // Alignment. A tick marks each anchor so drift is visible.
+  ui::drawLeft(canvas, ui::STYLE_TIME, ui::CONTENT_X, 346, "left edge");
+  canvas.drawFastVLine(ui::CONTENT_X, 350, 6, ui::INK);
 
-  note(canvas, 450, "F5 MonoRegular13 - full set");
+  ui::drawRight(canvas, ui::STYLE_TIME, right, 372, "right edge");
+  canvas.drawFastVLine(right - 1, 376, 6, ui::INK);
 
-  canvas.drawFastHLine(20, 470, kWidth - 40, kInk);
+  const int16_t centre = ui::CONTENT_X + ui::CONTENT_WIDTH / 2;
+  ui::drawCentred(canvas, ui::STYLE_TIME, centre, 398, "centred");
+  canvas.drawFastVLine(centre, 402, 6, ui::INK);
 
-  char line[96];
-  snprintf(line, sizeof(line), "ink height  F1 %d  F2 %d  F4 %d",
-           inkHeight(canvas, &ArchivoBlack56, "08"),
-           inkHeight(canvas, &ArchivoBold19, "Hx"),
-           inkHeight(canvas, &MonoSemiBold15, "00"));
-  note(canvas, 495, line);
+  caption(canvas, 420, "alignment, ticks mark the anchors");
 
-  // 20px grid, the agenda row rhythm.
-  note(canvas, 525, "20px row grid");
-  for (int16_t y = 540; y < 780; y += 20) {
-    canvas.drawFastHLine(20, y, 8, kInk);
+  rule(canvas, 434);
+
+  // Truncation. A column that most of these overrun.
+  constexpr int16_t COLUMN = 200;
+  canvas.drawFastVLine(ui::CONTENT_X + COLUMN, 452, 92, ui::INK);
+
+  const char *samples[] = {
+      "Fits easily",
+      "This one is right at the edge",
+      "A considerably longer string that cannot fit the column",
+      "Ærlig ørret på åsen i overmorgen ved sjøen",
+  };
+
+  int16_t y = 466;
+  for (const char *sample : samples) {
+    ui::drawTruncated(canvas, ui::STYLE_SUBTITLE, ui::CONTENT_X, y, COLUMN, sample);
+    y += 22;
   }
 
-  if (!png::write(out, canvas.getBuffer(), kWidth, kHeight)) {
+  caption(canvas, 562, "truncation to the rule, ellipsis when clipped");
+
+  rule(canvas, 576);
+
+  // Measurement must agree with what was drawn.
+  const char *probe = "Måler 123 °";
+  const int16_t width = ui::measure(ui::STYLE_TITLE, probe);
+
+  ui::drawLeft(canvas, ui::STYLE_TITLE, ui::CONTENT_X, 610, probe);
+  canvas.drawRect(ui::CONTENT_X - 1, 592, width + 2, 22, ui::INK);
+
+  char line[80];
+  snprintf(line, sizeof(line), "measure() = %d px, box drawn to match", width);
+  caption(canvas, 634, line);
+
+  // Baselines on the 20px agenda rhythm, to check row spacing.
+  rule(canvas, 650);
+  ui::drawLeft(canvas, ui::STYLE_LABEL, ui::CONTENT_X, 676, "20PX ROWS");
+
+  for (int16_t row = 0; row < 5; row++) {
+    const int16_t baseline = 700 + row * ui::ROW_HEIGHT;
+
+    ui::drawLeft(canvas, ui::STYLE_TIME, ui::CONTENT_X, baseline, "00:00");
+    ui::drawTruncated(canvas, ui::STYLE_TITLE, ui::CONTENT_X + ui::TODAY_TIME_WIDTH,
+                      baseline, ui::CONTENT_WIDTH - ui::TODAY_TIME_WIDTH,
+                      "Row title at the agenda rhythm");
+  }
+
+  if (!png::write(out, canvas.getBuffer(), ui::PANEL_WIDTH, ui::PANEL_HEIGHT)) {
     fprintf(stderr, "could not write %s\n", out.c_str());
     return 1;
   }
 
-  printf("wrote %s (%dx%d)\n", out.c_str(), kWidth, kHeight);
+  printf("wrote %s (%dx%d)\n", out.c_str(), ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
 
   return 0;
 }
