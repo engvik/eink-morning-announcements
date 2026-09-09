@@ -14,7 +14,8 @@ OUTPUT ?= preview.png
 # in a prerequisite list.
 DEPS := main.cpp png.h shim/Arduino.h shim/Print.h \
         ../src/ui/text.cpp ../src/ui/text.h ../src/ui/theme.h \
-        ../src/icons/met_icons_black_24x24.cpp ../src/icons/met_icons_black_44x44.cpp
+        ../src/icons/met_icons_black_24x24.cpp ../src/icons/met_icons_black_44x44.cpp \
+        ../src/icons/symbols.cpp ../src/icons/symbols.h ../src/icons/symbols_table.h
 
 .PHONY: all run clean
 
@@ -28,6 +29,7 @@ $(OUT): $(DEPS)
 	$(CXX) $(CXXFLAGS) -o $(OUT) main.cpp ../src/ui/text.cpp \
 		../src/icons/met_icons_black_24x24.cpp \
 		../src/icons/met_icons_black_44x44.cpp \
+		../src/icons/symbols.cpp \
 		"$(GFX)/Adafruit_GFX.cpp"
 
 run: $(OUT)
