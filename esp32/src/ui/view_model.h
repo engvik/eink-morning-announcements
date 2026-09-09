@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "ui/datetime.h"
+
 // What the panel draws, decoded from the backend once and owned outright.
 //
 // Everything is a fixed buffer rather than a pointer into the parsed JSON, so
@@ -20,6 +22,7 @@ constexpr size_t MAX_AHEAD = 8;
 constexpr size_t MAX_RUNNING = 4;
 constexpr size_t MAX_HOURS = 5;
 constexpr size_t RUNNING_DAYS = 4;
+constexpr size_t MAX_DAYS = 10;
 
 struct HeaderModel {
   char weekday[16];
@@ -52,7 +55,7 @@ struct HourModel {
 };
 
 struct EventModel {
-  char time[12];  // 09:00, or 09:00-09:30 when the end differs
+  char time[14];  // 09:00, or 09:00-09:30 when the end differs
   char title[MAX_TITLE];
 };
 
@@ -60,7 +63,15 @@ struct AheadModel {
   char day[8];   // THU 27
   char time[6];  // 17:30
   char title[MAX_TITLE];
-  char summary[16];  // 14 6.0 MM, already formatted
+  char summary[28];  // 14 6.0 MM, already formatted. The degree and
+                     // middot are two bytes each in UTF-8.
+};
+
+// A day's weather, used to summarise the AHEAD rows.
+struct DayModel {
+  char date[11];  // YYYY-MM-DD, as the backend buckets them
+  int16_t high = MISSING;
+  float precipitation = NAN;
 };
 
 struct RunningModel {
@@ -72,6 +83,7 @@ struct DisplayModel {
   HeaderModel header;
   WeatherModel weather;
   HourModel hours[MAX_HOURS];
+  DayModel days[MAX_DAYS];
   RunningModel running[MAX_RUNNING];
   EventModel today[MAX_TODAY];
   AheadModel ahead[MAX_AHEAD];
@@ -80,7 +92,12 @@ struct DisplayModel {
   char location[16];
   char updated[6];  // HH:MM
 
+  // Today, as the backend sees it. Decoded from meta and used to sort events
+  // into today, ahead and running.
+  DateTime now;
+
   uint8_t hourCount;
+  uint8_t dayCount;
   uint8_t runningCount;
   uint8_t todayCount;
   uint8_t aheadCount;

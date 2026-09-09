@@ -12,8 +12,11 @@ namespace ui {
 // fields rather than whatever the last wake put there.
 void clear(DisplayModel& model);
 
+// Decode in this order: meta establishes the current date that the calendar
+// sorts against, and weather fills the day buckets the AHEAD rows summarise.
 void decodeMeta(DisplayModel& model, const char* json);
 void decodeWeather(DisplayModel& model, const char* json);
 void decodeMessage(DisplayModel& model, const char* json);
+void decodeCalendar(DisplayModel& model, const char* json);
 
 }  // namespace ui
