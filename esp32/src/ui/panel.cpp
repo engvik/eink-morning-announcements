@@ -19,6 +19,13 @@ constexpr int16_t HEADER_META_STEP = 15;
 // Gap between the date numerals and the month beside them.
 constexpr int16_t HEADER_MONTH_GAP = 8;
 
+// The reminder bar's inner padding, and the gap between its label and message.
+constexpr int16_t REMINDER_PADDING = 12;
+constexpr int16_t REMINDER_LABEL_GAP = 12;
+
+// Text sits on one baseline, optically centred in the 32px bar.
+constexpr int16_t REMINDER_BASELINE = 21;
+
 void drawUpper(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
                int16_t baseline, const char* text) {
   char upper[32];
@@ -83,6 +90,35 @@ int16_t drawHeader(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
                RULE_THICK, INK);
 
   return top + HEADER_HEIGHT;
+}
+
+int16_t drawReminder(Adafruit_GFX& gfx, const DisplayModel& model,
+                     int16_t top) {
+  // No message collapses the band entirely, gap included.
+  if (model.reminder[0] == '\0') {
+    return top;
+  }
+
+  const int16_t bandTop = top + BAND_GAP;
+
+  gfx.fillRect(CONTENT_X, bandTop, CONTENT_WIDTH, REMINDER_HEIGHT, INK);
+
+  const int16_t baseline = bandTop + REMINDER_BASELINE;
+  const int16_t labelX = CONTENT_X + REMINDER_PADDING;
+
+  drawLeft(gfx, STYLE_LABEL, labelX, baseline, "REMINDER", PAPER);
+
+  const int16_t messageX =
+      labelX + measure(STYLE_LABEL, "REMINDER") + REMINDER_LABEL_GAP;
+
+  // Whatever is left of the bar, less the padding on the far side.
+  const int16_t available =
+      CONTENT_X + CONTENT_WIDTH - REMINDER_PADDING - messageX;
+
+  drawTruncated(gfx, STYLE_TITLE, messageX, baseline, available, model.reminder,
+                PAPER);
+
+  return bandTop + REMINDER_HEIGHT;
 }
 
 }  // namespace ui

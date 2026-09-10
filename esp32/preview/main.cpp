@@ -23,14 +23,17 @@ constexpr const char *META = R"({
   "sunset": "2026-09-26T20:41:00+02:00"})";
 
 void guide(GFXcanvas1 &canvas, int16_t y, const char *note) {
-  // Dotted rule marking a band boundary, with the expected y beside it.
   for (int16_t x = 0; x < ui::PANEL_WIDTH; x += 6) {
     canvas.drawFastHLine(x, y, 2, ui::INK);
   }
 
-  char label[48];
+  char label[56];
   snprintf(label, sizeof(label), "%d %s", y, note);
-  ui::drawLeft(canvas, ui::STYLE_META, ui::PANEL_WIDTH - 150, y - 4, label);
+  ui::drawRight(canvas, ui::STYLE_META, ui::PANEL_WIDTH - 4, y - 4, label);
+}
+
+void note(GFXcanvas1 &canvas, int16_t baseline, const char *text) {
+  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, baseline, text);
 }
 
 }  // namespace
@@ -41,23 +44,47 @@ int main(int argc, char **argv) {
   ui::DisplayModel model;
   ui::clear(model);
   ui::decodeMeta(model, META);
+  ui::decodeMessage(model, R"({"message":"Bins out before 07:00"})");
 
   GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
   canvas.fillScreen(ui::PAPER);
 
-  const int16_t next = ui::drawHeader(canvas, model, ui::PADDING);
+  // With a message: header, then the bar.
+  int16_t y = ui::drawHeader(canvas, model, ui::PADDING);
+  y = ui::drawReminder(canvas, model, y);
 
-  // The design puts the band at 20..84 with its rule as the bottom edge.
-  guide(canvas, ui::PADDING, "band top");
-  guide(canvas, next, "band bottom, next band starts");
+  guide(canvas, y, "next band");
+  note(canvas, y + 26, "with a message");
 
-  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, next + 30,
-               "header band, compared against artboard 4C");
+  char line[72];
+  snprintf(line, sizeof(line), "next y = %d, design says 128", y);
+  note(canvas, y + 44, line);
 
-  char note[64];
-  snprintf(note, sizeof(note), "returned next y = %d, expected %d", next,
-           ui::PADDING + ui::HEADER_HEIGHT);
-  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, next + 50, note);
+  // A message long enough to need truncating inside the bar.
+  ui::DisplayModel wide = model;
+  std::strncpy(wide.reminder,
+               "A reminder long enough that it cannot possibly fit the bar",
+               sizeof(wide.reminder) - 1);
+
+  int16_t z = ui::drawHeader(canvas, wide, y + 70);
+  z = ui::drawReminder(canvas, wide, z);
+  note(canvas, z + 26, "long message, truncated to the bar");
+
+  // No message at all: the bar and its gap disappear.
+  ui::DisplayModel quiet = model;
+  quiet.reminder[0] = '\0';
+
+  const int16_t collapsedTop = z + 50;
+  int16_t w = ui::drawHeader(canvas, quiet, collapsedTop);
+  const int16_t afterHeader = w;
+  w = ui::drawReminder(canvas, quiet, w);
+
+  guide(canvas, w, "next band");
+  note(canvas, w + 26, "no message, band collapses");
+
+  snprintf(line, sizeof(line), "header ended %d, reminder returned %d, saved %d",
+           afterHeader, w, ui::REMINDER_BLOCK);
+  note(canvas, w + 44, line);
 
   if (!png::write(out, canvas.getBuffer(), ui::PANEL_WIDTH, ui::PANEL_HEIGHT)) {
     fprintf(stderr, "could not write %s\n", out.c_str());
