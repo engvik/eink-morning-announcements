@@ -173,5 +173,31 @@ int main() {
   printf("free day: todayCount=%d todayTotal=%d aheadCount=%d\n",
          free_day.todayCount, free_day.todayTotal, free_day.aheadCount);
 
-  return render("agenda-free-day.png", free_day, "free day");
+  if (render("agenda-free-day.png", free_day, "free day") != 0) {
+    return 1;
+  }
+
+  // Events today but nothing after: the AHEAD heading goes too.
+  ui::DisplayModel today_only = model;
+  today_only.runningCount = 0;
+  today_only.aheadCount = 0;
+
+  if (render("agenda-today-only.png", today_only, "today only") != 0) {
+    return 1;
+  }
+
+  // An empty calendar: all three headings collapse and the agenda is bare.
+  ui::DisplayModel empty;
+  ui::clear(empty);
+  ui::decodeMeta(empty, META);
+  ui::decodeWeather(empty, WEATHER);
+  ui::decodeMessage(empty, R"({"message":"Bins out before 07:00"})");
+  ui::decodeCalendar(empty, R"({"total": 0, "events": []})");
+  std::strncpy(empty.location, "OSLO", sizeof(empty.location) - 1);
+  empty.battery = 90;
+
+  printf("empty:    running=%d today=%d ahead=%d\n", empty.runningCount,
+         empty.todayCount, empty.aheadCount);
+
+  return render("agenda-empty.png", empty, "empty calendar");
 }

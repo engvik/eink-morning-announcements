@@ -48,7 +48,8 @@ bool fetchDisplayData(BackendClient& backend, ui::DisplayModel& model) {
   }
 
   std::strncpy(model.location, DISPLAY_LOCATION, sizeof(model.location) - 1);
-  model.battery = static_cast<int16_t>(getBatteryPercentage(getBatteryVoltage()));
+  model.battery =
+      static_cast<int16_t>(getBatteryPercentage(getBatteryVoltage()));
 
   return true;
 }
