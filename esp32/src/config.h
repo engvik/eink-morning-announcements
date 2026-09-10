@@ -52,6 +52,8 @@ inline constexpr int Y_DEFAULT_SPACING = 10;
 
 inline constexpr int BITMAP_SIZE = 50;
 
+inline constexpr const char* DISPLAY_LOCATION = CFG_DISPLAY_LOCATION;
+
 inline constexpr const char* ERROR_UPDATING = "Unable to update :-(";
 
 inline constexpr const char* MSG_EMPTY_MOTD = "No message today!";
