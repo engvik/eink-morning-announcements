@@ -20,21 +20,26 @@ constexpr size_t MAX_GLYPHS = 128;
 // Width in pixels, including tracking between glyphs.
 int16_t measure(const TextStyle& style, const char* utf8);
 
-// Width of a single character, for laying out around symbols.
 int16_t measureGlyph(const TextStyle& style, uint32_t codepoint);
 
+// Colour is a parameter because the reminder bar draws paper on ink; every
+// other band draws ink on paper.
 void drawLeft(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
-              int16_t baseline, const char* utf8);
+              int16_t baseline, const char* utf8,
+              uint16_t colour = INK);
 
 void drawRight(Adafruit_GFX& gfx, const TextStyle& style, int16_t right,
-               int16_t baseline, const char* utf8);
+               int16_t baseline, const char* utf8,
+               uint16_t colour = INK);
 
 void drawCentred(Adafruit_GFX& gfx, const TextStyle& style, int16_t centre,
-                 int16_t baseline, const char* utf8);
+                 int16_t baseline, const char* utf8,
+                 uint16_t colour = INK);
 
 // Draws as much as fits in width, ending with an ellipsis when clipped. The
 // design never wraps, so this is the only overflow behaviour.
 void drawTruncated(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
-                   int16_t baseline, int16_t width, const char* utf8);
+                   int16_t baseline, int16_t width, const char* utf8,
+                   uint16_t colour = INK);
 
 }  // namespace ui

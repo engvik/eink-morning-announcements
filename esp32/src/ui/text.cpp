@@ -134,9 +134,10 @@ int16_t widthOf(const TextStyle& style, const uint8_t* glyphs, size_t count) {
 }
 
 void draw(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
-          int16_t baseline, const uint8_t* glyphs, size_t count) {
+          int16_t baseline, const uint8_t* glyphs, size_t count,
+          uint16_t colour) {
   gfx.setFont(style.font);
-  gfx.setTextColor(INK);
+  gfx.setTextColor(colour);
   gfx.setTextSize(1);
 
   for (size_t i = 0; i < count; i++) {
@@ -160,37 +161,38 @@ int16_t measureGlyph(const TextStyle& style, uint32_t codepoint) {
 }
 
 void drawLeft(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
-              int16_t baseline, const char* utf8) {
+              int16_t baseline, const char* utf8, uint16_t colour) {
   uint8_t glyphs[MAX_GLYPHS];
 
-  draw(gfx, style, x, baseline, glyphs, translate(utf8, glyphs));
+  draw(gfx, style, x, baseline, glyphs, translate(utf8, glyphs), colour);
 }
 
 void drawRight(Adafruit_GFX& gfx, const TextStyle& style, int16_t right,
-               int16_t baseline, const char* utf8) {
+               int16_t baseline, const char* utf8, uint16_t colour) {
   uint8_t glyphs[MAX_GLYPHS];
   const size_t count = translate(utf8, glyphs);
 
   draw(gfx, style, right - widthOf(style, glyphs, count), baseline, glyphs,
-       count);
+       count, colour);
 }
 
 void drawCentred(Adafruit_GFX& gfx, const TextStyle& style, int16_t centre,
-                 int16_t baseline, const char* utf8) {
+                 int16_t baseline, const char* utf8, uint16_t colour) {
   uint8_t glyphs[MAX_GLYPHS];
   const size_t count = translate(utf8, glyphs);
 
   draw(gfx, style, centre - widthOf(style, glyphs, count) / 2, baseline, glyphs,
-       count);
+       count, colour);
 }
 
 void drawTruncated(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
-                   int16_t baseline, int16_t width, const char* utf8) {
+                   int16_t baseline, int16_t width, const char* utf8,
+                   uint16_t colour) {
   uint8_t glyphs[MAX_GLYPHS];
   size_t count = translate(utf8, glyphs);
 
   if (widthOf(style, glyphs, count) <= width) {
-    draw(gfx, style, x, baseline, glyphs, count);
+    draw(gfx, style, x, baseline, glyphs, count, colour);
     return;
   }
 
@@ -204,7 +206,7 @@ void drawTruncated(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
 
   glyphs[count++] = ellipsis;
 
-  draw(gfx, style, x, baseline, glyphs, count);
+  draw(gfx, style, x, baseline, glyphs, count, colour);
 }
 
 }  // namespace ui
