@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdio>
 
+#include "ui/datetime.h"
 #include "ui/text.h"
 #include "ui/theme.h"
 
@@ -52,6 +53,17 @@ constexpr int16_t HOURLY_TEMP_BASELINE = 73;
 constexpr int16_t HOURLY_PRECIP_BASELINE = 94;
 constexpr int16_t HOURLY_PROBABILITY_BASELINE = 118;
 
+// The agenda. Rows are 20px, running rows 24, and text sits centred in them.
+constexpr int16_t AGENDA_META_BASELINE = 14;
+constexpr int16_t AGENDA_TITLE_BASELINE = 15;
+constexpr int16_t AGENDA_RULE_OFFSET = 10;
+constexpr int16_t AGENDA_RULE_GAP = 8;
+
+// The RUNNING strip: four day boxes with their headings above them.
+constexpr int16_t DAY_STRIP_WIDTH =
+    DAY_BOX_COUNT * DAY_BOX_WIDTH + (DAY_BOX_COUNT - 1) * DAY_BOX_GAP;
+constexpr int16_t RUNNING_BOX_OFFSET = 6;
+
 // The design capitalises weekday, month and condition. These come from Go's
 // time package and MET's legend, both ASCII, so a byte-wise fold is enough.
 // Pass a width to truncate rather than overrun.
@@ -73,6 +85,31 @@ void drawUpper(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
   }
 
   drawLeft(gfx, style, x, baseline, upper);
+}
+
+
+// A section heading: label on the left, a hairline filling the middle, and an
+// optional figure on the right. The hairline stops short of limit, which the
+// RUNNING heading uses to keep clear of its day strip.
+void drawSection(Adafruit_GFX& gfx, int16_t rowTop, const char* label,
+                 const char* trailing, int16_t limit) {
+  const int16_t baseline = rowTop + AGENDA_META_BASELINE;
+
+  drawLeft(gfx, STYLE_LABEL, CONTENT_X, baseline, label);
+
+  int16_t ruleStart =
+      CONTENT_X + measure(STYLE_LABEL, label) + AGENDA_RULE_GAP;
+  int16_t ruleEnd = limit;
+
+  if (trailing != nullptr && trailing[0] != '\0') {
+    drawRight(gfx, STYLE_META, limit, baseline, trailing);
+    ruleEnd = limit - measure(STYLE_META, trailing) - AGENDA_RULE_GAP;
+  }
+
+  if (ruleEnd > ruleStart) {
+    gfx.fillRect(ruleStart, rowTop + AGENDA_RULE_OFFSET, ruleEnd - ruleStart,
+                 RULE_THIN, INK);
+  }
 }
 
 }  // namespace
@@ -338,6 +375,128 @@ int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   }
 
   return bandTop + HOURLY_HEIGHT;
+}
+
+int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
+  const int16_t agendaTop = top + AGENDA_GAP;
+  const int16_t agendaBottom = FOOTER_TOP - AGENDA_GAP;
+  const int16_t right = CONTENT_X + CONTENT_WIDTH;
+
+  int16_t y = agendaTop;
+
+  // RUNNING: all-day events, with a strip of the days each one covers.
+  if (model.runningCount > 0) {
+    // Day headings sit above the boxes they label, and the heading's hairline
+    // stops before them rather than running underneath.
+    const int16_t stripX = right - DAY_STRIP_WIDTH;
+
+    drawSection(gfx, y, "RUNNING", nullptr, stripX - AGENDA_RULE_GAP);
+
+    for (size_t day = 0; day < RUNNING_DAYS; day++) {
+      const char letter[2] = {weekdayLetter(model.now, static_cast<int16_t>(day)),
+                              '\0'};
+
+      drawCentred(gfx, STYLE_META,
+                  stripX + static_cast<int16_t>(day) *
+                               (DAY_BOX_WIDTH + DAY_BOX_GAP) +
+                      DAY_BOX_WIDTH / 2,
+                  y + AGENDA_META_BASELINE, letter);
+    }
+
+    y += ROW_HEIGHT + ROW_GAP;
+
+    for (uint8_t i = 0; i < model.runningCount; i++) {
+      const RunningModel& running = model.running[i];
+
+      drawTruncated(gfx, STYLE_SUBTITLE, CONTENT_X,
+                    y + AGENDA_TITLE_BASELINE,
+                    CONTENT_WIDTH - DAY_STRIP_WIDTH - AGENDA_RULE_GAP,
+                    running.title);
+
+      for (size_t day = 0; day < RUNNING_DAYS; day++) {
+        const int16_t boxX = stripX + static_cast<int16_t>(day) *
+                                          (DAY_BOX_WIDTH + DAY_BOX_GAP);
+        const int16_t boxY = y + RUNNING_BOX_OFFSET;
+
+        if (running.days[day]) {
+          gfx.fillRect(boxX, boxY, DAY_BOX_WIDTH, DAY_BOX_HEIGHT, INK);
+        } else {
+          gfx.drawRect(boxX, boxY, DAY_BOX_WIDTH, DAY_BOX_HEIGHT, INK);
+        }
+      }
+
+      y += RUNNING_ROW_HEIGHT;
+    }
+
+    y += ROW_GAP;
+  }
+
+  // TODAY: the timed events, which take precedence over everything below.
+  char count[16];
+  snprintf(count, sizeof(count), "%d EVENTS", model.todayTotal);
+
+  drawSection(gfx, y, "TODAY", model.todayTotal > 0 ? count : nullptr, right);
+  y += ROW_HEIGHT + ROW_GAP;
+
+  for (uint8_t i = 0; i < model.todayCount; i++) {
+    if (y + ROW_HEIGHT > agendaBottom) {
+      break;
+    }
+
+    const EventModel& event = model.today[i];
+    const int16_t titleX = CONTENT_X + TODAY_TIME_WIDTH + ROW_GUTTER;
+
+    drawLeft(gfx, STYLE_TIME, CONTENT_X, y + AGENDA_META_BASELINE, event.time);
+    drawTruncated(gfx, STYLE_TITLE, titleX, y + AGENDA_TITLE_BASELINE,
+                  right - titleX, event.title);
+
+    y += ROW_HEIGHT;
+  }
+
+  if (model.todayCount > 0) {
+    y += ROW_GAP;
+  }
+
+  // AHEAD takes what is left, one row per upcoming day, and only if the
+  // heading and at least one row still leave the page some breathing room.
+  const int16_t limit = agendaBottom - AGENDA_SLACK;
+
+  if (model.aheadCount == 0 || y + ROW_HEIGHT + ROW_GAP + ROW_HEIGHT > limit) {
+    return FOOTER_TOP;
+  }
+
+  drawSection(gfx, y, "AHEAD", nullptr, right);
+  y += ROW_HEIGHT + ROW_GAP;
+
+  for (uint8_t i = 0; i < model.aheadCount; i++) {
+    if (y + ROW_HEIGHT > limit) {
+      break;
+    }
+
+    const AheadModel& ahead = model.ahead[i];
+
+    const int16_t timeX = CONTENT_X + AHEAD_DAY_WIDTH + ROW_GUTTER;
+    const int16_t titleX = timeX + AHEAD_TIME_WIDTH + ROW_GUTTER;
+
+    const int16_t summaryWidth =
+        ahead.summary[0] != '\0'
+            ? measure(STYLE_META, ahead.summary) + ROW_GUTTER
+            : 0;
+
+    drawLeft(gfx, STYLE_TIME, CONTENT_X, y + AGENDA_META_BASELINE, ahead.day);
+    drawLeft(gfx, STYLE_META, timeX, y + AGENDA_META_BASELINE, ahead.time);
+    drawTruncated(gfx, STYLE_SUBTITLE, titleX, y + AGENDA_TITLE_BASELINE,
+                  right - titleX - summaryWidth, ahead.title);
+
+    if (summaryWidth > 0) {
+      drawRight(gfx, STYLE_META, right, y + AGENDA_META_BASELINE,
+                ahead.summary);
+    }
+
+    y += ROW_HEIGHT + ROW_GAP;
+  }
+
+  return FOOTER_TOP;
 }
 
 }  // namespace ui

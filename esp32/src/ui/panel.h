@@ -14,4 +14,9 @@ int16_t drawReminder(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
 int16_t drawWeather(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
 int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
 
+// The agenda fills whatever is left between the band above it and the footer.
+// Today's events are laid out first and may consume all of it; only the
+// remainder goes to upcoming days, one line each.
+int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
+
 }  // namespace ui

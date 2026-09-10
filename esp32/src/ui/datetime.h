@@ -28,4 +28,8 @@ bool sameDay(const DateTime& a, const DateTime& b);
 // Three letter upper case weekday, for the AHEAD column. Empty if invalid.
 const char* weekdayAbbrev(const DateTime& date);
 
+// First letter of the weekday, offset whole days from the given date. Used for
+// the RUNNING strip's column headings.
+char weekdayLetter(const DateTime& date, int16_t offset);
+
 }  // namespace ui

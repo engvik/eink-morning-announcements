@@ -9,7 +9,6 @@ CXX ?= c++
 CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -DARDUINO=10805 -DPREVIEW_HOST \
             -Ishim -I"$(GFX)" -I"$(JSON)" -I. -I../src
 OUT := preview
-OUTPUT ?= preview.png
 
 # The library path contains a space, so it stays inside the recipe rather than
 # in a prerequisite list.
@@ -37,7 +36,7 @@ $(OUT): $(DEPS)
 		"$(GFX)/Adafruit_GFX.cpp"
 
 run: $(OUT)
-	./$(OUT) $(OUTPUT)
+	./$(OUT)
 
 clean:
-	rm -f $(OUT) $(OUTPUT)
+	rm -f $(OUT) *.png

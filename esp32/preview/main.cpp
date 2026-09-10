@@ -16,6 +16,12 @@
 namespace {
 
 // Stand-in data with the shape the backend produces. Deliberately generic.
+constexpr const char *META = R"({
+  "today": "Wednesday", "month": "September", "date": 26, "week": 35,
+  "now": "2026-09-26T06:00:00+02:00",
+  "sunrise": "2026-09-26T05:52:00+02:00",
+  "sunset": "2026-09-26T20:41:00+02:00"})";
+
 constexpr const char *WEATHER = R"({
   "forecasts": [
     {"time": "2026-09-26T08:00:00+02:00",
@@ -41,44 +47,55 @@ constexpr const char *WEATHER = R"({
                   "probability_of_precipitation": 90}},
     {"time": "2026-09-26T15:00:00+02:00", "instant": {"air_temperature": 19.0},
      "one_hour": {"symbol_code": "lightrain", "precipitation_amount": 0.5}},
-    {"time": "2026-09-26T16:00:00+02:00", "instant": {"air_temperature": -8.1},
-     "one_hour": {"symbol_code": "heavysnow", "precipitation_amount": 12.5,
-                  "probability_of_precipitation": 100}}],
-  "days": [{"date": "2026-09-26", "air_temperature_min": 12.4,
-            "air_temperature_max": 21.0, "ultraviolet_index_max": 3.2,
-            "precipitation_amount": 2.7}]})";
+    {"time": "2026-09-26T16:00:00+02:00", "instant": {"air_temperature": 18.1},
+     "one_hour": {"symbol_code": "lightrain", "precipitation_amount": 0.7,
+                  "probability_of_precipitation": 70}}],
+  "days": [
+    {"date": "2026-09-26", "air_temperature_min": 12.4,
+     "air_temperature_max": 21.0, "ultraviolet_index_max": 3.2,
+     "precipitation_amount": 2.7},
+    {"date": "2026-09-27", "air_temperature_max": 14.0,
+     "precipitation_amount": 6.0},
+    {"date": "2026-09-28", "air_temperature_max": 17.0,
+     "precipitation_amount": 0.0},
+    {"date": "2026-09-29", "air_temperature_max": 19.0,
+     "precipitation_amount": 0.0},
+    {"date": "2026-09-30", "air_temperature_max": 18.0,
+     "precipitation_amount": 1.1},
+    {"date": "2026-10-01", "air_temperature_max": 16.0,
+     "precipitation_amount": 0.4},
+    {"date": "2026-10-02", "air_temperature_max": 17.0,
+     "precipitation_amount": 0.0},
+    {"date": "2026-10-03", "air_temperature_max": 15.0,
+     "precipitation_amount": 2.2}]})";
 
-constexpr const char *META = R"({
-  "today": "Wednesday", "month": "September", "date": 26, "week": 35,
-  "now": "2026-09-26T06:00:00+02:00",
-  "sunrise": "2026-09-26T05:52:00+02:00",
-  "sunset": "2026-09-26T20:41:00+02:00"})";
+// Nine today, two spanning, and a week of upcoming days.
+constexpr const char *CALENDAR = R"({"total": 9, "events": [
+  {"start":"2026-09-25T00:00:00+02:00","end":"2026-09-29T00:00:00+02:00",
+   "title":"First long span","all_day":true},
+  {"start":"2026-09-27T00:00:00+02:00","end":"2026-09-30T00:00:00+02:00",
+   "title":"Second long span","all_day":true},
+  {"start":"2026-09-26T08:15:00+02:00","end":"2026-09-26T08:45:00+02:00","title":"Alpha"},
+  {"start":"2026-09-26T09:00:00+02:00","end":"2026-09-26T09:30:00+02:00","title":"Bravo"},
+  {"start":"2026-09-26T10:00:00+02:00","end":"2026-09-26T10:30:00+02:00","title":"Charlie"},
+  {"start":"2026-09-26T11:30:00+02:00","end":"2026-09-26T12:00:00+02:00","title":"Delta"},
+  {"start":"2026-09-26T13:00:00+02:00","end":"2026-09-26T14:30:00+02:00",
+   "title":"Echo","location":"A place"},
+  {"start":"2026-09-26T15:00:00+02:00","end":"2026-09-26T15:30:00+02:00","title":"Foxtrot"},
+  {"start":"2026-09-26T16:30:00+02:00","end":"2026-09-26T17:00:00+02:00","title":"Golf"},
+  {"start":"2026-09-26T18:00:00+02:00","end":"2026-09-26T19:00:00+02:00","title":"Hotel"},
+  {"start":"2026-09-26T19:00:00+02:00","end":"2026-09-26T20:00:00+02:00",
+   "title":"India, with a title long enough to need clipping in its own column"},
+  {"start":"2026-09-27T17:30:00+02:00","end":"2026-09-27T18:30:00+02:00","title":"Juliett"},
+  {"start":"2026-09-28T08:00:00+02:00","end":"2026-09-28T09:00:00+02:00","title":"Kilo"},
+  {"start":"2026-09-29T11:00:00+02:00","end":"2026-09-29T12:00:00+02:00","title":"Lima"},
+  {"start":"2026-09-30T14:00:00+02:00","end":"2026-09-30T15:00:00+02:00","title":"Mike"},
+  {"start":"2026-10-01T08:15:00+02:00","end":"2026-10-01T09:00:00+02:00","title":"November"},
+  {"start":"2026-10-02T17:00:00+02:00","end":"2026-10-02T18:00:00+02:00","title":"Oscar"},
+  {"start":"2026-10-03T09:00:00+02:00","end":"2026-10-03T10:00:00+02:00","title":"Papa"}]})";
 
-void guide(GFXcanvas1 &canvas, int16_t y, const char *note) {
-  for (int16_t x = 0; x < ui::PANEL_WIDTH; x += 6) {
-    canvas.drawFastHLine(x, y, 2, ui::INK);
-  }
-
-  char label[56];
-  snprintf(label, sizeof(label), "%d %s", y, note);
-  ui::drawRight(canvas, ui::STYLE_META, ui::PANEL_WIDTH - 4, y - 4, label);
-}
-
-void note(GFXcanvas1 &canvas, int16_t baseline, const char *text) {
-  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, baseline, text);
-}
-
-}  // namespace
-
-int main(int argc, char **argv) {
-  const std::string out = argc > 1 ? argv[1] : "preview.png";
-
-  ui::DisplayModel model;
-  ui::clear(model);
-  ui::decodeMeta(model, META);
-  ui::decodeMessage(model, R"({"message":"Bins out before 07:00"})");
-  ui::decodeWeather(model, WEATHER);
-
+int render(const char *path, const ui::DisplayModel &model,
+           const char *caption) {
   GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
   canvas.fillScreen(ui::PAPER);
 
@@ -87,43 +104,58 @@ int main(int argc, char **argv) {
   y = ui::drawWeather(canvas, model, y);
   y = ui::drawHourly(canvas, model, y);
 
-  guide(canvas, y, "next band");
+  const int16_t agendaTop = y + ui::AGENDA_GAP;
+
+  ui::drawAgenda(canvas, model, y);
+
+  // Mark the lowest line the agenda may draw on, so the fill rule is visible.
+  const int16_t agendaBottom = ui::FOOTER_TOP - ui::AGENDA_GAP;
+
+  for (int16_t x = 0; x < ui::PANEL_WIDTH; x += 8) {
+    canvas.drawFastHLine(x, agendaBottom, 2, ui::INK);
+  }
 
   char line[80];
-  snprintf(line, sizeof(line), "next y = %d, design says 364", y);
-  note(canvas, y + 26, line);
+  snprintf(line, sizeof(line), "%s   agenda %d..%d = %dpx", caption, agendaTop,
+           agendaBottom, agendaBottom - agendaTop);
+  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, ui::FOOTER_TOP + 18,
+               line);
 
-  // Fewer than five forecasts: columns and dividers stop together.
-  ui::DisplayModel few = model;
-  few.hourCount = 3;
+  printf("%-16s agenda %3d..%d = %3dpx\n", caption, agendaTop, agendaBottom,
+         agendaBottom - agendaTop);
 
-  int16_t p = ui::drawHourly(canvas, few, y + 40);
-  note(canvas, p + 22, "three columns, dividers stop with them");
+  return png::write(path, canvas.getBuffer(), ui::PANEL_WIDTH,
+                    ui::PANEL_HEIGHT)
+             ? 0
+             : 1;
+}
 
-  // The longest condition MET publishes, against the widest temperatures.
-  ui::DisplayModel wide = model;
-  wide.weather.condition = "Heavy sleet showers and thunder";
-  wide.weather.temperature = -18;
-  wide.weather.low = -24;
-  wide.weather.feels = -31;
-  wide.weather.wind = 12;
-  wide.weather.gust = 28;
-  wide.weather.precipitation = 14.5f;
+}  // namespace
 
-  int16_t z = ui::drawHeader(canvas, wide, p + 40);
-  z = ui::drawReminder(canvas, wide, z);
-  z = ui::drawWeather(canvas, wide, z);
-  z = ui::drawHourly(canvas, wide, z);
-  note(canvas, z + 26, "longest condition, negative temperatures");
+int main() {
+  ui::DisplayModel model;
+  ui::clear(model);
+  ui::decodeMeta(model, META);
+  ui::decodeWeather(model, WEATHER);
+  ui::decodeCalendar(model, CALENDAR);
+  ui::decodeMessage(model, R"({"message":"Bins out before 07:00"})");
 
-
-
-  if (!png::write(out, canvas.getBuffer(), ui::PANEL_WIDTH, ui::PANEL_HEIGHT)) {
-    fprintf(stderr, "could not write %s\n", out.c_str());
+  // 4C: events running across several days.
+  if (render("agenda-running.png", model, "4C running") != 0) {
     return 1;
   }
 
-  printf("wrote %s (%dx%d)\n", out.c_str(), ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
+  // 4D: nothing spanning, so AHEAD gets that space back.
+  ui::DisplayModel plain = model;
+  plain.runningCount = 0;
 
-  return 0;
+  if (render("agenda-plain.png", plain, "4D no running") != 0) {
+    return 1;
+  }
+
+  // 4E: no reminder either, which hands the agenda another 44px.
+  ui::DisplayModel quiet = plain;
+  quiet.reminder[0] = '\0';
+
+  return render("agenda-quiet.png", quiet, "4E no reminder");
 }

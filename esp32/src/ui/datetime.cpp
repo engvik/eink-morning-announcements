@@ -35,6 +35,16 @@ int32_t daysFromCivil(int16_t year, int8_t month, int8_t day) {
   return era * 146097 + static_cast<int32_t>(doe) - 719468;
 }
 
+// Weekday as a Monday-first index, which is how Norway and ISO 8601 count and
+// what the week number in the header already assumes. Day zero of the epoch,
+// 1970-01-01, was a Thursday, hence the shift.
+int weekdayIndex(const DateTime& date, int16_t offset) {
+  const int32_t days =
+      daysFromCivil(date.year, date.month, date.day) + offset + 3;
+
+  return static_cast<int>(((days % 7) + 7) % 7);
+}
+
 }  // namespace
 
 DateTime parseIso8601(const char* text) {
@@ -91,18 +101,25 @@ bool sameDay(const DateTime& a, const DateTime& b) {
          a.day == b.day;
 }
 
+char weekdayLetter(const DateTime& date, int16_t offset) {
+  if (!date.valid) {
+    return ' ';
+  }
+
+  static const char LETTERS[] = {'M', 'T', 'W', 'T', 'F', 'S', 'S'};
+
+  return LETTERS[weekdayIndex(date, offset)];
+}
+
 const char* weekdayAbbrev(const DateTime& date) {
   if (!date.valid) {
     return "";
   }
 
-  // 1970-01-01 was a Thursday.
-  static const char* const NAMES[] = {"THU", "FRI", "SAT", "SUN",
-                                      "MON", "TUE", "WED"};
+  static const char* const NAMES[] = {"MON", "TUE", "WED", "THU",
+                                      "FRI", "SAT", "SUN"};
 
-  const int32_t days = daysFromCivil(date.year, date.month, date.day);
-
-  return NAMES[((days % 7) + 7) % 7];
+  return NAMES[weekdayIndex(date, 0)];
 }
 
 }  // namespace ui
