@@ -431,12 +431,16 @@ int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
     y += ROW_GAP;
   }
 
-  // TODAY: the timed events, which take precedence over everything below.
-  char count[16];
-  snprintf(count, sizeof(count), "%d EVENTS", model.todayTotal);
+  // TODAY: the timed events, which take precedence over everything below. A
+  // day with nothing on it collapses the whole section rather than heading an
+  // empty list, which hands the space to AHEAD.
+  if (model.todayCount > 0) {
+    char count[16];
+    snprintf(count, sizeof(count), "%d EVENTS", model.todayTotal);
 
-  drawSection(gfx, y, "TODAY", model.todayTotal > 0 ? count : nullptr, right);
-  y += ROW_HEIGHT + ROW_GAP;
+    drawSection(gfx, y, "TODAY", count, right);
+    y += ROW_HEIGHT + ROW_GAP;
+  }
 
   for (uint8_t i = 0; i < model.todayCount; i++) {
     if (y + ROW_HEIGHT > agendaBottom) {

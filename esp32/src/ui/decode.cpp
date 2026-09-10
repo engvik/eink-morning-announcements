@@ -310,8 +310,6 @@ void decodeCalendar(DisplayModel& model, const char* json) {
     return;
   }
 
-  model.todayTotal = rounded(number(root, "total"));
-
   const cJSON* events = field(root, "events");
 
   if (!cJSON_IsArray(events) || !model.now.valid) {
@@ -376,6 +374,11 @@ void decodeCalendar(DisplayModel& model, const char* json) {
     const int16_t offset = daysBetween(model.now, start);
 
     if (offset <= 0) {
+      // Counted before the cap, so the heading can report more than it shows.
+      // The backend's own total counts the whole peek window rather than
+      // today, so it is not what this needs.
+      model.todayTotal++;
+
       if (model.todayCount >= MAX_TODAY) {
         continue;
       }
