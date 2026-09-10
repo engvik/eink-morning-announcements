@@ -5,6 +5,9 @@
 namespace ui {
 namespace {
 
+// Earlier than the display could meaningfully show.
+constexpr int16_t MIN_YEAR = 2000;
+
 bool digits(const char* text, int count, int16_t& out) {
   int16_t value = 0;
 
@@ -62,6 +65,14 @@ DateTime parseIso8601(const char* text) {
   }
 
   if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return out;
+  }
+
+  // Go marshals an unset time.Time as 0001-01-01T00:00:00Z, which the backend
+  // sends when a fetch has not succeeded yet. Treating that as a real date
+  // would print RISE 00:00 and throw off the calendar's day arithmetic, so
+  // anything implausible is a miss rather than a value.
+  if (year < MIN_YEAR) {
     return out;
   }
 

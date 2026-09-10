@@ -16,7 +16,8 @@ DEPS := main.cpp png.h shim/Arduino.h shim/Print.h \
         ../src/ui/text.cpp ../src/ui/text.h ../src/ui/theme.h \
         ../src/icons/met_icons_black_24x24.cpp ../src/icons/met_icons_black_44x44.cpp \
         ../src/icons/symbols.cpp ../src/icons/symbols.h ../src/icons/symbols_table.h \
-        ../src/ui/panel.cpp ../src/ui/panel.h ../src/ui/decode.cpp ../src/ui/datetime.cpp
+        ../src/ui/panel.cpp ../src/ui/panel.h ../src/ui/decode.cpp ../src/ui/datetime.cpp \
+
 
 .PHONY: all run clean
 

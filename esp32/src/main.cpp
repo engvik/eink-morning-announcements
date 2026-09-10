@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <Arduino_JSON.h>
 
 #include "data.h"
 #include "eink_display.h"
@@ -13,10 +12,8 @@
 }
 
 void setup() {
-  // Init serial
   Serial.begin(SERIAL_BAUD);
 
-  // Init WiFi
   Serial.println("Setting up WiFi ..");
 
   if (!initWiFi()) {
@@ -24,31 +21,28 @@ void setup() {
     deepSleep(SLEEP_TIME);
   }
 
-  // Fetch data from backend
   BackendClient backend;
-  DisplayData data = fetchDisplayData(backend);
+  ui::DisplayModel model;
 
-  // Init display
-  Serial.println("Setting up Eink Display ..");
-
-  EinkDisplay ed;
-  ed.init();
-  Serial.println("Refreshing Eink Display ..");
-  ed.refreshScreen();
-  ed.draw(&data);
-  ed.hibernate();
-
-  // Deep sleep
-  const char* now = data.meta["now"];
-  int hour = String(now).substring(11, 13).toInt();
-
-  // Sleep for six times SLEEP_TIME at midnight, otherwise update every
-  // SLEEP_TIME.
-  if (hour == LONG_SLEEP_HOUR) {
-    deepSleep(LONG_SLEEP_TIME);
-  } else {
+  if (!fetchDisplayData(backend, model)) {
+    // Show stale data over broken data.
+    Serial.println("No meta, leaving the panel as it is ..");
     deepSleep(SLEEP_TIME);
   }
+
+  Serial.println("Drawing ..");
+
+  EinkDisplay display;
+  display.init();
+  display.draw(model);
+  display.hibernate();
+
+  // One long sleep overnight, hourly the rest of the day. Without meta there
+  // is no clock to decide on, so assume the short interval.
+  const bool overnight =
+      model.now.valid && model.now.hour == LONG_SLEEP_HOUR;
+
+  deepSleep(overnight ? LONG_SLEEP_TIME : SLEEP_TIME);
 }
 
 void loop() {}
