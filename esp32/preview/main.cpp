@@ -107,19 +107,9 @@ int render(const char *path, const ui::DisplayModel &model,
   const int16_t agendaTop = y + ui::AGENDA_GAP;
 
   ui::drawAgenda(canvas, model, y);
+  ui::drawFooter(canvas, model);
 
-  // Mark the lowest line the agenda may draw on, so the fill rule is visible.
   const int16_t agendaBottom = ui::FOOTER_TOP - ui::AGENDA_GAP;
-
-  for (int16_t x = 0; x < ui::PANEL_WIDTH; x += 8) {
-    canvas.drawFastHLine(x, agendaBottom, 2, ui::INK);
-  }
-
-  char line[80];
-  snprintf(line, sizeof(line), "%s   agenda %d..%d = %dpx", caption, agendaTop,
-           agendaBottom, agendaBottom - agendaTop);
-  ui::drawLeft(canvas, ui::STYLE_META, ui::CONTENT_X, ui::FOOTER_TOP + 18,
-               line);
 
   printf("%-16s agenda %3d..%d = %3dpx\n", caption, agendaTop, agendaBottom,
          agendaBottom - agendaTop);
@@ -139,6 +129,10 @@ int main() {
   ui::decodeWeather(model, WEATHER);
   ui::decodeCalendar(model, CALENDAR);
   ui::decodeMessage(model, R"({"message":"Bins out before 07:00"})");
+
+  // Set on the device from config and the battery reading.
+  std::strncpy(model.location, "OSLO", sizeof(model.location) - 1);
+  model.battery = 90;
 
   // 4C: events running across several days.
   if (render("agenda-running.png", model, "4C running") != 0) {

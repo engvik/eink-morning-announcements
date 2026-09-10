@@ -64,6 +64,9 @@ constexpr int16_t DAY_STRIP_WIDTH =
     DAY_BOX_COUNT * DAY_BOX_WIDTH + (DAY_BOX_COUNT - 1) * DAY_BOX_GAP;
 constexpr int16_t RUNNING_BOX_OFFSET = 6;
 
+// The footer: a hairline, then one line of meta beneath it.
+constexpr int16_t FOOTER_BASELINE = 21;
+
 // The design capitalises weekday, month and condition. These come from Go's
 // time package and MET's legend, both ASCII, so a byte-wise fold is enough.
 // Pass a width to truncate rather than overrun.
@@ -88,9 +91,6 @@ void drawUpper(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
 }
 
 
-// A section heading: label on the left, a hairline filling the middle, and an
-// optional figure on the right. The hairline stops short of limit, which the
-// RUNNING heading uses to keep clear of its day strip.
 void drawSection(Adafruit_GFX& gfx, int16_t rowTop, const char* label,
                  const char* trailing, int16_t limit) {
   const int16_t baseline = rowTop + AGENDA_META_BASELINE;
@@ -497,6 +497,46 @@ int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   }
 
   return FOOTER_TOP;
+}
+
+void drawFooter(Adafruit_GFX& gfx, const DisplayModel& model) {
+  const int16_t right = CONTENT_X + CONTENT_WIDTH;
+  const int16_t baseline = FOOTER_TOP + FOOTER_BASELINE;
+
+  gfx.fillRect(CONTENT_X, FOOTER_TOP, CONTENT_WIDTH, RULE_THIN, INK);
+
+  char battery[12];
+  battery[0] = '\0';
+
+  if (model.battery > 0) {
+    snprintf(battery, sizeof(battery), "BATT %d%%", model.battery);
+  }
+
+  char updated[20];
+  updated[0] = '\0';
+
+  if (model.updated[0] != '\0') {
+    snprintf(updated, sizeof(updated), "UPDATED %s", model.updated);
+  }
+
+  drawLeft(gfx, STYLE_META_WIDE, CONTENT_X, baseline, model.location);
+  drawRight(gfx, STYLE_META_WIDE, right, baseline, updated);
+
+  // The battery sits centred in what the outer two leave, so it cannot collide
+  // with them. It is not in the design, which shows only two tokens.
+  if (battery[0] == '\0') {
+    return;
+  }
+
+  const int16_t locationWidth = measure(STYLE_META_WIDE, model.location);
+  const int16_t updatedWidth = measure(STYLE_META_WIDE, updated);
+  const int16_t batteryWidth = measure(STYLE_META_WIDE, battery);
+
+  const int16_t slack =
+      CONTENT_WIDTH - locationWidth - updatedWidth - batteryWidth;
+
+  drawLeft(gfx, STYLE_META_WIDE, CONTENT_X + locationWidth + slack / 2, baseline,
+           battery);
 }
 
 }  // namespace ui

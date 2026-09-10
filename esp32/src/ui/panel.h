@@ -19,4 +19,8 @@ int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
 // remainder goes to upcoming days, one line each.
 int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
 
+// Anchored to the bottom of the panel rather than following the agenda, so it
+// sits in the same place whatever the agenda did.
+void drawFooter(Adafruit_GFX& gfx, const DisplayModel& model);
+
 }  // namespace ui
