@@ -16,6 +16,15 @@
 namespace {
 
 // Stand-in data with the shape the backend produces. Deliberately generic.
+constexpr const char *WEATHER = R"({
+  "forecasts": [{"time": "2026-09-26T06:00:00+02:00",
+    "instant": {"air_temperature": 21.3, "apparent_air_temperature": 19.2,
+                "wind_speed": 4.1, "wind_speed_of_gust": 8.7},
+    "one_hour": {"symbol_code": "partlycloudy_day"}}],
+  "days": [{"date": "2026-09-26", "air_temperature_min": 12.4,
+            "air_temperature_max": 21.0, "ultraviolet_index_max": 3.2,
+            "precipitation_amount": 2.7}]})";
+
 constexpr const char *META = R"({
   "today": "Wednesday", "month": "September", "date": 26, "week": 35,
   "now": "2026-09-26T06:00:00+02:00",
@@ -45,46 +54,43 @@ int main(int argc, char **argv) {
   ui::clear(model);
   ui::decodeMeta(model, META);
   ui::decodeMessage(model, R"({"message":"Bins out before 07:00"})");
+  ui::decodeWeather(model, WEATHER);
 
   GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
   canvas.fillScreen(ui::PAPER);
 
-  // With a message: header, then the bar.
   int16_t y = ui::drawHeader(canvas, model, ui::PADDING);
   y = ui::drawReminder(canvas, model, y);
+  y = ui::drawWeather(canvas, model, y);
 
   guide(canvas, y, "next band");
-  note(canvas, y + 26, "with a message");
 
-  char line[72];
-  snprintf(line, sizeof(line), "next y = %d, design says 128", y);
-  note(canvas, y + 44, line);
+  char line[80];
+  snprintf(line, sizeof(line), "next y = %d, design says 228", y);
+  note(canvas, y + 26, line);
 
-  // A message long enough to need truncating inside the bar.
+  // The longest condition MET publishes, against the widest temperatures.
   ui::DisplayModel wide = model;
-  std::strncpy(wide.reminder,
-               "A reminder long enough that it cannot possibly fit the bar",
-               sizeof(wide.reminder) - 1);
+  wide.weather.condition = "Heavy sleet showers and thunder";
+  wide.weather.temperature = -18;
+  wide.weather.low = -24;
+  wide.weather.feels = -31;
+  wide.weather.wind = 12;
+  wide.weather.gust = 28;
+  wide.weather.precipitation = 14.5f;
 
-  int16_t z = ui::drawHeader(canvas, wide, y + 70);
+  int16_t z = ui::drawHeader(canvas, wide, y + 40);
   z = ui::drawReminder(canvas, wide, z);
-  note(canvas, z + 26, "long message, truncated to the bar");
+  z = ui::drawWeather(canvas, wide, z);
+  note(canvas, z + 26, "longest condition, negative temperatures");
 
-  // No message at all: the bar and its gap disappear.
-  ui::DisplayModel quiet = model;
-  quiet.reminder[0] = '\0';
+  // A failed weather fetch keeps the band's height so nothing below shifts.
+  ui::DisplayModel blank = model;
+  blank.weather.valid = false;
 
-  const int16_t collapsedTop = z + 50;
-  int16_t w = ui::drawHeader(canvas, quiet, collapsedTop);
-  const int16_t afterHeader = w;
-  w = ui::drawReminder(canvas, quiet, w);
-
-  guide(canvas, w, "next band");
-  note(canvas, w + 26, "no message, band collapses");
-
-  snprintf(line, sizeof(line), "header ended %d, reminder returned %d, saved %d",
-           afterHeader, w, ui::REMINDER_BLOCK);
-  note(canvas, w + 44, line);
+  int16_t w = ui::drawWeather(canvas, blank, z + 40);
+  guide(canvas, w, "after empty band");
+  note(canvas, w + 26, "no weather, band keeps its height");
 
   if (!png::write(out, canvas.getBuffer(), ui::PANEL_WIDTH, ui::PANEL_HEIGHT)) {
     fprintf(stderr, "could not write %s\n", out.c_str());
