@@ -60,6 +60,10 @@ constexpr int16_t WEATHER_HEIGHT = 88;
 constexpr int16_t HOURLY_HEIGHT = 124;
 constexpr int16_t FOOTER_HEIGHT = 28;
 
+// The footer is anchored to the bottom, so the agenda gets whatever is left
+// between the band above it and this.
+constexpr int16_t FOOTER_TOP = PANEL_HEIGHT - PADDING - FOOTER_HEIGHT;  // 752
+
 constexpr int16_t BAND_GAP = 12;
 constexpr int16_t AGENDA_GAP = 8;
 
