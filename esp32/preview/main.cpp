@@ -17,10 +17,33 @@ namespace {
 
 // Stand-in data with the shape the backend produces. Deliberately generic.
 constexpr const char *WEATHER = R"({
-  "forecasts": [{"time": "2026-09-26T06:00:00+02:00",
-    "instant": {"air_temperature": 21.3, "apparent_air_temperature": 19.2,
-                "wind_speed": 4.1, "wind_speed_of_gust": 8.7},
-    "one_hour": {"symbol_code": "partlycloudy_day"}}],
+  "forecasts": [
+    {"time": "2026-09-26T08:00:00+02:00",
+     "instant": {"air_temperature": 16.4, "apparent_air_temperature": 19.2,
+                 "wind_speed": 4.1, "wind_speed_of_gust": 8.7},
+     "one_hour": {"symbol_code": "clearsky_day", "precipitation_amount": 0,
+                  "probability_of_precipitation": 5}},
+    {"time": "2026-09-26T09:00:00+02:00", "instant": {"air_temperature": 17.0},
+     "one_hour": {"symbol_code": "fair_day"}},
+    {"time": "2026-09-26T10:00:00+02:00", "instant": {"air_temperature": 18.8},
+     "one_hour": {"symbol_code": "fair_day", "precipitation_amount": 0,
+                  "probability_of_precipitation": 10}},
+    {"time": "2026-09-26T11:00:00+02:00", "instant": {"air_temperature": 19.0},
+     "one_hour": {"symbol_code": "cloudy"}},
+    {"time": "2026-09-26T12:00:00+02:00", "instant": {"air_temperature": 21.2},
+     "one_hour": {"symbol_code": "partlycloudy_day",
+                  "precipitation_amount": 0.14,
+                  "probability_of_precipitation": 30}},
+    {"time": "2026-09-26T13:00:00+02:00", "instant": {"air_temperature": 20.0},
+     "one_hour": {"symbol_code": "rain", "precipitation_amount": 1.0}},
+    {"time": "2026-09-26T14:00:00+02:00", "instant": {"air_temperature": 20.4},
+     "one_hour": {"symbol_code": "rain", "precipitation_amount": 1.75,
+                  "probability_of_precipitation": 90}},
+    {"time": "2026-09-26T15:00:00+02:00", "instant": {"air_temperature": 19.0},
+     "one_hour": {"symbol_code": "lightrain", "precipitation_amount": 0.5}},
+    {"time": "2026-09-26T16:00:00+02:00", "instant": {"air_temperature": -8.1},
+     "one_hour": {"symbol_code": "heavysnow", "precipitation_amount": 12.5,
+                  "probability_of_precipitation": 100}}],
   "days": [{"date": "2026-09-26", "air_temperature_min": 12.4,
             "air_temperature_max": 21.0, "ultraviolet_index_max": 3.2,
             "precipitation_amount": 2.7}]})";
@@ -62,12 +85,20 @@ int main(int argc, char **argv) {
   int16_t y = ui::drawHeader(canvas, model, ui::PADDING);
   y = ui::drawReminder(canvas, model, y);
   y = ui::drawWeather(canvas, model, y);
+  y = ui::drawHourly(canvas, model, y);
 
   guide(canvas, y, "next band");
 
   char line[80];
-  snprintf(line, sizeof(line), "next y = %d, design says 228", y);
+  snprintf(line, sizeof(line), "next y = %d, design says 364", y);
   note(canvas, y + 26, line);
+
+  // Fewer than five forecasts: columns and dividers stop together.
+  ui::DisplayModel few = model;
+  few.hourCount = 3;
+
+  int16_t p = ui::drawHourly(canvas, few, y + 40);
+  note(canvas, p + 22, "three columns, dividers stop with them");
 
   // The longest condition MET publishes, against the widest temperatures.
   ui::DisplayModel wide = model;
@@ -79,18 +110,13 @@ int main(int argc, char **argv) {
   wide.weather.gust = 28;
   wide.weather.precipitation = 14.5f;
 
-  int16_t z = ui::drawHeader(canvas, wide, y + 40);
+  int16_t z = ui::drawHeader(canvas, wide, p + 40);
   z = ui::drawReminder(canvas, wide, z);
   z = ui::drawWeather(canvas, wide, z);
+  z = ui::drawHourly(canvas, wide, z);
   note(canvas, z + 26, "longest condition, negative temperatures");
 
-  // A failed weather fetch keeps the band's height so nothing below shifts.
-  ui::DisplayModel blank = model;
-  blank.weather.valid = false;
 
-  int16_t w = ui::drawWeather(canvas, blank, z + 40);
-  guide(canvas, w, "after empty band");
-  note(canvas, w + 26, "no weather, band keeps its height");
 
   if (!png::write(out, canvas.getBuffer(), ui::PANEL_WIDTH, ui::PANEL_HEIGHT)) {
     fprintf(stderr, "could not write %s\n", out.c_str());

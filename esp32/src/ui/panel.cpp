@@ -43,6 +43,15 @@ constexpr int16_t WEATHER_ICON_GAP = 12;
 // The least space that must remain between the three meta tokens.
 constexpr int16_t TOKEN_GAP = 24;
 
+// The hourly strip. Everything is measured from the top of the band, which
+// begins with six pixels of padding before the first row of the columns.
+constexpr int16_t HOURLY_PADDING = 6;
+constexpr int16_t HOURLY_HOUR_BASELINE = 18;
+constexpr int16_t HOURLY_ICON_TOP = 27;
+constexpr int16_t HOURLY_TEMP_BASELINE = 73;
+constexpr int16_t HOURLY_PRECIP_BASELINE = 94;
+constexpr int16_t HOURLY_PROBABILITY_BASELINE = 118;
+
 // The design capitalises weekday, month and condition. These come from Go's
 // time package and MET's legend, both ASCII, so a byte-wise fold is enough.
 // Pass a width to truncate rather than overrun.
@@ -269,6 +278,66 @@ int16_t drawWeather(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   drawRight(gfx, STYLE_META_WIDE, right, tokenBaseline, precipitation);
 
   return bandTop + WEATHER_HEIGHT;
+}
+
+int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
+  const int16_t bandTop = top + BAND_GAP;
+
+  for (uint8_t column = 0; column < model.hourCount; column++) {
+    const HourModel& hour = model.hours[column];
+
+    const int16_t left = CONTENT_X + column * HOUR_COLUMN_WIDTH;
+    const int16_t centre = left + HOUR_COLUMN_WIDTH / 2;
+
+    // Dividers sit between columns, never at the outer edges, and there is no
+    // rule above or below: the design lets the icons carry the row.
+    if (column > 0) {
+      gfx.fillRect(left, bandTop + HOURLY_PADDING, RULE_THIN,
+                   HOURLY_HEIGHT - HOURLY_PADDING, INK);
+    }
+
+    drawCentred(gfx, STYLE_META_WIDE, centre, bandTop + HOURLY_HOUR_BASELINE,
+                hour.label);
+
+    if (hour.icon != nullptr) {
+      gfx.drawBitmap(centre - HOUR_ICON_SIZE / 2, bandTop + HOURLY_ICON_TOP,
+                     hour.icon, HOUR_ICON_SIZE, HOUR_ICON_SIZE, INK);
+    }
+
+    if (hour.temperature != MISSING) {
+      char temperature[12];
+      snprintf(temperature, sizeof(temperature), "%d\xC2\xB0",
+               hour.temperature);
+      drawCentred(gfx, STYLE_TITLE, centre, bandTop + HOURLY_TEMP_BASELINE,
+                  temperature);
+    }
+
+    // A dry hour is a hyphen rather than a zero, so the eye skips it.
+    if (!std::isnan(hour.precipitation)) {
+      char precipitation[8];
+
+      if (hour.precipitation > 0.0f) {
+        snprintf(precipitation, sizeof(precipitation), "%.1f",
+                 static_cast<double>(hour.precipitation));
+      } else {
+        snprintf(precipitation, sizeof(precipitation), "-");
+      }
+
+      drawCentred(gfx, STYLE_META, centre, bandTop + HOURLY_PRECIP_BASELINE,
+                  precipitation);
+    }
+
+    // Probability is already suppressed below the floor during decoding, so a
+    // zero here means the slot stays empty.
+    if (hour.probability > 0) {
+      char probability[8];
+      snprintf(probability, sizeof(probability), "%d%%", hour.probability);
+      drawCentred(gfx, STYLE_META_WIDE, centre,
+                  bandTop + HOURLY_PROBABILITY_BASELINE, probability);
+    }
+  }
+
+  return bandTop + HOURLY_HEIGHT;
 }
 
 }  // namespace ui
