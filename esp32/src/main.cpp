@@ -39,8 +39,7 @@ void setup() {
 
   // One long sleep overnight, hourly the rest of the day. Without meta there
   // is no clock to decide on, so assume the short interval.
-  const bool overnight =
-      model.now.valid && model.now.hour == LONG_SLEEP_HOUR;
+  const bool overnight = model.now.valid && model.now.hour == LONG_SLEEP_HOUR;
 
   deepSleep(overnight ? LONG_SLEEP_TIME : SLEEP_TIME);
 }
