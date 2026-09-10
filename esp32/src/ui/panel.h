@@ -12,5 +12,6 @@ namespace ui {
 int16_t drawHeader(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
 int16_t drawReminder(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
 int16_t drawWeather(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
+int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top);
 
 }  // namespace ui
