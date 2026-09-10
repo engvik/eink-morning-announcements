@@ -78,8 +78,9 @@ ASCII = [chr(c) for c in range(0x20, 0x7F)]
 # Latin text plus the symbols that appear in running copy.
 TEXT_SET = ASCII + EXTRAS
 
-# The hero numerals only ever show digits and a degree sign.
-NUMERAL_SET = [chr(c) for c in range(0x30, 0x3A)] + ["°"]
+# The hero numerals show digits, a degree sign, and a minus for temperatures
+# below freezing.
+NUMERAL_SET = [chr(c) for c in range(0x30, 0x3A)] + ["-", "°"]
 
 # name, source, variable weight, pixel size, character set
 FONTS = [
