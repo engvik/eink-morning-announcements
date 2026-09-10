@@ -102,7 +102,7 @@ struct DisplayModel {
   uint8_t todayCount;
   uint8_t aheadCount;
 
-  int16_t todayTotal;  // may exceed todayCount; the header reports it
+  int16_t todayTotal;  // today's events, before the MAX_TODAY cap
   int16_t battery;     // percent
 };
 

@@ -151,5 +151,27 @@ int main() {
   ui::DisplayModel quiet = plain;
   quiet.reminder[0] = '\0';
 
-  return render("agenda-quiet.png", quiet, "4E no reminder");
+  if (render("agenda-quiet.png", quiet, "4E no reminder") != 0) {
+    return 1;
+  }
+
+  // Nothing on today: the whole TODAY section goes, and AHEAD takes the space.
+  ui::DisplayModel free_day;
+  ui::clear(free_day);
+  ui::decodeMeta(free_day, META);
+  ui::decodeWeather(free_day, WEATHER);
+  ui::decodeMessage(free_day, R"({"message":"Bins out before 07:00"})");
+  ui::decodeCalendar(free_day, R"({"total": 5, "events": [
+    {"start":"2026-09-27T17:30:00+02:00","end":"2026-09-27T18:30:00+02:00","title":"Juliett"},
+    {"start":"2026-09-28T08:00:00+02:00","end":"2026-09-28T09:00:00+02:00","title":"Kilo"},
+    {"start":"2026-09-29T11:00:00+02:00","end":"2026-09-29T12:00:00+02:00","title":"Lima"},
+    {"start":"2026-09-30T14:00:00+02:00","end":"2026-09-30T15:00:00+02:00","title":"Mike"},
+    {"start":"2026-10-01T08:15:00+02:00","end":"2026-10-01T09:00:00+02:00","title":"November"}]})");
+  std::strncpy(free_day.location, "OSLO", sizeof(free_day.location) - 1);
+  free_day.battery = 90;
+
+  printf("free day: todayCount=%d todayTotal=%d aheadCount=%d\n",
+         free_day.todayCount, free_day.todayTotal, free_day.aheadCount);
+
+  return render("agenda-free-day.png", free_day, "free day");
 }
