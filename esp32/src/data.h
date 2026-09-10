@@ -1,15 +1,9 @@
 #pragma once
 
-#include <Arduino_JSON.h>
-
 #include "http.h"
+#include "ui/view_model.h"
 
-struct DisplayData {
-  JSONVar calendar;
-  JSONVar message;
-  JSONVar meta;
-  JSONVar weather;
-  float battery = 0.0f;
-};
-
-DisplayData fetchDisplayData(BackendClient& backend);
+// Fetches the four endpoints and decodes them into the model.
+//
+// Returns false without meta, so the panel can keep its last good render.
+bool fetchDisplayData(BackendClient& backend, ui::DisplayModel& model);
