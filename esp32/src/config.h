@@ -45,22 +45,7 @@ inline constexpr float BATTERY_DIVIDER_RATIO = 2.0f;
 
 // Eink Display
 
-inline constexpr int X_DEFAULT_PADDING = 25;
-inline constexpr int Y_DEFAULT_PADDING = 20;
-inline constexpr int X_DEFAULT_SPACING = 50;
-inline constexpr int Y_DEFAULT_SPACING = 10;
-
-inline constexpr int BITMAP_SIZE = 50;
-
 inline constexpr const char* DISPLAY_LOCATION = CFG_DISPLAY_LOCATION;
-
-inline constexpr const char* ERROR_UPDATING = "Unable to update :-(";
-
-inline constexpr const char* MSG_EMPTY_MOTD = "No message today!";
-inline constexpr const char* MSG_EMPTY_CALENDAR = "Nothing going on today!";
-inline constexpr const char* MSG_EMPTY_WEATHER = "No weather reports today!";
-
-inline constexpr int TEXT_CUTOFF_THRESHOLD = 39;
 
 // HTTP Backend
 

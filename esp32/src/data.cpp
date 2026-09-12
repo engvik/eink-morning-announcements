@@ -6,6 +6,10 @@
 #include "config.h"
 #include "ui/decode.h"
 
+static_assert(sizeof(CFG_DISPLAY_LOCATION) <=
+                  sizeof(ui::DisplayModel::location),
+              "DISPLAY_LOCATION is too long for the footer");
+
 bool fetchDisplayData(BackendClient& backend, ui::DisplayModel& model) {
   ui::clear(model);
 
