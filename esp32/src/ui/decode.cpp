@@ -67,12 +67,7 @@ void copyClock(char* out, size_t capacity, const char* timestamp) {
     return;
   }
 
-  // parseIso8601 already rejects out of range values, but the compiler cannot
-  // see that through int8_t and sizes the buffer for a negative sign.
-  const int hour = parsed.hour & 0x1F;
-  const int minute = parsed.minute & 0x3F;
-
-  snprintf(out, capacity, "%02d:%02d", hour, minute);
+  formatClock(out, capacity, parsed);
 }
 
 }  // namespace
@@ -173,7 +168,7 @@ void decodeWeather(DisplayModel& model, const char* json) {
       const cJSON* entry = cJSON_GetArrayItem(days, i);
       DayModel& day = model.days[model.dayCount];
 
-      copyString(day.date, sizeof(day.date), text(entry, "date"));
+      day.date = parseIso8601(text(entry, "date"));
       day.high = whole(entry, "air_temperature_max");
       day.precipitation = decimal(entry, "precipitation_amount");
 
@@ -200,7 +195,9 @@ void decodeWeather(DisplayModel& model, const char* json) {
 
       const DateTime at = parseIso8601(text(entry, "time"));
       if (at.valid) {
-        snprintf(hour.label, sizeof(hour.label), "%02d", at.hour & 0x1F);
+        char clock[6];
+        formatClock(clock, sizeof(clock), at);
+        copyString(hour.label, sizeof(hour.label), clock);  // HH of HH:MM
       }
 
       hour.temperature = whole(instant, "air_temperature");
@@ -242,25 +239,23 @@ void composeTitle(char* out, size_t capacity, const char* title,
 // 09:00, or 09:00-09:30 when the event has a distinct end on the same day.
 void composeTime(char* out, size_t capacity, const DateTime& start,
                  const DateTime& end) {
-  const int startHour = start.hour & 0x1F;
-  const int startMinute = start.minute & 0x3F;
+  formatClock(out, capacity, start);
 
   const bool ranged = end.valid && sameDay(start, end) &&
                       (end.hour != start.hour || end.minute != start.minute);
 
-  if (!ranged) {
-    snprintf(out, capacity, "%02d:%02d", startHour, startMinute);
+  if (!ranged || capacity < 12) {
     return;
   }
 
-  snprintf(out, capacity, "%02d:%02d-%02d:%02d", startHour, startMinute,
-           end.hour & 0x1F, end.minute & 0x3F);
+  out[5] = '-';
+  formatClock(out + 6, capacity - 6, end);
 }
 
 // Looks up a day bucket by date, for the AHEAD summary.
-const DayModel* findDay(const DisplayModel& model, const char* date) {
+const DayModel* findDay(const DisplayModel& model, const DateTime& date) {
   for (uint8_t i = 0; i < model.dayCount; i++) {
-    if (std::strcmp(model.days[i].date, date) == 0) {
+    if (sameDay(model.days[i].date, date)) {
       return &model.days[i];
     }
   }
@@ -270,15 +265,7 @@ const DayModel* findDay(const DisplayModel& model, const char* date) {
 
 void composeSummary(char* out, size_t capacity, const DisplayModel& model,
                     const DateTime& start) {
-  // Masked for the same reason as the clock fields: parseIso8601 has already
-  // range checked these, but the compiler only sees int8_t.
-  char date[11];
-  snprintf(date, sizeof(date), "%04u-%02u-%02u",
-           static_cast<unsigned>(start.year) % 10000,
-           static_cast<unsigned>(start.month) % 100,
-           static_cast<unsigned>(start.day) % 100);
-
-  const DayModel* day = findDay(model, date);
+  const DayModel* day = findDay(model, start);
 
   if (day == nullptr) {
     out[0] = '\0';
@@ -404,8 +391,7 @@ void decodeCalendar(DisplayModel& model, const char* json) {
 
     snprintf(ahead.day, sizeof(ahead.day), "%s %d", weekdayAbbrev(start),
              start.day);
-    snprintf(ahead.time, sizeof(ahead.time), "%02d:%02d", start.hour & 0x1F,
-             start.minute & 0x3F);
+    formatClock(ahead.time, sizeof(ahead.time), start);
 
     composeTitle(ahead.title, sizeof(ahead.title), title, location);
     composeSummary(ahead.summary, sizeof(ahead.summary), model, start);

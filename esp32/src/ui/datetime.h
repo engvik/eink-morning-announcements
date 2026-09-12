@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 // Dates as the backend sends them. Timestamps arrive as RFC3339 already
@@ -24,6 +25,9 @@ DateTime parseIso8601(const char* text);
 int16_t daysBetween(const DateTime& a, const DateTime& b);
 
 bool sameDay(const DateTime& a, const DateTime& b);
+
+// Writes HH:MM. Needs a capacity of 6; writes an empty string if smaller.
+void formatClock(char* out, size_t capacity, const DateTime& time);
 
 // Three letter upper case weekday, for the AHEAD column. Empty if invalid.
 const char* weekdayAbbrev(const DateTime& date);
