@@ -18,7 +18,7 @@ constexpr int16_t MISSING = INT16_MIN;
 
 constexpr size_t MAX_TITLE = 64;
 constexpr size_t MAX_TODAY = 20;
-constexpr size_t MAX_AHEAD = 8;
+constexpr size_t MAX_AHEAD = 16;
 constexpr size_t MAX_RUNNING = 4;
 constexpr size_t MAX_HOURS = 5;
 constexpr size_t RUNNING_DAYS = 4;
