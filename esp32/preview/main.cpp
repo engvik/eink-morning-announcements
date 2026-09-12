@@ -10,7 +10,6 @@
 #include "png.h"
 #include "ui/decode.h"
 #include "ui/panel.h"
-#include "ui/text.h"
 #include "ui/theme.h"
 
 namespace {
@@ -94,25 +93,9 @@ constexpr const char *CALENDAR = R"({"total": 9, "events": [
   {"start":"2026-10-02T17:00:00+02:00","end":"2026-10-02T18:00:00+02:00","title":"Oscar"},
   {"start":"2026-10-03T09:00:00+02:00","end":"2026-10-03T10:00:00+02:00","title":"Papa"}]})";
 
-int render(const char *path, const ui::DisplayModel &model,
-           const char *caption) {
+int render(const char *path, const ui::DisplayModel &model) {
   GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
-  canvas.fillScreen(ui::PAPER);
-
-  int16_t y = ui::drawHeader(canvas, model, ui::PADDING);
-  y = ui::drawReminder(canvas, model, y);
-  y = ui::drawWeather(canvas, model, y);
-  y = ui::drawHourly(canvas, model, y);
-
-  const int16_t agendaTop = y + ui::AGENDA_GAP;
-
-  ui::drawAgenda(canvas, model, y);
-  ui::drawFooter(canvas, model);
-
-  const int16_t agendaBottom = ui::FOOTER_TOP - ui::AGENDA_GAP;
-
-  printf("%-16s agenda %3d..%d = %3dpx\n", caption, agendaTop, agendaBottom,
-         agendaBottom - agendaTop);
+  ui::drawPanel(canvas, model);
 
   return png::write(path, canvas.getBuffer(), ui::PANEL_WIDTH,
                     ui::PANEL_HEIGHT)
@@ -135,7 +118,7 @@ int main() {
   model.battery = 90;
 
   // 4C: events running across several days.
-  if (render("agenda-running.png", model, "4C running") != 0) {
+  if (render("agenda-running.png", model) != 0) {
     return 1;
   }
 
@@ -143,7 +126,7 @@ int main() {
   ui::DisplayModel plain = model;
   plain.runningCount = 0;
 
-  if (render("agenda-plain.png", plain, "4D no running") != 0) {
+  if (render("agenda-plain.png", plain) != 0) {
     return 1;
   }
 
@@ -151,7 +134,7 @@ int main() {
   ui::DisplayModel quiet = plain;
   quiet.reminder[0] = '\0';
 
-  if (render("agenda-quiet.png", quiet, "4E no reminder") != 0) {
+  if (render("agenda-quiet.png", quiet) != 0) {
     return 1;
   }
 
@@ -173,7 +156,7 @@ int main() {
   printf("free day: todayCount=%d todayTotal=%d aheadCount=%d\n",
          free_day.todayCount, free_day.todayTotal, free_day.aheadCount);
 
-  if (render("agenda-free-day.png", free_day, "free day") != 0) {
+  if (render("agenda-free-day.png", free_day) != 0) {
     return 1;
   }
 
@@ -182,7 +165,7 @@ int main() {
   today_only.runningCount = 0;
   today_only.aheadCount = 0;
 
-  if (render("agenda-today-only.png", today_only, "today only") != 0) {
+  if (render("agenda-today-only.png", today_only) != 0) {
     return 1;
   }
 
@@ -199,5 +182,5 @@ int main() {
   printf("empty:    running=%d today=%d ahead=%d\n", empty.runningCount,
          empty.todayCount, empty.aheadCount);
 
-  return render("agenda-empty.png", empty, "empty calendar");
+  return render("agenda-empty.png", empty);
 }
