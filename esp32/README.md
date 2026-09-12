@@ -27,6 +27,7 @@ Secrets are read from the environment
 - `WIFI_PASSWORD` - WiFi password
 - `BACKEND_HOST` - backend base URL, e.g. `http://192.168.1.1:8080`
 - `BACKEND_TOKEN` - optional value for the `Authorization` header
+- `DISPLAY_LOCATION` - place name in the footer, at most 15 characters
 
 ## Build and upload
 
@@ -38,4 +39,4 @@ From repository root folder: `task monitor-esp`
 
 ## Configuration
 
-Configuration is done in `config.cpp`.
+Configuration is done in `src/config.h`.
