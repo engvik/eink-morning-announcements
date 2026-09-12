@@ -29,29 +29,28 @@ constexpr int16_t REMINDER_LABEL_GAP = 12;
 constexpr int16_t REMINDER_BASELINE = 21;
 
 // Weather. The left block is the hero temperature over its summary line; the
-// right block is the icon and condition over three meta tokens.
-constexpr int16_t WEATHER_HERO_BASELINE = 55;
-constexpr int16_t WEATHER_DEGREE_BASELINE = 30;
-constexpr int16_t WEATHER_SUMMARY_BASELINE = 71;
+// right block is the icon and condition over three meta tokens. The icon sits
+// at the top of the band.
+constexpr int16_t WEATHER_HERO_BASELINE = 47;
+constexpr int16_t WEATHER_DEGREE_BASELINE = 22;
+constexpr int16_t WEATHER_SUMMARY_BASELINE = 63;
 constexpr int16_t WEATHER_BLOCK_GAP = 16;
 
-constexpr int16_t WEATHER_ICON_TOP = 8;
-constexpr int16_t WEATHER_CONDITION_BASELINE = 36;
-constexpr int16_t WEATHER_RULE_OFFSET = 60;
-constexpr int16_t WEATHER_TOKEN_BASELINE = 77;
+constexpr int16_t WEATHER_CONDITION_BASELINE = 28;
+constexpr int16_t WEATHER_RULE_OFFSET = 52;
+constexpr int16_t WEATHER_TOKEN_BASELINE = 69;
 constexpr int16_t WEATHER_ICON_GAP = 12;
 
 // The least space that must remain between the three meta tokens.
 constexpr int16_t TOKEN_GAP = 24;
 
-// The hourly strip. Everything is measured from the top of the band, which
-// begins with six pixels of padding before the first row of the columns.
-constexpr int16_t HOURLY_PADDING = 6;
-constexpr int16_t HOURLY_HOUR_BASELINE = 18;
-constexpr int16_t HOURLY_ICON_TOP = 27;
-constexpr int16_t HOURLY_TEMP_BASELINE = 73;
-constexpr int16_t HOURLY_PRECIP_BASELINE = 94;
-constexpr int16_t HOURLY_PROBABILITY_BASELINE = 118;
+// The hourly strip. Everything is measured from the top of the band, where the
+// column dividers start.
+constexpr int16_t HOURLY_HOUR_BASELINE = 12;
+constexpr int16_t HOURLY_ICON_TOP = 21;
+constexpr int16_t HOURLY_TEMP_BASELINE = 67;
+constexpr int16_t HOURLY_PRECIP_BASELINE = 88;
+constexpr int16_t HOURLY_PROBABILITY_BASELINE = 112;
 
 // The agenda. Rows are 20px, running rows 24, and text sits centred in them.
 constexpr int16_t AGENDA_META_BASELINE = 14;
@@ -241,8 +240,8 @@ int16_t drawWeather(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   const int16_t blockX = CONTENT_X + leftWidth + WEATHER_BLOCK_GAP;
 
   if (model.weather.icon != nullptr) {
-    gfx.drawBitmap(blockX, bandTop + WEATHER_ICON_TOP, model.weather.icon,
-                   HERO_ICON_SIZE, HERO_ICON_SIZE, INK);
+    gfx.drawBitmap(blockX, bandTop, model.weather.icon, HERO_ICON_SIZE,
+                   HERO_ICON_SIZE, INK);
   }
 
   const int16_t conditionX = blockX + HERO_ICON_SIZE + WEATHER_ICON_GAP;
@@ -328,8 +327,7 @@ int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
     // Dividers sit between columns, never at the outer edges, and there is no
     // rule above or below: the design lets the icons carry the row.
     if (column > 0) {
-      gfx.fillRect(left, bandTop + HOURLY_PADDING, RULE_THIN,
-                   HOURLY_HEIGHT - HOURLY_PADDING, INK);
+      gfx.fillRect(left, bandTop, RULE_THIN, HOURLY_HEIGHT, INK);
     }
 
     drawCentred(gfx, STYLE_META_WIDE, centre, bandTop + HOURLY_HOUR_BASELINE,

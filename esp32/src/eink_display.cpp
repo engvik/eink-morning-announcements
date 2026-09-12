@@ -37,6 +37,4 @@ void renderDisplay(const ui::DisplayModel& model) {
   render([&model](Adafruit_GFX& gfx) { ui::drawPanel(gfx, model); });
 }
 
-void renderCalibration() {
-  render(ui::drawCalibration);
-}
+void renderCalibration() { render(ui::drawCalibration); }
