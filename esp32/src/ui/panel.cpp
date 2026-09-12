@@ -379,7 +379,7 @@ int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
 // The agenda fills whatever is left between the band above it and the footer.
 // Today's events are laid out first and may consume all of it; only the
 // remainder goes to upcoming days, one line each.
-int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
+void drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   const int16_t agendaTop = top + AGENDA_GAP;
   const int16_t agendaBottom = FOOTER_TOP - AGENDA_GAP;
   const int16_t right = CONTENT_X + CONTENT_WIDTH;
@@ -468,7 +468,7 @@ int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   const int16_t limit = agendaBottom - AGENDA_SLACK;
 
   if (model.aheadCount == 0 || y + ROW_HEIGHT + ROW_GAP + ROW_HEIGHT > limit) {
-    return FOOTER_TOP;
+    return;
   }
 
   drawSection(gfx, y, "AHEAD", nullptr, right);
@@ -501,8 +501,6 @@ int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
 
     y += ROW_HEIGHT + ROW_GAP;
   }
-
-  return FOOTER_TOP;
 }
 
 // Anchored to the bottom of the panel rather than following the agenda, so it
