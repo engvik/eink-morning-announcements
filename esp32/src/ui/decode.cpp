@@ -197,7 +197,8 @@ void decodeWeather(DisplayModel& model, const char* json) {
       if (at.valid) {
         char clock[6];
         formatClock(clock, sizeof(clock), at);
-        copyString(hour.label, sizeof(hour.label), clock);  // HH of HH:MM
+        std::memcpy(hour.label, clock, 2);  // HH of HH:MM
+        hour.label[2] = '\0';
       }
 
       hour.temperature = whole(instant, "air_temperature");
@@ -304,8 +305,8 @@ void decodeCalendar(DisplayModel& model, const char* json) {
 
   const int count = cJSON_GetArraySize(events);
 
-  // Events arrive sorted by start, so the first one seen for a day is its
-  // earliest, which is what an AHEAD row shows.
+  // Events arrive sorted by start. A day's label and weather go on its first
+  // AHEAD row only.
   int16_t lastAheadDay = 0;
 
   for (int i = 0; i < count; i++) {
@@ -378,21 +379,22 @@ void decodeCalendar(DisplayModel& model, const char* json) {
       continue;
     }
 
-    // One AHEAD row per upcoming day, showing that day's first event.
-    if (offset <= lastAheadDay || model.aheadCount >= MAX_AHEAD) {
+    if (model.aheadCount >= MAX_AHEAD) {
       continue;
     }
 
-    lastAheadDay = offset;
-
     AheadModel& ahead = model.ahead[model.aheadCount];
 
-    snprintf(ahead.day, sizeof(ahead.day), "%s %d", weekdayAbbrev(start),
-             start.day);
-    formatClock(ahead.time, sizeof(ahead.time), start);
+    if (offset != lastAheadDay) {
+      snprintf(ahead.day, sizeof(ahead.day), "%s %d", weekdayAbbrev(start),
+               start.day);
+      composeSummary(ahead.summary, sizeof(ahead.summary), model, start);
 
+      lastAheadDay = offset;
+    }
+
+    formatClock(ahead.time, sizeof(ahead.time), start);
     composeTitle(ahead.title, sizeof(ahead.title), title, location);
-    composeSummary(ahead.summary, sizeof(ahead.summary), model, start);
 
     model.aheadCount++;
   }

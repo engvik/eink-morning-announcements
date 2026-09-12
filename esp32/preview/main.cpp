@@ -87,6 +87,7 @@ constexpr const char *CALENDAR = R"({"total": 9, "events": [
    "title":"India, with a title long enough to need clipping in its own column"},
   {"start":"2026-09-27T17:30:00+02:00","end":"2026-09-27T18:30:00+02:00","title":"Juliett"},
   {"start":"2026-09-28T08:00:00+02:00","end":"2026-09-28T09:00:00+02:00","title":"Kilo"},
+  {"start":"2026-09-28T12:00:00+02:00","end":"2026-09-28T13:00:00+02:00","title":"Kilo follow-up"},
   {"start":"2026-09-29T11:00:00+02:00","end":"2026-09-29T12:00:00+02:00","title":"Lima"},
   {"start":"2026-09-30T14:00:00+02:00","end":"2026-09-30T15:00:00+02:00","title":"Mike"},
   {"start":"2026-10-01T08:15:00+02:00","end":"2026-10-01T09:00:00+02:00","title":"November"},
@@ -147,6 +148,7 @@ int main() {
   ui::decodeCalendar(free_day, R"({"total": 5, "events": [
     {"start":"2026-09-27T17:30:00+02:00","end":"2026-09-27T18:30:00+02:00","title":"Juliett"},
     {"start":"2026-09-28T08:00:00+02:00","end":"2026-09-28T09:00:00+02:00","title":"Kilo"},
+    {"start":"2026-09-28T12:00:00+02:00","end":"2026-09-28T13:00:00+02:00","title":"Kilo follow-up"},
     {"start":"2026-09-29T11:00:00+02:00","end":"2026-09-29T12:00:00+02:00","title":"Lima"},
     {"start":"2026-09-30T14:00:00+02:00","end":"2026-09-30T15:00:00+02:00","title":"Mike"},
     {"start":"2026-10-01T08:15:00+02:00","end":"2026-10-01T09:00:00+02:00","title":"November"}]})");
