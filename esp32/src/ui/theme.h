@@ -43,9 +43,31 @@ struct TextStyle {
 constexpr int16_t PANEL_WIDTH = 480;
 constexpr int16_t PANEL_HEIGHT = 800;
 
-constexpr int16_t PADDING = 20;
-constexpr int16_t CONTENT_X = PADDING;
-constexpr int16_t CONTENT_WIDTH = PANEL_WIDTH - PADDING * 2;  // 440
+constexpr int16_t DEFAULT_PADDING = 20;
+
+// Parses a DISPLAY_PADDING_* value: empty gives the default, non-digits give -1.
+constexpr int16_t parseInset(const char* value) {
+  if (*value == '\0') return DEFAULT_PADDING;
+  int16_t inset = 0;
+  for (; *value != '\0'; value++) {
+    if (*value < '0' || *value > '9') return -1;
+    inset = inset * 10 + (*value - '0');
+  }
+  return inset;
+}
+
+// Per-edge insets, so the content clears the frame's mat.
+constexpr int16_t PADDING_TOP = parseInset(CFG_DISPLAY_PADDING_TOP);
+constexpr int16_t PADDING_RIGHT = parseInset(CFG_DISPLAY_PADDING_RIGHT);
+constexpr int16_t PADDING_BOTTOM = parseInset(CFG_DISPLAY_PADDING_BOTTOM);
+constexpr int16_t PADDING_LEFT = parseInset(CFG_DISPLAY_PADDING_LEFT);
+static_assert(PADDING_TOP >= 0, "DISPLAY_PADDING_TOP must be a whole number");
+static_assert(PADDING_RIGHT >= 0, "DISPLAY_PADDING_RIGHT must be a whole number");
+static_assert(PADDING_BOTTOM >= 0, "DISPLAY_PADDING_BOTTOM must be a whole number");
+static_assert(PADDING_LEFT >= 0, "DISPLAY_PADDING_LEFT must be a whole number");
+
+constexpr int16_t CONTENT_X = PADDING_LEFT;
+constexpr int16_t CONTENT_WIDTH = PANEL_WIDTH - PADDING_LEFT - PADDING_RIGHT;  // 440 by default
 
 constexpr int16_t RULE_THIN = 1;
 constexpr int16_t RULE_THICK = 3;
@@ -59,7 +81,7 @@ constexpr int16_t FOOTER_HEIGHT = 28;
 
 // The footer is anchored to the bottom, so the agenda gets whatever is left
 // between the band above it and this.
-constexpr int16_t FOOTER_TOP = PANEL_HEIGHT - PADDING - FOOTER_HEIGHT;  // 752
+constexpr int16_t FOOTER_TOP = PANEL_HEIGHT - PADDING_BOTTOM - FOOTER_HEIGHT;  // 752 by default
 
 constexpr int16_t BAND_GAP = 12;
 constexpr int16_t AGENDA_GAP = 8;
@@ -88,7 +110,9 @@ constexpr int16_t DAY_BOX_COUNT = 4;
 
 // The hourly strip: five columns filling the content width exactly.
 constexpr int16_t HOUR_COLUMNS = 5;
-constexpr int16_t HOUR_COLUMN_WIDTH = CONTENT_WIDTH / HOUR_COLUMNS;  // 88
+constexpr int16_t HOUR_COLUMN_WIDTH = CONTENT_WIDTH / HOUR_COLUMNS;  // 88 by default
+static_assert(CONTENT_WIDTH % HOUR_COLUMNS == 0,
+              "DISPLAY_PADDING_LEFT + DISPLAY_PADDING_RIGHT must be a multiple of 5");
 constexpr int16_t HOUR_ICON_SIZE = 24;
 constexpr int16_t HERO_ICON_SIZE = 44;
 

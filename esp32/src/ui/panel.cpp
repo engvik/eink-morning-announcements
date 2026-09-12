@@ -550,7 +550,7 @@ void drawFooter(Adafruit_GFX& gfx, const DisplayModel& model) {
 void drawPanel(Adafruit_GFX& gfx, const DisplayModel& model) {
   gfx.fillScreen(PAPER);
 
-  int16_t y = drawHeader(gfx, model, PADDING);
+  int16_t y = drawHeader(gfx, model, PADDING_TOP);
   y = drawReminder(gfx, model, y);
   y = drawWeather(gfx, model, y);
   y = drawHourly(gfx, model, y);

@@ -33,6 +33,7 @@ esp32/.vscode/*
 # host preview build
 esp32/preview/preview
 esp32/preview/*.png
+esp32/preview/.insets
 
 # sources fetched on demand by the generators in esp32/tools
 esp32/tools/.fonts
