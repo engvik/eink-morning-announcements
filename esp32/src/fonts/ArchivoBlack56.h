@@ -238,11 +238,53 @@ const GFXglyph ArchivoBlack56Glyphs[] PROGMEM = {
     {0, 0, 0, 0, 0, 0},  // unused
     {0, 0, 0, 0, 0, 0},  // unused
     {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
+    {0, 0, 0, 0, 0, 0},  // unused
     {1566, 17, 17, 22, 3, -39},  // °
 };
 
 const GFXfont ArchivoBlack56 PROGMEM = {(uint8_t *)ArchivoBlack56Bitmaps,
                                 (GFXglyph *)ArchivoBlack56Glyphs, 0x2D,
-                                0x86, 62};
+                                0xB0, 62};
 
-// Approx. 2240 bytes
+// Approx. 2534 bytes

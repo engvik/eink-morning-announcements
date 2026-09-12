@@ -1,5 +1,7 @@
 #include "ui/text.h"
 
+#include "ui/glyph_map.h"
+
 // The ESP32 core supplies this. On the host, read the pointer as a pointer
 // rather than through pgm_read_dword, which puns it via unsigned long and
 // trips strict aliasing.
@@ -9,24 +11,6 @@
 
 namespace ui {
 namespace {
-
-struct Mapping {
-  uint32_t codepoint;
-  uint8_t index;
-};
-
-// Must match EXTRAS in tools/genfonts.py, in the same order.
-constexpr Mapping EXTRAS[] = {
-    {0x00E6, 0x7F},  // æ
-    {0x00F8, 0x80},  // ø
-    {0x00E5, 0x81},  // å
-    {0x00C6, 0x82},  // Æ
-    {0x00D8, 0x83},  // Ø
-    {0x00C5, 0x84},  // Å
-    {0x00B7, 0x85},  // ·
-    {0x00B0, 0x86},  // °
-    {0x2026, 0x87},  // ellipsis
-};
 
 constexpr uint32_t ELLIPSIS = 0x2026;
 
@@ -72,11 +56,13 @@ uint32_t decode(const char*& cursor) {
 // Maps a codepoint into the font's index space. Returns 0 when the font has no
 // glyph for it, which callers skip.
 uint8_t glyphIndex(uint32_t codepoint) {
-  if (codepoint >= 0x20 && codepoint < 0x7F) {
+  // ASCII and Latin-1 are stored at their own codepoints.
+  if ((codepoint >= 0x20 && codepoint < 0x7F) ||
+      (codepoint >= 0xA0 && codepoint <= 0xFF)) {
     return static_cast<uint8_t>(codepoint);
   }
 
-  for (const Mapping& mapping : EXTRAS) {
+  for (const GlyphMapping& mapping : EXTRA_GLYPHS) {
     if (mapping.codepoint == codepoint) {
       return mapping.index;
     }
