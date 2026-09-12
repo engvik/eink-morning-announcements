@@ -509,10 +509,10 @@ void drawFooter(Adafruit_GFX& gfx, const DisplayModel& model) {
 
   gfx.fillRect(CONTENT_X, FOOTER_TOP, CONTENT_WIDTH, RULE_THIN, INK);
 
-  char battery[12];
+  char battery[16];
   battery[0] = '\0';
 
-  if (model.battery > 0) {
+  if (model.battery != MISSING) {
     snprintf(battery, sizeof(battery), "BATT %d%%", model.battery);
   }
 

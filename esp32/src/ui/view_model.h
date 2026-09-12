@@ -51,7 +51,7 @@ struct HourModel {
   char label[3];              // hour of day, zero padded
   int16_t temperature = MISSING;
   float precipitation = NAN;  // zero draws as a hyphen
-  int16_t probability;  // below PROBABILITY_FLOOR draws as nothing
+  int16_t probability;        // below PROBABILITY_FLOOR draws as nothing
 };
 
 struct EventModel {
@@ -102,8 +102,8 @@ struct DisplayModel {
   uint8_t todayCount;
   uint8_t aheadCount;
 
-  int16_t todayTotal;  // today's events, before the MAX_TODAY cap
-  int16_t battery;     // percent
+  int16_t todayTotal;         // today's events, before the MAX_TODAY cap
+  int16_t battery = MISSING;  // percent
 };
 
 }  // namespace ui
