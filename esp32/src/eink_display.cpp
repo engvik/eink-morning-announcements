@@ -4,6 +4,10 @@
 
 #include "config.h"
 #include "ui/panel.h"
+#include "ui/theme.h"
+
+static_assert(ui::INK == GxEPD_BLACK && ui::PAPER == GxEPD_WHITE,
+              "ui::INK and ui::PAPER must match GxEPD2's colours");
 
 namespace {
 

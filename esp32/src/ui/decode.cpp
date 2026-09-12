@@ -207,9 +207,7 @@ void decodeWeather(DisplayModel& model, const char* json) {
           rounded(number(oneHour, "probability_of_precipitation"));
 
       // Below the floor the slot stays empty, so dry hours read as dry.
-      hour.probability =
-          probability >= static_cast<int16_t>(PROBABILITY_FLOOR) ? probability
-                                                                 : 0;
+      hour.probability = probability >= PROBABILITY_FLOOR ? probability : 0;
 
       const WeatherSymbol* symbol = findSymbol(text(oneHour, "symbol_code"));
       if (symbol != nullptr) {
@@ -381,7 +379,7 @@ void decodeCalendar(DisplayModel& model, const char* json) {
     }
 
     // One AHEAD row per upcoming day, showing that day's first event.
-    if (offset == lastAheadDay || model.aheadCount >= MAX_AHEAD) {
+    if (offset <= lastAheadDay || model.aheadCount >= MAX_AHEAD) {
       continue;
     }
 

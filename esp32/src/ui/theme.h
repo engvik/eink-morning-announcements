@@ -8,10 +8,6 @@
 #include "fonts/MonoRegular13.h"
 #include "fonts/MonoSemiBold15.h"
 
-#ifndef PREVIEW_HOST
-#include <GxEPD2_BW.h>
-#endif
-
 namespace ui {
 
 // GxEPD2 and GFXcanvas1 disagree about what a colour value means: the panel
@@ -21,8 +17,9 @@ namespace ui {
 constexpr uint16_t INK = 1;
 constexpr uint16_t PAPER = 0;
 #else
-constexpr uint16_t INK = GxEPD_BLACK;
-constexpr uint16_t PAPER = GxEPD_WHITE;
+// GxEPD_BLACK and GxEPD_WHITE, checked in eink_display.cpp.
+constexpr uint16_t INK = 0x0000;
+constexpr uint16_t PAPER = 0xFFFF;
 #endif
 
 struct Rect {
@@ -96,7 +93,7 @@ constexpr int16_t HOUR_ICON_SIZE = 24;
 constexpr int16_t HERO_ICON_SIZE = 44;
 
 // Precipitation probability is suppressed below this, so dry hours stay empty.
-constexpr float PROBABILITY_FLOOR = 10.0f;
+constexpr int16_t PROBABILITY_FLOOR = 10;
 
 // The five faces. Tracking is the design's em value at the face's size:
 // 0.16em of 13px rounds to 2, the 0.06-0.1em variants to 1, and the hero
