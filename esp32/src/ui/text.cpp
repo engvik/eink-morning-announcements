@@ -139,6 +139,7 @@ void draw(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
   gfx.setFont(style.font);
   gfx.setTextColor(colour);
   gfx.setTextSize(1);
+  gfx.setTextWrap(false);  // callers clip; a wrap would land at x=0
 
   for (size_t i = 0; i < count; i++) {
     gfx.setCursor(x, baseline);
@@ -201,6 +202,11 @@ void drawTruncated(Adafruit_GFX& gfx, const TextStyle& style, int16_t x,
 
   // Drop glyphs from the end until the ellipsis fits too.
   while (count > 0 && widthOf(style, glyphs, count) + reserved > width) {
+    count--;
+  }
+
+  // Drop trailing spaces so the ellipsis sits against the last word.
+  while (count > 0 && glyphs[count - 1] == ' ') {
     count--;
   }
 
