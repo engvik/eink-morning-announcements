@@ -122,9 +122,8 @@ int16_t drawHeader(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
             model.header.weekday);
 
   // The numerals and the month share a baseline, as they do in the design.
-  char date[4];
-  snprintf(date, sizeof(date), "%u",
-           static_cast<unsigned>(model.header.date) % 100);
+  char date[8];
+  snprintf(date, sizeof(date), "%d", model.header.date);
 
   const int16_t baseline = top + HEADER_NUMERAL_BASELINE;
 
@@ -153,8 +152,7 @@ int16_t drawHeader(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
 
   metaBaseline += HEADER_META_STEP;
 
-  snprintf(line, sizeof(line), "WEEK %u",
-           static_cast<unsigned>(model.header.week) % 100);
+  snprintf(line, sizeof(line), "WEEK %d", model.header.week);
   drawRight(gfx, STYLE_META, right, metaBaseline, line);
 
   // The rule is the band's bottom edge, inside its height.

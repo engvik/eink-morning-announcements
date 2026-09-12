@@ -69,7 +69,7 @@ struct AheadModel {
 
 // A day's weather, used to summarise the AHEAD rows.
 struct DayModel {
-  char date[11];  // YYYY-MM-DD, as the backend buckets them
+  DateTime date;  // as the backend buckets them
   int16_t high = MISSING;
   float precipitation = NAN;
 };

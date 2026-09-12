@@ -112,6 +112,23 @@ bool sameDay(const DateTime& a, const DateTime& b) {
          a.day == b.day;
 }
 
+void formatClock(char* out, size_t capacity, const DateTime& time) {
+  if (capacity < 6) {
+    if (capacity > 0) {
+      out[0] = '\0';
+    }
+
+    return;
+  }
+
+  out[0] = static_cast<char>('0' + time.hour / 10);
+  out[1] = static_cast<char>('0' + time.hour % 10);
+  out[2] = ':';
+  out[3] = static_cast<char>('0' + time.minute / 10);
+  out[4] = static_cast<char>('0' + time.minute % 10);
+  out[5] = '\0';
+}
+
 char weekdayLetter(const DateTime& date, int16_t offset) {
   if (!date.valid) {
     return ' ';
