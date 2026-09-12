@@ -34,6 +34,14 @@
       '';
     };
 
+    calibrate-esp = {
+      description = "Upload firmware that draws rulers for sizing DISPLAY_PADDING_*";
+      exec = ''
+        cd "$DEVENV_ROOT/esp32"
+        pio run -e calibrate --target upload
+      '';
+    };
+
     monitor-esp = {
       description = "Attach to the esp32 serial monitor";
       exec = ''

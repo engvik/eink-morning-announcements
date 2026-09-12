@@ -14,6 +14,14 @@
 void setup() {
   Serial.begin(SERIAL_BAUD);
 
+#ifdef CALIBRATE_FRAME
+  // The rulers stay on the panel, so draw once and sleep until reset.
+  Serial.println("Drawing calibration ..");
+  renderCalibration();
+  Serial.flush();
+  esp_deep_sleep_start();
+#endif
+
   Serial.println("Setting up WiFi ..");
 
   if (!initWiFi()) {

@@ -35,6 +35,15 @@ Secrets are read from the environment
 
 From repository root folder: `task upload-esp`
 
+## Fitting a frame
+
+From repository root folder: `calibrate-esp`
+
+This flashes firmware that draws a ruler at the middle of each edge instead of
+the dashboard. Put the panel in the frame, note the first visible tick on each
+edge, and set `DISPLAY_PADDING_*` to that plus the margin you want. Then run
+`upload-esp` to restore the dashboard.
+
 ## Monitor
 
 From repository root folder: `task monitor-esp`

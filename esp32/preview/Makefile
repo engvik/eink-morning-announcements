@@ -25,6 +25,7 @@ DEPS := main.cpp png.h shim/Arduino.h shim/Print.h .insets \
         ../src/icons/met_icons_black_24x24.cpp ../src/icons/met_icons_black_44x44.cpp \
         ../src/icons/symbols.cpp ../src/icons/symbols.h ../src/icons/symbols_table.h \
         ../src/ui/panel.cpp ../src/ui/panel.h ../src/ui/decode.cpp ../src/ui/datetime.cpp \
+        ../src/ui/calibration.cpp ../src/ui/calibration.h \
 
 
 .PHONY: all run clean
@@ -41,6 +42,7 @@ $(OUT): $(DEPS)
 		../src/icons/met_icons_black_44x44.cpp \
 		../src/icons/symbols.cpp \
 		../src/ui/panel.cpp ../src/ui/decode.cpp ../src/ui/datetime.cpp \
+		../src/ui/calibration.cpp \
 		"$(JSON)/cjson/cJSON.c" \
 		"$(GFX)/Adafruit_GFX.cpp"
 

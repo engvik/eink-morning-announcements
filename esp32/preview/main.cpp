@@ -8,6 +8,7 @@
 #include <string>
 
 #include "png.h"
+#include "ui/calibration.h"
 #include "ui/decode.h"
 #include "ui/panel.h"
 #include "ui/theme.h"
@@ -94,14 +95,23 @@ constexpr const char *CALENDAR = R"({"total": 9, "events": [
   {"start":"2026-10-02T17:00:00+02:00","end":"2026-10-02T18:00:00+02:00","title":"Oscar"},
   {"start":"2026-10-03T09:00:00+02:00","end":"2026-10-03T10:00:00+02:00","title":"Papa"}]})";
 
-int render(const char *path, const ui::DisplayModel &model) {
-  GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
-  ui::drawPanel(canvas, model);
-
+int save(const char *path, GFXcanvas1 &canvas) {
   return png::write(path, canvas.getBuffer(), ui::PANEL_WIDTH,
                     ui::PANEL_HEIGHT)
              ? 0
              : 1;
+}
+
+int render(const char *path, const ui::DisplayModel &model) {
+  GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
+  ui::drawPanel(canvas, model);
+  return save(path, canvas);
+}
+
+int renderCalibration(const char *path) {
+  GFXcanvas1 canvas(ui::PANEL_WIDTH, ui::PANEL_HEIGHT);
+  ui::drawCalibration(canvas);
+  return save(path, canvas);
 }
 
 }  // namespace
@@ -184,5 +194,10 @@ int main() {
   printf("empty:    running=%d today=%d ahead=%d\n", empty.runningCount,
          empty.todayCount, empty.aheadCount);
 
-  return render("agenda-empty.png", empty);
+  if (render("agenda-empty.png", empty) != 0) {
+    return 1;
+  }
+
+  // What the calibrate env draws on the device.
+  return renderCalibration("calibration.png");
 }

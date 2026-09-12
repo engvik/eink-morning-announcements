@@ -3,6 +3,7 @@
 #include <GxEPD2_BW.h>
 
 #include "config.h"
+#include "ui/calibration.h"
 #include "ui/panel.h"
 #include "ui/theme.h"
 
@@ -16,17 +17,26 @@ namespace {
 GxEPD2_BW<GxEPD2_750_T7, GxEPD2_750_T7::HEIGHT> panel(
     GxEPD2_750_T7(PIN_CS, PIN_DC, PIN_RST, PIN_BUSY));
 
-}  // namespace
-
-void renderDisplay(const ui::DisplayModel& model) {
+template <typename Draw>
+void render(Draw draw) {
   panel.init(SERIAL_BAUD, true, 2, false);
   panel.setRotation(1);
   panel.setFullWindow();
   panel.firstPage();
 
   do {
-    ui::drawPanel(panel, model);
+    draw(panel);
   } while (panel.nextPage());
 
   panel.hibernate();
+}
+
+}  // namespace
+
+void renderDisplay(const ui::DisplayModel& model) {
+  render([&model](Adafruit_GFX& gfx) { ui::drawPanel(gfx, model); });
+}
+
+void renderCalibration() {
+  render(ui::drawCalibration);
 }
