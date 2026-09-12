@@ -6,28 +6,27 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/server"
 )
 
 type service interface {
 	GetWeatherForecasts(context.Context) (Forecasts, error)
 }
 
-func NewHTTPHandler(cfg *config.Config, s service) http.Handler {
-	r := chi.NewRouter()
-
-	h := &handler{service: s, numForecasts: cfg.WeatherFetchEorecasts}
-
-	r.Get("/", h.getWeatherForecasts)
-
-	return r
+func NewHTTPHandler(cfg *config.Config, s service) *Handler {
+	return &Handler{service: s, numForecasts: cfg.WeatherFetchEorecasts}
 }
 
-type handler struct {
+type Handler struct {
 	service      service
 	numForecasts int
+}
+
+func (h *Handler) Routes() []server.Route {
+	return []server.Route{
+		{Method: http.MethodGet, Path: "/weather", Handler: h.getWeatherForecasts},
+	}
 }
 
 // response carries the next few hours for the hourly strip, plus per-day
@@ -37,7 +36,7 @@ type response struct {
 	Days      []Day     `json:"days"`
 }
 
-func (h *handler) getWeatherForecasts(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getWeatherForecasts(w http.ResponseWriter, r *http.Request) {
 	forecasts, err := h.service.GetWeatherForecasts(r.Context())
 	if err != nil {
 		log.Printf("error getting forecasts: %s\n", err)

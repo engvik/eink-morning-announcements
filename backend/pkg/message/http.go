@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/engvik/eink-morning-announcements/backend/internal/server"
 )
 
 var ErrNoMessages = errors.New("No messages")
@@ -17,22 +17,22 @@ type service interface {
 	GetMessage(context.Context) (Message, error)
 }
 
-func NewHTTPHandler(s service) http.Handler {
-	r := chi.NewRouter()
-
-	h := &handler{service: s}
-
-	r.Get("/", h.getMessage)
-	r.Post("/", h.setMessage)
-
-	return r
+func NewHTTPHandler(s service) *Handler {
+	return &Handler{service: s}
 }
 
-type handler struct {
+type Handler struct {
 	service service
 }
 
-func (h *handler) getMessage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Routes() []server.Route {
+	return []server.Route{
+		{Method: http.MethodGet, Path: "/message", Handler: h.getMessage, Public: true},
+		{Method: http.MethodPost, Path: "/message", Handler: h.setMessage, Public: true},
+	}
+}
+
+func (h *Handler) getMessage(w http.ResponseWriter, r *http.Request) {
 	message, err := h.service.GetMessage(r.Context())
 	if errors.Is(err, ErrNoMessages) {
 		w.WriteHeader(http.StatusNotFound)
@@ -59,7 +59,7 @@ func (h *handler) getMessage(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-func (h *handler) setMessage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) setMessage(w http.ResponseWriter, r *http.Request) {
 	var m Message
 
 	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {

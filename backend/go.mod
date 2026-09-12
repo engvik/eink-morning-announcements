@@ -4,8 +4,6 @@ go 1.25.0
 
 require (
 	github.com/arran4/golang-ical v0.3.2
-	github.com/go-chi/chi/v5 v5.2.4
-	github.com/go-chi/cors v1.2.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/teambition/rrule-go v1.8.2
 	golang.org/x/sync v0.22.0

@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/server"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
 )
 
@@ -16,22 +15,22 @@ type service interface {
 	GetSun(context.Context) (weather.Sun, error)
 }
 
-func NewHTTPHandler(cfg *config.Config, s service) http.Handler {
-	r := chi.NewRouter()
-
-	h := &handler{location: cfg.Location, service: s}
-
-	r.Get("/", h.getMeta)
-
-	return r
+func NewHTTPHandler(cfg *config.Config, s service) *Handler {
+	return &Handler{location: cfg.Location, service: s}
 }
 
-type handler struct {
+type Handler struct {
 	location string
 	service  service
 }
 
-func (h *handler) getMeta(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Routes() []server.Route {
+	return []server.Route{
+		{Method: http.MethodGet, Path: "/meta", Handler: h.getMeta},
+	}
+}
+
+func (h *Handler) getMeta(w http.ResponseWriter, r *http.Request) {
 	sun, err := h.service.GetSun(r.Context())
 	if err != nil {
 		log.Printf("error getting sun: %s\n", err)

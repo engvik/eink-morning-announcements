@@ -6,28 +6,27 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
+	"github.com/engvik/eink-morning-announcements/backend/internal/server"
 )
 
 type service interface {
 	GetCalendarEvents(context.Context) (Events, error)
 }
 
-func NewHTTPHandler(cfg *config.Config, s service) http.Handler {
-	r := chi.NewRouter()
-
-	h := &handler{service: s, numEvents: cfg.CalendarFetchEvents}
-
-	r.Get("/", h.getCalendarEvents)
-
-	return r
+func NewHTTPHandler(cfg *config.Config, s service) *Handler {
+	return &Handler{service: s, numEvents: cfg.CalendarFetchEvents}
 }
 
-type handler struct {
+type Handler struct {
 	service   service
 	numEvents int
+}
+
+func (h *Handler) Routes() []server.Route {
+	return []server.Route{
+		{Method: http.MethodGet, Path: "/calendar", Handler: h.getCalendarEvents},
+	}
 }
 
 // response carries the next few events, plus how many are upcoming in total so
@@ -37,7 +36,7 @@ type response struct {
 	Total  int    `json:"total"`
 }
 
-func (h *handler) getCalendarEvents(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getCalendarEvents(w http.ResponseWriter, r *http.Request) {
 	events, err := h.service.GetCalendarEvents(r.Context())
 	if err != nil {
 		log.Printf("error getting events: %s\n", err)

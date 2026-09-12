@@ -3,22 +3,11 @@ package transport
 import (
 	"net/http"
 	"strings"
-
-	"github.com/go-chi/cors"
 )
 
-func NewAuthMiddleware(auth string, allowUnauthenticated []string) func(next http.Handler) http.Handler {
+func NewAuthMiddleware(auth string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			endpoint := r.URL.String()
-
-			for _, allowed := range allowUnauthenticated {
-				if allowed == endpoint {
-					next.ServeHTTP(w, r)
-					return
-				}
-			}
-
 			splitHeader := strings.Split(r.Header.Get("Authorization"), "Bearer")
 
 			if len(splitHeader) != 2 {
@@ -38,21 +27,33 @@ func NewAuthMiddleware(auth string, allowUnauthenticated []string) func(next htt
 	}
 }
 
+const (
+	corsAllowedOrigin  = "http://localhost:5173"
+	corsAllowedMethods = "GET, POST, OPTIONS"
+	corsAllowedHeaders = "Origin, Accept, Content-Type, If-None-Match"
+)
+
 func CORSHandler() func(next http.Handler) http.Handler {
-	return cors.Handler(cors.Options{
-		// Allow options requests to pass through to the middlewares
-		AllowedOrigins: []string{"http://localhost:5173"},
-		AllowedMethods: []string{
-			"GET",
-			"POST",
-			"OPTIONS",
-		},
-		// Default go-chi headers + our custom header for identifying source
-		AllowedHeaders: []string{
-			"Origin",
-			"Accept",
-			"Content-Type",
-			"If-None-Match",
-		},
-	})
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			preflight := r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != ""
+
+			w.Header().Add("Vary", "Origin")
+			if r.Header.Get("Origin") == corsAllowedOrigin {
+				w.Header().Set("Access-Control-Allow-Origin", corsAllowedOrigin)
+				if preflight {
+					w.Header().Set("Access-Control-Allow-Methods", corsAllowedMethods)
+					w.Header().Set("Access-Control-Allow-Headers", corsAllowedHeaders)
+				}
+			}
+
+			// Answer preflights here so they never reach auth
+			if preflight {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }

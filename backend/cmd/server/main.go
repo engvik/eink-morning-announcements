@@ -61,10 +61,10 @@ func main() {
 	s := server.New(&cfg)
 
 	// Mount routes
-	s.MountRoute("/api/calendar", calendarHandler)
-	s.MountRoute("/api/weather", weatherHandler)
-	s.MountRoute("/api/message", messageHandler)
-	s.MountRoute("/api/meta", metaHandler)
+	s.Mount("/api", calendarHandler.Routes())
+	s.Mount("/api", weatherHandler.Routes())
+	s.Mount("/api", messageHandler.Routes())
+	s.Mount("/api", metaHandler.Routes())
 
 	// Start background tasks
 	tasks.Start(ctx, calendarTask, weatherTask)

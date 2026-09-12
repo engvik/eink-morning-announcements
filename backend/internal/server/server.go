@@ -9,41 +9,53 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 	"github.com/engvik/eink-morning-announcements/backend/internal/transport"
 )
 
 type Server struct {
 	port   string
-	router *chi.Mux
+	router *http.ServeMux
+	auth   func(http.Handler) http.Handler
 	server *http.Server
 }
 
+// Route is a handler at Path relative to the prefix it is mounted under.
+type Route struct {
+	Method  string
+	Path    string
+	Handler http.HandlerFunc
+	Public  bool
+}
+
 func New(cfg *config.Config) *Server {
-	router := chi.NewRouter()
-	router.Use(transport.CORSHandler())
+	router := http.NewServeMux()
 
-	if cfg.Authorization != "" {
-		allowUnauthenticated := []string{
-			"/api/message",
-		}
-		router.Use(transport.NewAuthMiddleware(cfg.Authorization, allowUnauthenticated))
-	}
-
-	return &Server{
+	s := &Server{
 		port:   cfg.Port,
 		router: router,
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%s", cfg.Port),
-			Handler: router,
+			Handler: transport.CORSHandler()(router),
 		},
 	}
+
+	if cfg.Authorization != "" {
+		s.auth = transport.NewAuthMiddleware(cfg.Authorization)
+	}
+
+	return s
 }
 
-func (s *Server) MountRoute(path string, route http.Handler) {
-	s.router.Mount(path, route)
+func (s *Server) Mount(prefix string, routes []Route) {
+	for _, r := range routes {
+		var h http.Handler = r.Handler
+		if !r.Public && s.auth != nil {
+			h = s.auth(h)
+		}
+
+		s.router.Handle(r.Method+" "+prefix+r.Path, h)
+	}
 }
 
 func (s *Server) Serve(ctx context.Context) {
