@@ -112,8 +112,9 @@ void drawSection(Adafruit_GFX& gfx, int16_t rowTop, const char* label,
   }
 }
 
-}  // namespace
-
+// The panel is a stack of fixed bands, drawn top down. Each takes the y it
+// starts at and returns the y the next band starts at, so the reminder can
+// collapse without every band below it needing to know.
 int16_t drawHeader(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   const int16_t right = CONTENT_X + CONTENT_WIDTH;
 
@@ -377,6 +378,9 @@ int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   return bandTop + HOURLY_HEIGHT;
 }
 
+// The agenda fills whatever is left between the band above it and the footer.
+// Today's events are laid out first and may consume all of it; only the
+// remainder goes to upcoming days, one line each.
 int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   const int16_t agendaTop = top + AGENDA_GAP;
   const int16_t agendaBottom = FOOTER_TOP - AGENDA_GAP;
@@ -503,6 +507,8 @@ int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   return FOOTER_TOP;
 }
 
+// Anchored to the bottom of the panel rather than following the agenda, so it
+// sits in the same place whatever the agenda did.
 void drawFooter(Adafruit_GFX& gfx, const DisplayModel& model) {
   const int16_t right = CONTENT_X + CONTENT_WIDTH;
   const int16_t baseline = FOOTER_TOP + FOOTER_BASELINE;
@@ -541,6 +547,20 @@ void drawFooter(Adafruit_GFX& gfx, const DisplayModel& model) {
 
   drawLeft(gfx, STYLE_META_WIDE, CONTENT_X + locationWidth + slack / 2, baseline,
            battery);
+}
+
+}  // namespace
+
+void drawPanel(Adafruit_GFX& gfx, const DisplayModel& model) {
+  gfx.fillScreen(PAPER);
+
+  int16_t y = drawHeader(gfx, model, PADDING);
+  y = drawReminder(gfx, model, y);
+  y = drawWeather(gfx, model, y);
+  y = drawHourly(gfx, model, y);
+
+  drawAgenda(gfx, model, y);
+  drawFooter(gfx, model);
 }
 
 }  // namespace ui

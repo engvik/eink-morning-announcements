@@ -32,10 +32,7 @@ void setup() {
 
   Serial.println("Drawing ..");
 
-  EinkDisplay display;
-  display.init();
-  display.draw(model);
-  display.hibernate();
+  renderDisplay(model);
 
   // One long sleep overnight, hourly the rest of the day. Without meta there
   // is no clock to decide on, so assume the short interval.
