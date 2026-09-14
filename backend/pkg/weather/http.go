@@ -14,7 +14,7 @@ type service interface {
 	GetWeatherForecasts(context.Context) (Forecasts, error)
 }
 
-func NewHTTPHandler(cfg *config.Config, s service) *Handler {
+func NewHTTPHandlers(cfg *config.Config, s service) *Handler {
 	return &Handler{service: s, numForecasts: cfg.WeatherFetchEorecasts}
 }
 

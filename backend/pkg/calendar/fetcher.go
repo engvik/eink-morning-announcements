@@ -17,7 +17,7 @@ type Fetcher struct {
 	HTTP httpClient
 }
 
-func NewFetcher(http httpClient, cfg *config.Config) *Fetcher {
+func NewFetcher(cfg *config.Config, http httpClient) *Fetcher {
 	return &Fetcher{
 		URL:  cfg.CalendarURL,
 		HTTP: http,

@@ -37,10 +37,10 @@ func main() {
 	storage := storage.New(storageClient)
 
 	// Calendar
-	calendarFetcher := calendar.NewFetcher(httpClient, &cfg)
+	calendarFetcher := calendar.NewFetcher(&cfg, httpClient)
 	calendarParser := calendar.NewParser(&cfg)
 	calendarTask := calendar.NewTask(&cfg, storage, calendarFetcher, calendarParser)
-	calendarHandler := calendar.NewHTTPHandler(&cfg, storage)
+	calendarHandlers := calendar.NewHTTPHandlers(&cfg, storage)
 
 	// Weather
 	weatherFetcher, err := weather.NewFetcher(&cfg, httpClient)
@@ -49,22 +49,22 @@ func main() {
 	}
 
 	weatherTask := weather.NewTask(&cfg, weatherFetcher, storage)
-	weatherHandler := weather.NewHTTPHandler(&cfg, storage)
+	weatherHandlers := weather.NewHTTPHandlers(&cfg, storage)
 
 	// Message
-	messageHandler := message.NewHTTPHandler(storage)
+	messageHandlers := message.NewHTTPHandlers(storage)
 
 	// Meta
-	metaHandler := meta.NewHTTPHandler(&cfg, storage)
+	metaHandlers := meta.NewHTTPHandlers(&cfg, storage)
 
 	// Create HTTP server
 	s := server.New(&cfg)
 
 	// Mount routes
-	s.Mount("/api", calendarHandler.Routes())
-	s.Mount("/api", weatherHandler.Routes())
-	s.Mount("/api", messageHandler.Routes())
-	s.Mount("/api", metaHandler.Routes())
+	s.Mount("/api", calendarHandlers.Routes())
+	s.Mount("/api", weatherHandlers.Routes())
+	s.Mount("/api", messageHandlers.Routes())
+	s.Mount("/api", metaHandlers.Routes())
 
 	// Start background tasks
 	tasks.Start(ctx, calendarTask, weatherTask)

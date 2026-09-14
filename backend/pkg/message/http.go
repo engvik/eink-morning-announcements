@@ -17,7 +17,7 @@ type service interface {
 	GetMessage(context.Context) (Message, error)
 }
 
-func NewHTTPHandler(s service) *Handler {
+func NewHTTPHandlers(s service) *Handler {
 	return &Handler{service: s}
 }
 

@@ -15,7 +15,7 @@ type service interface {
 	GetSun(context.Context) (weather.Sun, error)
 }
 
-func NewHTTPHandler(cfg *config.Config, s service) *Handler {
+func NewHTTPHandlers(cfg *config.Config, s service) *Handler {
 	return &Handler{location: cfg.Location, service: s}
 }
 

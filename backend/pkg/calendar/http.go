@@ -14,7 +14,7 @@ type service interface {
 	GetCalendarEvents(context.Context) (Events, error)
 }
 
-func NewHTTPHandler(cfg *config.Config, s service) *Handler {
+func NewHTTPHandlers(cfg *config.Config, s service) *Handler {
 	return &Handler{service: s, numEvents: cfg.CalendarFetchEvents}
 }
 
