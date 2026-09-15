@@ -12,6 +12,7 @@ import (
 	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/message"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/meta"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/news"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/storage"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/tasks"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
@@ -51,6 +52,12 @@ func main() {
 	weatherTask := weather.NewTask(&cfg, weatherFetcher, storage)
 	weatherHandlers := weather.NewHTTPHandlers(&cfg, storage)
 
+	// News
+	newsFetcher := news.NewFetcher(httpClient)
+	newsParser := news.NewParser(&cfg)
+	newsTask := news.NewTask(&cfg, storage, newsFetcher, newsParser)
+	newsHandlers := news.NewHTTPHandlers(storage)
+
 	// Message
 	messageHandlers := message.NewHTTPHandlers(storage)
 
@@ -65,9 +72,10 @@ func main() {
 	s.Mount("/api", weatherHandlers.Routes())
 	s.Mount("/api", messageHandlers.Routes())
 	s.Mount("/api", metaHandlers.Routes())
+	s.Mount("/api", newsHandlers.Routes())
 
 	// Start background tasks
-	tasks.Start(ctx, calendarTask, weatherTask)
+	tasks.Start(ctx, calendarTask, weatherTask, newsTask)
 
 	// Start HTTP server
 	s.Serve(ctx)

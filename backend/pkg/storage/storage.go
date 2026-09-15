@@ -6,6 +6,7 @@ import (
 
 	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/message"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/news"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
 )
 
@@ -18,6 +19,8 @@ type store interface {
 	GetMessage(context.Context) (message.Message, error)
 	SetSun(context.Context, weather.Sun) error
 	GetSun(context.Context) (weather.Sun, error)
+	SetNews(context.Context, news.Items) error
+	GetNews(context.Context) (news.Items, error)
 }
 
 type Storage struct {
@@ -72,4 +75,16 @@ func (s *Storage) SetSun(ctx context.Context, sun weather.Sun) error {
 
 func (s *Storage) GetSun(ctx context.Context) (weather.Sun, error) {
 	return s.client.GetSun(ctx)
+}
+
+func (s *Storage) SetNews(ctx context.Context, items news.Items) error {
+	if len(items) == 0 {
+		return fmt.Errorf("no data")
+	}
+
+	return s.client.SetNews(ctx, items)
+}
+
+func (s *Storage) GetNews(ctx context.Context) (news.Items, error) {
+	return s.client.GetNews(ctx)
 }

@@ -8,18 +8,20 @@ import (
 
 	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/news"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/weather"
 )
 
-// Memory holds calendar events and weather forecasts. Both are re-fetchable
-// from their upstreams, so they are cached rather than persisted. Each fetch
-// replaces the previous set, which is also what keeps past entries from
-// accumulating.
+// Memory holds calendar events, weather forecasts and news. All are
+// re-fetchable from their upstreams, so they are cached rather than persisted.
+// Each fetch replaces the previous set, which is also what keeps past entries
+// from accumulating.
 type Memory struct {
 	mu        sync.RWMutex
 	events    calendar.Events
 	forecasts weather.Forecasts
 	sun       weather.Sun
+	news      news.Items
 
 	location *time.Location
 }
@@ -117,4 +119,22 @@ func (c *Memory) GetSun(_ context.Context) (weather.Sun, error) {
 	defer c.mu.RUnlock()
 
 	return c.sun, nil
+}
+
+// SetNews keeps the order it is given, which is the order the display shows.
+func (c *Memory) SetNews(_ context.Context, items news.Items) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.news = items
+
+	return nil
+}
+
+func (c *Memory) GetNews(_ context.Context) (news.Items, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	// Never nil, so the response is an empty list rather than null.
+	return append(make(news.Items, 0, len(c.news)), c.news...), nil
 }

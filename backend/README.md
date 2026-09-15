@@ -3,7 +3,7 @@
 The backend is a Go application that performs two things:
 
 1) Is a HTTP server serving an API for the frontend and the ESP32.
-2) Runs tasks to fetch forecasts and calendar events on a regular basis.
+2) Runs tasks to fetch forecasts, calendar events and news on a regular basis.
 
 ## Run locally
 
@@ -36,6 +36,11 @@ Get calendar events.
 
 Get weather forecasts.
 
+### GET /api/news
+
+Get the top headlines from the feeds in `NEWS_FEEDS`, interleaved so every feed
+leads with its top item.
+
 ### GET /api/message
 
 Get latest message.
@@ -59,8 +64,8 @@ weeks.
 
 Storage is split by whether the data can be fetched again.
 
-Calendar events and weather forecasts are a **cache**, both are re-fetchable
-from the ICS feed and MET, so they are held in memory (`storage.Memory`) and
+Calendar events, weather forecasts and news are a **cache**, all are
+re-fetchable from the ICS feed, MET and the news feeds, so they are held in memory (`storage.Memory`) and
 never persisted. Each fetch replaces the previous set, which is also what keeps
 past entries from piling up.
 
@@ -77,6 +82,8 @@ swap either half, implement the interface and compose your own:
     GetWeatherForecasts(context.Context) ([]weather.Forecast, error)
     SetMessage(context.Context, message.Message) error
     GetMessage(context.Context) (message.Message, error)
+    SetNews(context.Context, news.Items) error
+    GetNews(context.Context) (news.Items, error)
 ```
 
 ### Migrations

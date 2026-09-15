@@ -1,12 +1,13 @@
 module github.com/engvik/eink-morning-announcements/backend
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/arran4/golang-ical v0.3.2
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/teambition/rrule-go v1.8.2
-	golang.org/x/sync v0.22.0
+	golang.org/x/net v0.59.0
+	golang.org/x/sync v0.23.0
 	modernc.org/sqlite v1.58.0
 )
 
@@ -16,7 +17,8 @@ require (
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 	modernc.org/libc v1.75.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
