@@ -104,6 +104,7 @@ constexpr int16_t AGENDA_SLACK = 20;
 constexpr int16_t TODAY_TIME_WIDTH = 112;
 constexpr int16_t AHEAD_DAY_WIDTH = 62;
 constexpr int16_t AHEAD_TIME_WIDTH = 46;
+constexpr int16_t NEWS_SOURCE_WIDTH = 62;  // at most, narrower labels close up
 constexpr int16_t ROW_GUTTER = 12;
 
 // The RUNNING day strip.

@@ -402,4 +402,47 @@ void decodeCalendar(DisplayModel& model, const char* json) {
   cJSON_Delete(root);
 }
 
+void decodeNews(DisplayModel& model, const char* json) {
+  cJSON* root = cJSON_Parse(json);
+
+  if (root == nullptr) {
+    return;
+  }
+
+  const cJSON* items = field(root, "items");
+
+  if (!cJSON_IsArray(items)) {
+    cJSON_Delete(root);
+    return;
+  }
+
+  // Already in display order, top headline of each feed first.
+  const int count = cJSON_GetArraySize(items);
+
+  for (int i = 0; i < count && model.newsCount < MAX_NEWS; i++) {
+    const cJSON* entry = cJSON_GetArrayItem(items, i);
+    const char* title = text(entry, "title");
+
+    if (title == nullptr || title[0] == '\0') {
+      continue;
+    }
+
+    NewsModel& news = model.news[model.newsCount];
+
+    copyString(news.source, sizeof(news.source), text(entry, "source"));
+    copyString(news.title, sizeof(news.title), title);
+
+    // Labels come from backend config, so a byte-wise fold is enough.
+    for (char* c = news.source; *c != '\0'; c++) {
+      if (*c >= 'a' && *c <= 'z') {
+        *c = static_cast<char>(*c - 'a' + 'A');
+      }
+    }
+
+    model.newsCount++;
+  }
+
+  cJSON_Delete(root);
+}
+
 }  // namespace ui

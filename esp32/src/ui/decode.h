@@ -18,5 +18,6 @@ void decodeMeta(DisplayModel& model, const char* json);
 void decodeWeather(DisplayModel& model, const char* json);
 void decodeMessage(DisplayModel& model, const char* json);
 void decodeCalendar(DisplayModel& model, const char* json);
+void decodeNews(DisplayModel& model, const char* json);
 
 }  // namespace ui

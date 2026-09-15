@@ -38,6 +38,9 @@ bool fetchDisplayData(BackendClient& backend, ui::DisplayModel& model) {
   Serial.println("Fetching calendar data ..");
   const HttpResponse calendar = backend.get(BACKEND_CALENDAR_ENDPOINT);
 
+  Serial.println("Fetching news ..");
+  const HttpResponse news = backend.get(BACKEND_NEWS_ENDPOINT);
+
   // Weather first, it fills the day buckets the calendar summarises.
   if (weather.ok()) {
     ui::decodeWeather(model, weather.body.c_str());
@@ -49,6 +52,10 @@ bool fetchDisplayData(BackendClient& backend, ui::DisplayModel& model) {
 
   if (calendar.ok()) {
     ui::decodeCalendar(model, calendar.body.c_str());
+  }
+
+  if (news.ok()) {
+    ui::decodeNews(model, news.body.c_str());
   }
 
   std::strncpy(model.location, DISPLAY_LOCATION, sizeof(model.location) - 1);

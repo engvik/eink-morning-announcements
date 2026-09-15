@@ -95,6 +95,21 @@ constexpr const char *CALENDAR = R"({"total": 9, "events": [
   {"start":"2026-10-02T17:00:00+02:00","end":"2026-10-02T18:00:00+02:00","title":"Oscar"},
   {"start":"2026-10-03T09:00:00+02:00","end":"2026-10-03T10:00:00+02:00","title":"Papa"}]})";
 
+// Two feeds, already interleaved by the backend.
+constexpr const char *NEWS = R"({"items": [
+  {"source":"NRK","title":"Alpha headline"},
+  {"source":"BBC","title":"Bravo headline"},
+  {"source":"NRK","title":"Charlie headline, with a title long enough to need clipping"},
+  {"source":"BBC","title":"Delta headline"},
+  {"source":"NRK","title":"Echo headline with æøå"},
+  {"source":"BBC","title":"Foxtrot headline"},
+  {"source":"NRK","title":"Golf headline"},
+  {"source":"BBC","title":"Hotel headline"},
+  {"source":"NRK","title":"India headline"},
+  {"source":"BBC","title":"Juliett headline"},
+  {"source":"NRK","title":"Kilo headline"},
+  {"source":"BBC","title":"Lima headline"}]})";
+
 int save(const char *path, GFXcanvas1 &canvas) {
   return png::write(path, canvas.getBuffer(), ui::PANEL_WIDTH,
                     ui::PANEL_HEIGHT)
@@ -123,6 +138,7 @@ int main() {
   ui::decodeWeather(model, WEATHER);
   ui::decodeCalendar(model, CALENDAR);
   ui::decodeMessage(model, R"({"message":"Bins out before 07:00"})");
+  ui::decodeNews(model, NEWS);
 
   // Set on the device from config and the battery reading.
   std::strncpy(model.location, "OSLO", sizeof(model.location) - 1);
@@ -146,6 +162,16 @@ int main() {
   quiet.reminder[0] = '\0';
 
   if (render("agenda-quiet.png", quiet) != 0) {
+    return 1;
+  }
+
+  // 4F: a light calendar, so NEWS gets what AHEAD leaves.
+  ui::DisplayModel news = quiet;
+  news.todayCount = 3;
+  news.todayTotal = 3;
+  news.aheadCount = 3;
+
+  if (render("agenda-news.png", news) != 0) {
     return 1;
   }
 

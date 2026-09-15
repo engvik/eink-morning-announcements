@@ -10,7 +10,7 @@
 //
 // Everything is a fixed buffer rather than a pointer into the parsed JSON, so
 // the draw layer has no dependency on the parser and nothing to outlive. The
-// whole model is about 3 KB, against roughly 200 KB of free DRAM.
+// whole model is about 6 KB, against roughly 200 KB of free DRAM.
 namespace ui {
 
 // An absent reading, drawn as nothing. Floats use NAN.
@@ -23,6 +23,10 @@ constexpr size_t MAX_RUNNING = 4;
 constexpr size_t MAX_HOURS = 5;
 constexpr size_t RUNNING_DAYS = 4;
 constexpr size_t MAX_DAYS = 10;
+constexpr size_t MAX_NEWS = 16;
+
+// Headlines outrun MAX_TITLE, so they get room to clip on width instead.
+constexpr size_t MAX_HEADLINE = 128;
 
 struct HeaderModel {
   char weekday[16];
@@ -79,6 +83,11 @@ struct RunningModel {
   bool days[RUNNING_DAYS];  // which of the coming days it covers
 };
 
+struct NewsModel {
+  char source[16];  // upper case, as the design sets labels
+  char title[MAX_HEADLINE];
+};
+
 struct DisplayModel {
   HeaderModel header;
   WeatherModel weather;
@@ -87,6 +96,7 @@ struct DisplayModel {
   RunningModel running[MAX_RUNNING];
   EventModel today[MAX_TODAY];
   AheadModel ahead[MAX_AHEAD];
+  NewsModel news[MAX_NEWS];
 
   char reminder[MAX_TITLE];  // empty collapses the band
   char location[16];
@@ -101,6 +111,7 @@ struct DisplayModel {
   uint8_t runningCount;
   uint8_t todayCount;
   uint8_t aheadCount;
+  uint8_t newsCount;
 
   int16_t todayTotal;         // today's events, before the MAX_TODAY cap
   int16_t battery = MISSING;  // percent

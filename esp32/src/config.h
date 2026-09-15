@@ -55,6 +55,8 @@ inline constexpr const char* BACKEND_MESSAGE_ENDPOINT =
     CFG_BACKEND_HOST "/api/message";
 inline constexpr const char* BACKEND_META_ENDPOINT =
     CFG_BACKEND_HOST "/api/meta";
+inline constexpr const char* BACKEND_NEWS_ENDPOINT =
+    CFG_BACKEND_HOST "/api/news";
 inline constexpr const char* BACKEND_WEATHER_ENDPOINT =
     CFG_BACKEND_HOST "/api/weather";
 

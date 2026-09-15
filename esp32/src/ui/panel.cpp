@@ -58,6 +58,10 @@ constexpr int16_t AGENDA_TITLE_BASELINE = 15;
 constexpr int16_t AGENDA_RULE_OFFSET = 10;
 constexpr int16_t AGENDA_RULE_GAP = 8;
 
+// TODAY may run down to the footer's gap. AHEAD and NEWS stop short of it, so
+// the page keeps some breathing room.
+constexpr int16_t SECTION_LIMIT = FOOTER_TOP - AGENDA_GAP - AGENDA_SLACK;
+
 // The RUNNING strip: four day boxes with their headings above them.
 constexpr int16_t DAY_STRIP_WIDTH =
     DAY_BOX_COUNT * DAY_BOX_WIDTH + (DAY_BOX_COUNT - 1) * DAY_BOX_GAP;
@@ -374,10 +378,15 @@ int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   return bandTop + HOURLY_HEIGHT;
 }
 
+// A section is only worth starting if its heading and one row fit.
+bool sectionFits(int16_t y) {
+  return y + ROW_HEIGHT + ROW_GAP + ROW_HEIGHT <= SECTION_LIMIT;
+}
+
 // The agenda fills whatever is left between the band above it and the footer.
 // Today's events are laid out first and may consume all of it; only the
 // remainder goes to upcoming days, one line each.
-void drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
+int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   const int16_t agendaTop = top + AGENDA_GAP;
   const int16_t agendaBottom = FOOTER_TOP - AGENDA_GAP;
   const int16_t right = CONTENT_X + CONTENT_WIDTH;
@@ -462,18 +471,16 @@ void drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   }
 
   // AHEAD takes what is left, one row per upcoming day, and only if the
-  // heading and at least one row still leave the page some breathing room.
-  const int16_t limit = agendaBottom - AGENDA_SLACK;
-
-  if (model.aheadCount == 0 || y + ROW_HEIGHT + ROW_GAP + ROW_HEIGHT > limit) {
-    return;
+  // heading and at least one row still fit.
+  if (model.aheadCount == 0 || !sectionFits(y)) {
+    return y;
   }
 
   drawSection(gfx, y, "AHEAD", nullptr, right);
   y += ROW_HEIGHT + ROW_GAP;
 
   for (uint8_t i = 0; i < model.aheadCount; i++) {
-    if (y + ROW_HEIGHT > limit) {
+    if (y + ROW_HEIGHT > SECTION_LIMIT) {
       break;
     }
 
@@ -496,6 +503,51 @@ void drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
       drawRight(gfx, STYLE_META, right, y + AGENDA_META_BASELINE,
                 ahead.summary);
     }
+
+    y += ROW_HEIGHT + ROW_GAP;
+  }
+
+  return y;
+}
+
+// News gets only what the agenda leaves. A clipped AHEAD leaves less than a
+// row, so it never shows under one.
+void drawNews(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
+  if (model.newsCount == 0 || !sectionFits(top)) {
+    return;
+  }
+
+  const int16_t right = CONTENT_X + CONTENT_WIDTH;
+
+  int16_t y = top;
+
+  drawSection(gfx, y, "NEWS", nullptr, right);
+  y += ROW_HEIGHT + ROW_GAP;
+
+  // The source column closes up to the widest label, within a cap.
+  int16_t sourceWidth = 0;
+
+  for (uint8_t i = 0; i < model.newsCount; i++) {
+    const int16_t width = measure(STYLE_TIME, model.news[i].source);
+    sourceWidth = width > sourceWidth ? width : sourceWidth;
+  }
+
+  sourceWidth =
+      sourceWidth < NEWS_SOURCE_WIDTH ? sourceWidth : NEWS_SOURCE_WIDTH;
+
+  const int16_t titleX = CONTENT_X + sourceWidth + ROW_GUTTER;
+
+  for (uint8_t i = 0; i < model.newsCount; i++) {
+    if (y + ROW_HEIGHT > SECTION_LIMIT) {
+      break;
+    }
+
+    const NewsModel& news = model.news[i];
+
+    drawTruncated(gfx, STYLE_TIME, CONTENT_X, y + AGENDA_META_BASELINE,
+                  sourceWidth, news.source);
+    drawTruncated(gfx, STYLE_SUBTITLE, titleX, y + AGENDA_TITLE_BASELINE,
+                  right - titleX, news.title);
 
     y += ROW_HEIGHT + ROW_GAP;
   }
@@ -553,7 +605,8 @@ void drawPanel(Adafruit_GFX& gfx, const DisplayModel& model) {
   y = drawWeather(gfx, model, y);
   y = drawHourly(gfx, model, y);
 
-  drawAgenda(gfx, model, y);
+  y = drawAgenda(gfx, model, y);
+  drawNews(gfx, model, y);
   drawFooter(gfx, model);
 }
 
