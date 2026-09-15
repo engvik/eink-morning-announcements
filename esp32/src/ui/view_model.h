@@ -10,7 +10,8 @@
 //
 // Everything is a fixed buffer rather than a pointer into the parsed JSON, so
 // the draw layer has no dependency on the parser and nothing to outlive. The
-// whole model is about 6 KB, against roughly 200 KB of free DRAM.
+// whole model is about 6 KB, too much for the loop task stack, so keep it
+// static.
 namespace ui {
 
 // An absent reading, drawn as nothing. Floats use NAN.

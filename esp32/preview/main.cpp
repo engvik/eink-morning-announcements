@@ -175,6 +175,17 @@ int main() {
     return 1;
   }
 
+  // A dry forecast: the probability row goes, and NEWS gets another row.
+  ui::DisplayModel dry = news;
+
+  for (ui::HourModel &hour : dry.hours) {
+    hour.probability = 0;
+  }
+
+  if (render("agenda-dry.png", dry) != 0) {
+    return 1;
+  }
+
   // Nothing on today: the whole TODAY section goes, and AHEAD takes the space.
   ui::DisplayModel free_day;
   ui::clear(free_day);

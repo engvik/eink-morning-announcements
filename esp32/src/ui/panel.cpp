@@ -52,6 +52,10 @@ constexpr int16_t HOURLY_TEMP_BASELINE = 67;
 constexpr int16_t HOURLY_PRECIP_BASELINE = 88;
 constexpr int16_t HOURLY_PROBABILITY_BASELINE = 112;
 
+// What the band gives back when no hour has a probability to show.
+constexpr int16_t HOURLY_PROBABILITY_ROW =
+    HOURLY_PROBABILITY_BASELINE - HOURLY_PRECIP_BASELINE;
+
 // The agenda. Rows are 20px, running rows 24, and text sits centred in them.
 constexpr int16_t AGENDA_META_BASELINE = 14;
 constexpr int16_t AGENDA_TITLE_BASELINE = 15;
@@ -322,6 +326,17 @@ int16_t drawWeather(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
 int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
   const int16_t bandTop = top + BAND_GAP;
 
+  // A dry forecast drops the probability row. Without hours the band keeps its
+  // height, so a failed fetch does not shift everything below it.
+  bool probabilities = model.hourCount == 0;
+
+  for (uint8_t column = 0; column < model.hourCount; column++) {
+    probabilities = probabilities || model.hours[column].probability > 0;
+  }
+
+  const int16_t height =
+      probabilities ? HOURLY_HEIGHT : HOURLY_HEIGHT - HOURLY_PROBABILITY_ROW;
+
   for (uint8_t column = 0; column < model.hourCount; column++) {
     const HourModel& hour = model.hours[column];
 
@@ -331,7 +346,7 @@ int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
     // Dividers sit between columns, never at the outer edges, and there is no
     // rule above or below: the design lets the icons carry the row.
     if (column > 0) {
-      gfx.fillRect(left, bandTop, RULE_THIN, HOURLY_HEIGHT, INK);
+      gfx.fillRect(left, bandTop, RULE_THIN, height, INK);
     }
 
     drawCentred(gfx, STYLE_META_WIDE, centre, bandTop + HOURLY_HOUR_BASELINE,
@@ -375,7 +390,7 @@ int16_t drawHourly(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
     }
   }
 
-  return bandTop + HOURLY_HEIGHT;
+  return bandTop + height;
 }
 
 // A section is only worth starting if its heading and one row fit.

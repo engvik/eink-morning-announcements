@@ -30,7 +30,9 @@ void setup() {
   }
 
   BackendClient backend;
-  ui::DisplayModel model;
+
+  // Static, as the model would take most of the 8 KB loop task stack.
+  static ui::DisplayModel model;
 
   if (!fetchDisplayData(backend, model)) {
     // Show stale data over broken data.
