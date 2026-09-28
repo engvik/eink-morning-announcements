@@ -70,12 +70,6 @@ func (h *Handler) setMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.SetMessage(r.Context(), m); err != nil {
-		if errors.Is(err, ErrEmptyMessage) {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(http.StatusText(http.StatusBadRequest)))
-			return
-		}
-
 		log.Printf("error saving message: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(http.StatusText(http.StatusInternalServerError)))

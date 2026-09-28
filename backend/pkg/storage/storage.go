@@ -58,10 +58,6 @@ func (s *Storage) GetWeatherForecasts(ctx context.Context) (weather.Forecasts, e
 }
 
 func (s *Storage) SetMessage(ctx context.Context, m message.Message) error {
-	if err := m.Valid(); err != nil {
-		return err
-	}
-
 	return s.client.SetMessage(ctx, m)
 }
 
