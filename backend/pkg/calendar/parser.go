@@ -40,6 +40,11 @@ func (p *Parser) Parse(cal string) (Events, error) {
 	overrides := collectOverrides(calendar.Events())
 
 	for _, e := range calendar.Events() {
+		// A cancelled instance still counts as an override above, so its slot stays empty.
+		if isCancelled(e) {
+			continue
+		}
+
 		eStart, err := e.GetStartAt()
 		if err != nil {
 			return events, err
@@ -201,6 +206,10 @@ func isAllDay(e *ics.VEvent) bool {
 	p := e.GetProperty(ics.ComponentPropertyDtStart)
 
 	return p != nil && p.GetValueType() == ics.ValueDataTypeDate
+}
+
+func isCancelled(e *ics.VEvent) bool {
+	return strings.EqualFold(getPropertyString(e.GetProperty(ics.ComponentPropertyStatus)), "CANCELLED")
 }
 
 func getPropertyString(p *ics.IANAProperty) string {

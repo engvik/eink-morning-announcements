@@ -33,11 +33,8 @@ func New(c store) *Storage {
 	}
 }
 
+// SetCalendarEvents accepts an empty set, since a calendar with nothing coming up is valid.
 func (s *Storage) SetCalendarEvents(ctx context.Context, events calendar.Events) error {
-	if len(events) == 0 {
-		return fmt.Errorf("no data")
-	}
-
 	return s.client.SetCalendarEvents(ctx, events)
 }
 
