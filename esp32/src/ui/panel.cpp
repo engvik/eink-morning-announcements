@@ -408,7 +408,8 @@ int16_t drawAgenda(Adafruit_GFX& gfx, const DisplayModel& model, int16_t top) {
 
   int16_t y = agendaTop;
 
-  // RUNNING: all-day events, with a strip of the days each one covers.
+  // RUNNING: all-day and multi-day events, with a strip of the days each one
+  // covers.
   if (model.runningCount > 0) {
     // Day headings sit above the boxes they label, and the heading's hairline
     // stops before them rather than running underneath.

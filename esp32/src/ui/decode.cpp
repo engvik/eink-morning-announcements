@@ -235,9 +235,22 @@ void composeTitle(char* out, size_t capacity, const char* title,
   snprintf(out, capacity, "%s (%s)", title == nullptr ? "" : title, location);
 }
 
+// Minutes from a to b, in wall-clock time.
+int32_t minutesBetween(const DateTime& a, const DateTime& b) {
+  return daysBetween(a, b) * 24 * 60 + (b.hour - a.hour) * 60 +
+         (b.minute - a.minute);
+}
+
 // 09:00, or 09:00-09:30 when the event has a distinct end on the same day.
+// An event carried over from yesterday shows only its end, as -02:00.
 void composeTime(char* out, size_t capacity, const DateTime& start,
-                 const DateTime& end) {
+                 const DateTime& end, bool carried) {
+  if (carried && end.valid && capacity >= 7) {
+    out[0] = '-';
+    formatClock(out + 1, capacity - 1, end);
+    return;
+  }
+
   formatClock(out, capacity, start);
 
   const bool ranged = end.valid && sameDay(start, end) &&
@@ -323,9 +336,13 @@ void decodeCalendar(DisplayModel& model, const char* json) {
     const char* title = text(entry, "title");
     const char* location = text(entry, "location");
 
+    // A timed event lasting a day or more is treated like an all-day one.
+    const bool spanning =
+        !allDay && end.valid && minutesBetween(start, end) >= 24 * 60;
+
     // All-day events are context rather than appointments, so they run along
     // the top with a strip of the days they cover instead of taking a row.
-    if (allDay) {
+    if (allDay || spanning) {
       if (model.runningCount >= MAX_RUNNING) {
         continue;
       }
@@ -333,8 +350,13 @@ void decodeCalendar(DisplayModel& model, const char* json) {
       const int16_t from = daysBetween(model.now, start);
       // DTEND is exclusive for an all-day event, so this is one past the last
       // day it covers.
-      const int16_t until = end.valid ? daysBetween(model.now, end)
-                                      : static_cast<int16_t>(from + 1);
+      int16_t until = end.valid ? daysBetween(model.now, end)
+                                : static_cast<int16_t>(from + 1);
+
+      // A timed end covers its own day too, unless it lands on midnight.
+      if (spanning && (end.hour != 0 || end.minute != 0)) {
+        until++;
+      }
 
       RunningModel& running = model.running[model.runningCount];
       bool visible = false;
@@ -371,7 +393,7 @@ void decodeCalendar(DisplayModel& model, const char* json) {
 
       EventModel& event = model.today[model.todayCount];
 
-      composeTime(event.time, sizeof(event.time), start, end);
+      composeTime(event.time, sizeof(event.time), start, end, offset < 0);
       composeTitle(event.title, sizeof(event.title), title, location);
 
       model.todayCount++;
