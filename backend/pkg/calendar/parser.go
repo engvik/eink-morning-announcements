@@ -88,8 +88,9 @@ func expand(e *ics.VEvent, eStart, now, peek time.Time, replaced map[time.Time]b
 
 	for _, prop := range e.GetProperties(ics.ComponentPropertyExdate) {
 		// A single EXDATE property may carry several comma separated dates.
+		loc := propertyLocation(prop, eStart.Location())
 		for _, value := range strings.Split(prop.Value, ",") {
-			excluded, err := parseICalTime(value, eStart.Location())
+			excluded, err := parseICalTime(value, loc)
 			if err != nil {
 				log.Println("Unable to parse EXDATE:", err)
 				continue
@@ -142,7 +143,7 @@ func collectOverrides(events []*ics.VEvent) map[string]map[time.Time]bool {
 			continue
 		}
 
-		replaced, err := parseICalTime(prop.Value, time.Local)
+		replaced, err := parseICalTime(prop.Value, propertyLocation(prop, time.Local))
 		if err != nil {
 			log.Println("Unable to parse RECURRENCE-ID:", err)
 			continue
@@ -156,6 +157,22 @@ func collectOverrides(events []*ics.VEvent) map[string]map[time.Time]bool {
 	}
 
 	return overrides
+}
+
+// propertyLocation returns the zone named by the property's TZID, or fallback.
+func propertyLocation(prop *ics.IANAProperty, fallback *time.Location) *time.Location {
+	tzid := prop.ICalParameters[string(ics.ParameterTzid)]
+	if len(tzid) == 0 {
+		return fallback
+	}
+
+	loc, err := time.LoadLocation(tzid[0])
+	if err != nil {
+		log.Println("Unable to load TZID:", err)
+		return fallback
+	}
+
+	return loc
 }
 
 // parseICalTime reads the date and date-time forms iCalendar uses for EXDATE
