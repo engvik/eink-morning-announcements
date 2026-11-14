@@ -10,7 +10,10 @@
   ];
 
   languages.cplusplus.enable = true;
-  languages.go.enable = true;
+  languages.go = {
+    enable = true;
+    version = "1.27.4";
+  };
   languages.javascript = {
     enable = true;
 
