@@ -39,8 +39,8 @@ func (f *fakeMyKid) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		http.SetCookie(w, &http.Cookie{Name: "PHPSESSID", Value: "valid", Path: "/"})
 		w.Write([]byte(`{"status":"ok"}`))
-	case r.URL.Path == "/_ajax/avdelinger/bytt_barn/531853/foreldre":
-		f.kids = append(f.kids, "531853")
+	case r.URL.Path == "/_ajax/avdelinger/bytt_barn/100001/foreldre":
+		f.kids = append(f.kids, "100001")
 		http.Redirect(w, r, "/foreldre", http.StatusFound)
 	case r.URL.Path == "/foreldre":
 		if !loggedIn {
@@ -77,7 +77,7 @@ func newTestClient(t *testing.T, password string) (*Client, *fakeMyKid) {
 func TestClientNotices(t *testing.T) {
 	c, fake := newTestClient(t, "secret")
 
-	notices, err := c.Notices(t.Context(), "531853")
+	notices, err := c.Notices(t.Context(), "100001")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestClientNotices(t *testing.T) {
 	}
 
 	// The session is reused.
-	if _, err := c.Notices(t.Context(), "531853"); err != nil {
+	if _, err := c.Notices(t.Context(), "100001"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -99,7 +99,7 @@ func TestClientNotices(t *testing.T) {
 func TestClientWrongPassword(t *testing.T) {
 	c, fake := newTestClient(t, "wrong")
 
-	if _, err := c.Notices(t.Context(), "531853"); err == nil {
+	if _, err := c.Notices(t.Context(), "100001"); err == nil {
 		t.Fatal("err = nil, want login error")
 	}
 

@@ -23,10 +23,10 @@ func TestEventsDedupe(t *testing.T) {
 		{
 			name: "same title and times collapse to the first",
 			in: Events{
-				{ID: "531853_1", Title: "Tur", Start: start, End: end},
-				{ID: "547103_1", Title: "Tur", Start: start, End: end},
+				{ID: "kid1_tur", Title: "Tur", Start: start, End: end},
+				{ID: "kid2_tur", Title: "Tur", Start: start, End: end},
 			},
-			want: []string{"531853_1"},
+			want: []string{"kid1_tur"},
 		},
 		{
 			name: "same instant in another location is a duplicate",
@@ -39,10 +39,10 @@ func TestEventsDedupe(t *testing.T) {
 		{
 			name: "different times are kept",
 			in: Events{
-				{ID: "s_531853_1", Title: "Foreldresamtale", Start: start, End: end},
-				{ID: "s_547103_1", Title: "Foreldresamtale", Start: end, End: end.Add(time.Hour)},
+				{ID: "s_kid1_tur", Title: "Foreldresamtale", Start: start, End: end},
+				{ID: "s_kid2_tur", Title: "Foreldresamtale", Start: end, End: end.Add(time.Hour)},
 			},
-			want: []string{"s_531853_1", "s_547103_1"},
+			want: []string{"s_kid1_tur", "s_kid2_tur"},
 		},
 		{
 			name: "different titles are kept",

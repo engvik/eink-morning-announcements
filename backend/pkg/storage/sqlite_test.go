@@ -77,7 +77,7 @@ func TestSQLiteMessages(t *testing.T) {
 		Time:       time.Now().Add(time.Hour),
 		Message:    "Ny beskjed fra barnehagen (14.11)",
 		Source:     message.SourceMyKid,
-		ExternalID: "27292",
+		ExternalID: "900001",
 	}
 
 	for i, want := range []bool{true, false} {

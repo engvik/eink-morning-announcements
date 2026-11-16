@@ -34,8 +34,8 @@ func TestParsePage(t *testing.T) {
 	}
 
 	want := []Notice{
-		{ID: "27292", Date: time.Date(2026, 11, 9, 0, 0, 0, 0, oslo), Heading: "Barnehagen"},
-		{ID: "27300", Date: time.Date(2026, 11, 12, 0, 0, 0, 0, oslo), Heading: "Avdelingen"},
+		{ID: "900001", Date: time.Date(2026, 11, 9, 0, 0, 0, 0, oslo), Heading: "Barnehagen"},
+		{ID: "900002", Date: time.Date(2026, 11, 12, 0, 0, 0, 0, oslo), Heading: "Avdelingen"},
 	}
 
 	if !slices.EqualFunc(notices, want, func(a, b Notice) bool {

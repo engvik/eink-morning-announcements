@@ -92,7 +92,7 @@ func (t *Task) update(ctx context.Context) {
 
 			// Exclude per feed, before the merge, so an excluded title in one
 			// feed does not drop the same title from another.
-			if t.excludeFeed == "" || feed.Label == t.excludeFeed {
+			if t.excludeFeed == "" || normalizeTitle(feed.Label) == normalizeTitle(t.excludeFeed) {
 				events = events.Exclude(t.exclude)
 			}
 

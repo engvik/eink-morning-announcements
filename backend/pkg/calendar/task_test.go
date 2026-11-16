@@ -49,9 +49,9 @@ func TestTaskUpdate(t *testing.T) {
 			{ID: "home_yoga", Title: "Yoga", Start: start, End: end},
 		},
 		"mykid": {
-			{ID: "531853_1", Title: "Tur", Start: start, End: end},
-			{ID: "547103_1", Title: "Tur", Start: start, End: end},
-			{ID: "531853_2", Title: "Yoga", Start: start, End: end},
+			{ID: "kid1_tur", Title: "Tur", Start: start, End: end},
+			{ID: "kid2_tur", Title: "Tur", Start: start, End: end},
+			{ID: "kid1_yoga", Title: "Yoga", Start: start, End: end},
 		},
 	}
 
@@ -68,7 +68,7 @@ func TestTaskUpdate(t *testing.T) {
 		{
 			name:      "merges and dedupes, no exclude",
 			fetchErrs: fakeFetcher{},
-			wantIDs:   []string{"home", "home_yoga", "531853_1"},
+			wantIDs:   []string{"home", "home_yoga", "kid1_tur"},
 			wantCalls: 1,
 		},
 		{
@@ -76,14 +76,22 @@ func TestTaskUpdate(t *testing.T) {
 			fetchErrs:   fakeFetcher{},
 			exclude:     []string{"Yoga"},
 			excludeFeed: "mykid",
-			wantIDs:     []string{"home", "home_yoga", "531853_1"},
+			wantIDs:     []string{"home", "home_yoga", "kid1_tur"},
+			wantCalls:   1,
+		},
+		{
+			name:        "feed label match ignores case and space",
+			fetchErrs:   fakeFetcher{},
+			exclude:     []string{"Yoga"},
+			excludeFeed: " MyKid ",
+			wantIDs:     []string{"home", "home_yoga", "kid1_tur"},
 			wantCalls:   1,
 		},
 		{
 			name:      "no feed scope excludes everywhere",
 			fetchErrs: fakeFetcher{},
 			exclude:   []string{"Yoga"},
-			wantIDs:   []string{"home", "531853_1"},
+			wantIDs:   []string{"home", "kid1_tur"},
 			wantCalls: 1,
 		},
 		{
