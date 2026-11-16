@@ -26,8 +26,7 @@ type Config struct {
 	Authorization           string        `envconfig:"AUTHORIZATION"`
 	NewsFeeds               Feeds         `envconfig:"NEWS_FEEDS"`
 	CalendarFeeds           Feeds         `envconfig:"CALENDAR_URL" required:"true"`
-	CalendarExclude         []string      `envconfig:"CALENDAR_EXCLUDE"`
-	CalendarExcludeFeed     string        `envconfig:"CALENDAR_EXCLUDE_FEED"`
+	CalendarExclude         Excludes      `envconfig:"CALENDAR_EXCLUDE"`
 	MyKidPhone              string        `envconfig:"MYKID_PHONE"`
 	MyKidPassword           string        `envconfig:"MYKID_PASSWORD"`
 	MyKidKids               []string      `envconfig:"MYKID_KIDS"`
@@ -65,6 +64,48 @@ func (f *Feeds) Decode(value string) error {
 	}
 
 	return nil
+}
+
+// Exclude is a calendar title to hide. Feed limits it to one feed label; empty
+// applies to every feed.
+type Exclude struct {
+	Feed  string
+	Title string
+}
+
+// Excludes decodes comma separated entries, each a title or a LABEL=title pair.
+type Excludes []Exclude
+
+func (e *Excludes) Decode(value string) error {
+	for entry := range strings.SplitSeq(value, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+
+		// A LABEL=title scopes the title to one feed; a bare title hits all feeds.
+		if feed, title, ok := strings.Cut(entry, "="); ok {
+			*e = append(*e, Exclude{Feed: strings.TrimSpace(feed), Title: strings.TrimSpace(title)})
+			continue
+		}
+
+		*e = append(*e, Exclude{Title: entry})
+	}
+
+	return nil
+}
+
+// Titles returns the titles to exclude for the feed labelled label.
+func (e Excludes) Titles(label string) []string {
+	titles := make([]string, 0, len(e))
+
+	for _, ex := range e {
+		if ex.Feed == "" || strings.EqualFold(ex.Feed, label) {
+			titles = append(titles, ex.Title)
+		}
+	}
+
+	return titles
 }
 
 // Clock is a time of day.

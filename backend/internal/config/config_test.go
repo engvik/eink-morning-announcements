@@ -65,3 +65,38 @@ func TestClocksNext(t *testing.T) {
 		})
 	}
 }
+
+func TestExcludesDecodeAndTitles(t *testing.T) {
+	var e Excludes
+	if err := e.Decode("Yoga, mykid=Første måltid , mykid=Tur,personal=Dugnad"); err != nil {
+		t.Fatal(err)
+	}
+
+	want := Excludes{
+		{Title: "Yoga"},
+		{Feed: "mykid", Title: "Første måltid"},
+		{Feed: "mykid", Title: "Tur"},
+		{Feed: "personal", Title: "Dugnad"},
+	}
+	if !slices.Equal(e, want) {
+		t.Fatalf("Decode = %+v, want %+v", e, want)
+	}
+
+	tests := []struct {
+		label string
+		want  []string
+	}{
+		{"mykid", []string{"Yoga", "Første måltid", "Tur"}},
+		{"MyKid", []string{"Yoga", "Første måltid", "Tur"}}, // label match is case-insensitive
+		{"personal", []string{"Yoga", "Dugnad"}},
+		{"other", []string{"Yoga"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.label, func(t *testing.T) {
+			if got := e.Titles(tt.label); !slices.Equal(got, tt.want) {
+				t.Errorf("Titles(%q) = %v, want %v", tt.label, got, tt.want)
+			}
+		})
+	}
+}

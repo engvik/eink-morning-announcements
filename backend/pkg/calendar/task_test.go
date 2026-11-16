@@ -58,12 +58,11 @@ func TestTaskUpdate(t *testing.T) {
 	calendarFeeds := config.Feeds{{Label: "personal", URL: "ical"}, {Label: "mykid", URL: "mykid"}}
 
 	tests := []struct {
-		name        string
-		fetchErrs   fakeFetcher
-		exclude     []string
-		excludeFeed string
-		wantIDs     []string
-		wantCalls   int
+		name      string
+		fetchErrs fakeFetcher
+		exclude   config.Excludes
+		wantIDs   []string
+		wantCalls int
 	}{
 		{
 			name:      "merges and dedupes, no exclude",
@@ -72,25 +71,23 @@ func TestTaskUpdate(t *testing.T) {
 			wantCalls: 1,
 		},
 		{
-			name:        "exclude scoped to one feed keeps the title in the other",
-			fetchErrs:   fakeFetcher{},
-			exclude:     []string{"Yoga"},
-			excludeFeed: "mykid",
-			wantIDs:     []string{"home", "home_yoga", "kid1_tur"},
-			wantCalls:   1,
-		},
-		{
-			name:        "feed label match ignores case and space",
-			fetchErrs:   fakeFetcher{},
-			exclude:     []string{"Yoga"},
-			excludeFeed: " MyKid ",
-			wantIDs:     []string{"home", "home_yoga", "kid1_tur"},
-			wantCalls:   1,
-		},
-		{
-			name:      "no feed scope excludes everywhere",
+			name:      "exclude scoped to one feed keeps the title in the other",
 			fetchErrs: fakeFetcher{},
-			exclude:   []string{"Yoga"},
+			exclude:   config.Excludes{{Feed: "mykid", Title: "Yoga"}},
+			wantIDs:   []string{"home", "home_yoga", "kid1_tur"},
+			wantCalls: 1,
+		},
+		{
+			name:      "feed label match ignores case",
+			fetchErrs: fakeFetcher{},
+			exclude:   config.Excludes{{Feed: "MyKid", Title: "Yoga"}},
+			wantIDs:   []string{"home", "home_yoga", "kid1_tur"},
+			wantCalls: 1,
+		},
+		{
+			name:      "unscoped entry excludes everywhere",
+			fetchErrs: fakeFetcher{},
+			exclude:   config.Excludes{{Title: "Yoga"}},
 			wantIDs:   []string{"home", "kid1_tur"},
 			wantCalls: 1,
 		},
@@ -106,13 +103,12 @@ func TestTaskUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &fakeStore{events: Events{{ID: "previous"}}}
 			task := &Task{
-				Fetcher:     tt.fetchErrs,
-				Parser:      feeds,
-				Storage:     s,
-				feeds:       calendarFeeds,
-				exclude:     tt.exclude,
-				excludeFeed: tt.excludeFeed,
-				timeout:     time.Second,
+				Fetcher: tt.fetchErrs,
+				Parser:  feeds,
+				Storage: s,
+				feeds:   calendarFeeds,
+				exclude: tt.exclude,
+				timeout: time.Second,
 			}
 
 			task.update(t.Context())

@@ -29,8 +29,7 @@ type Task struct {
 	Parser         parser
 	Storage        store
 	feeds          config.Feeds
-	exclude        []string
-	excludeFeed    string
+	exclude        config.Excludes
 	updateInterval time.Duration
 	timeout        time.Duration
 }
@@ -42,7 +41,6 @@ func NewTask(cfg *config.Config, s store, f fetcher, p parser) *Task {
 		Storage:        s,
 		feeds:          cfg.CalendarFeeds,
 		exclude:        cfg.CalendarExclude,
-		excludeFeed:    cfg.CalendarExcludeFeed,
 		updateInterval: cfg.CalendarUpdateInterval,
 		timeout:        cfg.CalendarTimeout,
 	}
@@ -90,11 +88,9 @@ func (t *Task) update(ctx context.Context) {
 				return fmt.Errorf("parsing calendar %q: %w", feed.Label, err)
 			}
 
-			// Exclude per feed, before the merge, so an excluded title in one
-			// feed does not drop the same title from another.
-			if t.excludeFeed == "" || normalizeTitle(feed.Label) == normalizeTitle(t.excludeFeed) {
-				events = events.Exclude(t.exclude)
-			}
+			// Exclude per feed, before the merge, so a title excluded from one
+			// feed is not dropped from another.
+			events = events.Exclude(t.exclude.Titles(feed.Label))
 
 			feeds[i] = events
 
