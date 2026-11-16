@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-
-	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
 type httpClient interface {
@@ -13,19 +11,18 @@ type httpClient interface {
 }
 
 type Fetcher struct {
-	URL  string
 	HTTP httpClient
 }
 
-func NewFetcher(cfg *config.Config, http httpClient) *Fetcher {
+func NewFetcher(http httpClient) *Fetcher {
 	return &Fetcher{
-		URL:  cfg.CalendarURL,
 		HTTP: http,
 	}
 }
 
-func (f *Fetcher) Fetch(ctx context.Context) ([]byte, error) {
-	req, err := http.NewRequest(http.MethodGet, f.URL, nil)
+// Fetch retrieves the raw calendar at url.
+func (f *Fetcher) Fetch(ctx context.Context, url string) ([]byte, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating request: %w", err)
 	}

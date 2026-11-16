@@ -69,6 +69,9 @@ func (h *Handler) setMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	m.Source = SourceManual
+	m.ExternalID = ""
+
 	if err := h.service.SetMessage(r.Context(), m); err != nil {
 		log.Printf("error saving message: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)

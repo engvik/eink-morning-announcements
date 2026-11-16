@@ -110,29 +110,52 @@ func (c *SQLite) migrate(entry string, next int) error {
 }
 
 func (c *SQLite) SetMessage(ctx context.Context, m message.Message) error {
-	stmt, err := c.db.PrepareContext(
+	_, err := c.db.ExecContext(
 		ctx,
-		`
-		INSERT OR REPLACE INTO messages
-		VALUES (?, ?)
-		`,
+		"INSERT INTO messages (time, message, source) VALUES (?, ?, ?)",
+		time.Now().UnixMicro(), m.Message, m.Source,
+	)
+
+	return err
+}
+
+// AddExternalMessage stores m at m.Time unless its source and external ID are
+// already stored, and reports whether it was added.
+func (c *SQLite) AddExternalMessage(ctx context.Context, m message.Message) (bool, error) {
+	if m.ExternalID == "" {
+		return false, errors.New("external message without external ID")
+	}
+
+	res, err := c.db.ExecContext(
+		ctx,
+		"INSERT OR IGNORE INTO messages (time, message, source, external_id) VALUES (?, ?, ?, ?)",
+		m.Time.UnixMicro(), m.Message, m.Source, m.ExternalID,
 	)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	if _, err := stmt.ExecContext(ctx, time.Now().UnixMicro(), m.Message); err != nil {
-		return err
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
 	}
 
-	return nil
+	return n == 1, nil
+}
+
+func (c *SQLite) HasMessages(ctx context.Context, source string) (bool, error) {
+	var exists bool
+
+	err := c.db.QueryRowContext(ctx, "SELECT EXISTS (SELECT 1 FROM messages WHERE source = ?)", source).Scan(&exists)
+
+	return exists, err
 }
 
 func (c *SQLite) GetMessage(ctx context.Context) (message.Message, error) {
 	var timestamp int64
-	var msg string
+	var msg, source string
 
-	err := c.db.QueryRowContext(ctx, "SELECT time, message FROM messages ORDER BY time DESC LIMIT 1").Scan(&timestamp, &msg)
+	err := c.db.QueryRowContext(ctx, "SELECT time, message, source FROM messages ORDER BY time DESC LIMIT 1").Scan(&timestamp, &msg, &source)
 	if errors.Is(err, sql.ErrNoRows) {
 		return message.Message{}, message.ErrNoMessages
 	}
@@ -144,6 +167,7 @@ func (c *SQLite) GetMessage(ctx context.Context) (message.Message, error) {
 	return message.Message{
 		Time:    time.UnixMicro(timestamp).In(c.location),
 		Message: msg,
+		Source:  source,
 	}, nil
 }
 
