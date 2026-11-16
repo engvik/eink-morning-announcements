@@ -28,8 +28,9 @@ type Task struct {
 	Fetcher        fetcher
 	Parser         parser
 	Storage        store
-	urls           []string
+	feeds          config.Feeds
 	exclude        []string
+	excludeFeed    string
 	updateInterval time.Duration
 	timeout        time.Duration
 }
@@ -39,8 +40,9 @@ func NewTask(cfg *config.Config, s store, f fetcher, p parser) *Task {
 		Fetcher:        f,
 		Parser:         p,
 		Storage:        s,
-		urls:           cfg.CalendarURLs,
+		feeds:          cfg.CalendarFeeds,
 		exclude:        cfg.CalendarExclude,
+		excludeFeed:    cfg.CalendarExcludeFeed,
 		updateInterval: cfg.CalendarUpdateInterval,
 		timeout:        cfg.CalendarTimeout,
 	}
@@ -71,21 +73,27 @@ func (t *Task) update(ctx context.Context) {
 	ctx, cancel := context.WithTimeout(ctx, t.timeout)
 	defer cancel()
 
-	feeds := make([]Events, len(t.urls))
+	feeds := make([]Events, len(t.feeds))
 
 	// Any failed feed keeps the previous set, rather than dropping that feed's events.
 	g, gctx := errgroup.WithContext(ctx)
 
-	for i, url := range t.urls {
+	for i, feed := range t.feeds {
 		g.Go(func() error {
-			body, err := t.Fetcher.Fetch(gctx, url)
+			body, err := t.Fetcher.Fetch(gctx, feed.URL)
 			if err != nil {
-				return fmt.Errorf("fetching calendar %d: %w", i, err)
+				return fmt.Errorf("fetching calendar %q: %w", feed.Label, err)
 			}
 
 			events, err := t.Parser.Parse(string(body))
 			if err != nil {
-				return fmt.Errorf("parsing calendar %d: %w", i, err)
+				return fmt.Errorf("parsing calendar %q: %w", feed.Label, err)
+			}
+
+			// Exclude per feed, before the merge, so an excluded title in one
+			// feed does not drop the same title from another.
+			if t.excludeFeed == "" || feed.Label == t.excludeFeed {
+				events = events.Exclude(t.exclude)
 			}
 
 			feeds[i] = events
@@ -104,7 +112,7 @@ func (t *Task) update(ctx context.Context) {
 		events = append(events, f...)
 	}
 
-	events = events.Dedupe().Exclude(t.exclude)
+	events = events.Dedupe()
 
 	if err := t.Storage.SetCalendarEvents(ctx, events); err != nil {
 		log.Printf("Error storing calendar events: %s\n", err)

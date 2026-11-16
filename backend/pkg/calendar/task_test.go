@@ -6,6 +6,8 @@ import (
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/engvik/eink-morning-announcements/backend/internal/config"
 )
 
 type fakeFetcher map[string]error
@@ -40,24 +42,47 @@ func TestTaskUpdate(t *testing.T) {
 	start := time.Date(2026, 11, 16, 10, 0, 0, 0, time.UTC)
 	end := start.Add(time.Hour)
 
+	// Keyed by feed URL. Both feeds carry Yoga, so dedupe and scoped exclude interact.
 	feeds := fakeParser{
-		"ical": {{ID: "home", Title: "Tannlege", Start: start, End: end}},
+		"ical": {
+			{ID: "home", Title: "Tannlege", Start: start, End: end},
+			{ID: "home_yoga", Title: "Yoga", Start: start, End: end},
+		},
 		"mykid": {
 			{ID: "531853_1", Title: "Tur", Start: start, End: end},
 			{ID: "547103_1", Title: "Tur", Start: start, End: end},
-			{ID: "531853_2", Title: "Første måltid", Start: start, End: end},
+			{ID: "531853_2", Title: "Yoga", Start: start, End: end},
 		},
 	}
 
+	calendarFeeds := config.Feeds{{Label: "personal", URL: "ical"}, {Label: "mykid", URL: "mykid"}}
+
 	tests := []struct {
-		name      string
-		fetchErrs fakeFetcher
-		wantIDs   []string
-		wantCalls int
+		name        string
+		fetchErrs   fakeFetcher
+		exclude     []string
+		excludeFeed string
+		wantIDs     []string
+		wantCalls   int
 	}{
 		{
-			name:      "merges, dedupes and excludes",
+			name:      "merges and dedupes, no exclude",
 			fetchErrs: fakeFetcher{},
+			wantIDs:   []string{"home", "home_yoga", "531853_1"},
+			wantCalls: 1,
+		},
+		{
+			name:        "exclude scoped to one feed keeps the title in the other",
+			fetchErrs:   fakeFetcher{},
+			exclude:     []string{"Yoga"},
+			excludeFeed: "mykid",
+			wantIDs:     []string{"home", "home_yoga", "531853_1"},
+			wantCalls:   1,
+		},
+		{
+			name:      "no feed scope excludes everywhere",
+			fetchErrs: fakeFetcher{},
+			exclude:   []string{"Yoga"},
 			wantIDs:   []string{"home", "531853_1"},
 			wantCalls: 1,
 		},
@@ -73,12 +98,13 @@ func TestTaskUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &fakeStore{events: Events{{ID: "previous"}}}
 			task := &Task{
-				Fetcher: tt.fetchErrs,
-				Parser:  feeds,
-				Storage: s,
-				urls:    []string{"ical", "mykid"},
-				exclude: []string{"Første måltid"},
-				timeout: time.Second,
+				Fetcher:     tt.fetchErrs,
+				Parser:      feeds,
+				Storage:     s,
+				feeds:       calendarFeeds,
+				exclude:     tt.exclude,
+				excludeFeed: tt.excludeFeed,
+				timeout:     time.Second,
 			}
 
 			task.update(t.Context())

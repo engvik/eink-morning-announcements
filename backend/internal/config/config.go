@@ -25,8 +25,9 @@ type Config struct {
 	Location                string        `envconfig:"LOCATION" default:"Europe/Oslo"`
 	Authorization           string        `envconfig:"AUTHORIZATION"`
 	NewsFeeds               Feeds         `envconfig:"NEWS_FEEDS"`
-	CalendarURLs            []string      `envconfig:"CALENDAR_URL" required:"true"`
+	CalendarFeeds           Feeds         `envconfig:"CALENDAR_URL" required:"true"`
 	CalendarExclude         []string      `envconfig:"CALENDAR_EXCLUDE"`
+	CalendarExcludeFeed     string        `envconfig:"CALENDAR_EXCLUDE_FEED"`
 	MyKidPhone              string        `envconfig:"MYKID_PHONE"`
 	MyKidPassword           string        `envconfig:"MYKID_PASSWORD"`
 	MyKidKids               []string      `envconfig:"MYKID_KIDS"`
