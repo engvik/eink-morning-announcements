@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/engvik/eink-morning-announcements/backend/pkg/calendar"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/message"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/meta"
+	"github.com/engvik/eink-morning-announcements/backend/pkg/mykid"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/news"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/storage"
 	"github.com/engvik/eink-morning-announcements/backend/pkg/tasks"
@@ -38,7 +40,7 @@ func main() {
 	storage := storage.New(storageClient)
 
 	// Calendar
-	calendarFetcher := calendar.NewFetcher(&cfg, httpClient)
+	calendarFetcher := calendar.NewFetcher(httpClient)
 	calendarParser := calendar.NewParser(&cfg)
 	calendarTask := calendar.NewTask(&cfg, storage, calendarFetcher, calendarParser)
 	calendarHandlers := calendar.NewHTTPHandlers(&cfg, storage)
@@ -58,6 +60,21 @@ func main() {
 	newsTask := news.NewTask(&cfg, storage, newsFetcher, newsParser)
 	newsHandlers := news.NewHTTPHandlers(storage)
 
+	// Default tasks
+	backgroundTasks := []tasks.Task{calendarTask, weatherTask, newsTask}
+
+	// MyKid task when configured
+	if cfg.MyKidPhone != "" && cfg.MyKidPassword != "" {
+		location, err := time.LoadLocation(cfg.Location)
+		if err != nil {
+			log.Fatal("Error loading location:", err)
+		}
+
+		mykidClient := mykid.NewClient(httpClient.Client, cfg.MyKidPhone, cfg.MyKidPassword, location)
+		mykidClient.UserAgent = httpClient.UserAgent()
+		backgroundTasks = append(backgroundTasks, mykid.NewTask(&cfg, location, mykidClient, storage))
+	}
+
 	// Message
 	messageHandlers := message.NewHTTPHandlers(storage)
 
@@ -75,7 +92,7 @@ func main() {
 	s.Mount("/api", newsHandlers.Routes())
 
 	// Start background tasks
-	tasks.Start(ctx, calendarTask, weatherTask, newsTask)
+	tasks.Start(ctx, backgroundTasks...)
 
 	// Start HTTP server
 	s.Serve(ctx)
