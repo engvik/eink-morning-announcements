@@ -33,7 +33,7 @@ func (http *HTTP) Request(req *http.Request) ([]byte, int, error) {
 
 	resp, err := http.Client.Do(req)
 	if err != nil {
-		return nil, 0, fmt.Errorf("Error doing request: %w", err)
+		return nil, 0, fmt.Errorf("request %s %s://%s%s failed", req.Method, req.URL.Scheme, req.URL.Host, req.URL.Path)
 	}
 
 	defer resp.Body.Close()
