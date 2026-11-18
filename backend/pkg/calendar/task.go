@@ -88,8 +88,6 @@ func (t *Task) update(ctx context.Context) {
 				return fmt.Errorf("parsing calendar %q: %w", feed.Label, err)
 			}
 
-			// Exclude per feed, before the merge, so a title excluded from one
-			// feed is not dropped from another.
 			events = events.Exclude(t.exclude.Titles(feed.Label))
 
 			feeds[i] = events

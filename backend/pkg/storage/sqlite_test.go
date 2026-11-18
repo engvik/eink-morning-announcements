@@ -81,7 +81,7 @@ func TestSQLiteMessages(t *testing.T) {
 	}
 
 	for i, want := range []bool{true, false} {
-		added, err := c.AddExternalMessage(ctx, notice)
+		added, err := c.AddExternalMessage(ctx, notice, true)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -104,7 +104,49 @@ func TestSQLiteMessages(t *testing.T) {
 		t.Errorf("GetMessage = %+v, want the notice", got)
 	}
 
-	if _, err := c.AddExternalMessage(ctx, message.Message{Source: message.SourceMyKid}); err == nil {
+	if _, err := c.AddExternalMessage(ctx, message.Message{Source: message.SourceMyKid}, true); err == nil {
 		t.Error("AddExternalMessage without ID: err = nil")
+	}
+}
+
+func TestSQLiteDeactivateExternalMessages(t *testing.T) {
+	c := newTestSQLite(t, filepath.Join(t.TempDir(), "test.db"))
+	ctx := t.Context()
+
+	if err := c.SetMessage(ctx, message.Message{Message: "manual", Source: message.SourceManual}); err != nil {
+		t.Fatal(err)
+	}
+
+	notice := message.Message{Time: time.Now().Add(time.Hour), Message: "notice", Source: message.SourceMyKid, ExternalID: "a"}
+	if _, err := c.AddExternalMessage(ctx, notice, true); err != nil {
+		t.Fatal(err)
+	}
+
+	// While active, the newer notice is the reminder.
+	if got, _ := c.GetMessage(ctx); got.Source != message.SourceMyKid {
+		t.Errorf("GetMessage = %+v, want the notice", got)
+	}
+
+	// Deactivated, it stops showing and the reminder falls back to manual...
+	if err := c.DeactivateExternalMessages(ctx, message.SourceMyKid); err != nil {
+		t.Fatal(err)
+	}
+
+	if got, _ := c.GetMessage(ctx); got.Source != message.SourceManual {
+		t.Errorf("GetMessage = %+v, want the manual message", got)
+	}
+
+	// ...but the row remains, so the same notice is never re-added.
+	added, err := c.AddExternalMessage(ctx, notice, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if added {
+		t.Error("a deactivated notice was re-added")
+	}
+
+	if got, _ := c.GetMessage(ctx); got.Source != message.SourceManual {
+		t.Errorf("GetMessage = %+v, want the notice to stay cleared", got)
 	}
 }

@@ -119,17 +119,17 @@ func (c *SQLite) SetMessage(ctx context.Context, m message.Message) error {
 	return err
 }
 
-// AddExternalMessage stores m at m.Time unless its source and external ID are
-// already stored, and reports whether it was added.
-func (c *SQLite) AddExternalMessage(ctx context.Context, m message.Message) (bool, error) {
+// AddExternalMessage stores a message once per source and external ID,
+// reporting whether it was new. show marks it the active reminder.
+func (c *SQLite) AddExternalMessage(ctx context.Context, m message.Message, show bool) (bool, error) {
 	if m.ExternalID == "" {
 		return false, errors.New("external message without external ID")
 	}
 
 	res, err := c.db.ExecContext(
 		ctx,
-		"INSERT OR IGNORE INTO messages (time, message, source, external_id) VALUES (?, ?, ?, ?)",
-		m.Time.UnixMicro(), m.Message, m.Source, m.ExternalID,
+		"INSERT OR IGNORE INTO messages (time, message, source, external_id, active) VALUES (?, ?, ?, ?, ?)",
+		m.Time.UnixMicro(), m.Message, m.Source, m.ExternalID, show,
 	)
 	if err != nil {
 		return false, err
@@ -141,6 +141,14 @@ func (c *SQLite) AddExternalMessage(ctx context.Context, m message.Message) (boo
 	}
 
 	return n == 1, nil
+}
+
+// DeactivateExternalMessages retires source's messages from the reminder slot,
+// keeping the rows so they are remembered as seen.
+func (c *SQLite) DeactivateExternalMessages(ctx context.Context, source string) error {
+	_, err := c.db.ExecContext(ctx, "UPDATE messages SET active = 0 WHERE source = ?", source)
+
+	return err
 }
 
 func (c *SQLite) HasMessages(ctx context.Context, source string) (bool, error) {
@@ -155,7 +163,7 @@ func (c *SQLite) GetMessage(ctx context.Context) (message.Message, error) {
 	var timestamp int64
 	var msg, source string
 
-	err := c.db.QueryRowContext(ctx, "SELECT time, message, source FROM messages ORDER BY time DESC LIMIT 1").Scan(&timestamp, &msg, &source)
+	err := c.db.QueryRowContext(ctx, "SELECT time, message, source FROM messages WHERE active = 1 ORDER BY time DESC LIMIT 1").Scan(&timestamp, &msg, &source)
 	if errors.Is(err, sql.ErrNoRows) {
 		return message.Message{}, message.ErrNoMessages
 	}

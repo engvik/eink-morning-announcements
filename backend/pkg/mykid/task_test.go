@@ -15,33 +15,61 @@ func (f fakeNoticer) Notices(_ context.Context, kid string) ([]Notice, error) {
 	return f[kid], nil
 }
 
-// memStore mirrors the SQLite semantics the task relies on.
 type memStore struct {
-	msgs []message.Message
+	msgs []storedMsg
+}
+
+type storedMsg struct {
+	m      message.Message
+	active bool
 }
 
 func (s *memStore) GetMessage(context.Context) (message.Message, error) {
-	if len(s.msgs) == 0 {
+	var latest message.Message
+	found := false
+
+	for _, row := range s.msgs {
+		if row.active && (!found || row.m.Time.After(latest.Time)) {
+			latest = row.m
+			found = true
+		}
+	}
+
+	if !found {
 		return message.Message{}, message.ErrNoMessages
 	}
 
-	return slices.MaxFunc(s.msgs, func(a, b message.Message) int { return a.Time.Compare(b.Time) }), nil
+	return latest, nil
 }
 
-func (s *memStore) AddExternalMessage(_ context.Context, m message.Message) (bool, error) {
+func (s *memStore) AddExternalMessage(_ context.Context, m message.Message, show bool) (bool, error) {
 	for _, old := range s.msgs {
-		if old.Source == m.Source && old.ExternalID == m.ExternalID {
+		if old.m.Source == m.Source && old.m.ExternalID == m.ExternalID {
 			return false, nil
 		}
 	}
 
-	s.msgs = append(s.msgs, m)
+	s.msgs = append(s.msgs, storedMsg{m: m, active: show})
 
 	return true, nil
 }
 
 func (s *memStore) HasMessages(_ context.Context, source string) (bool, error) {
-	return slices.ContainsFunc(s.msgs, func(m message.Message) bool { return m.Source == source }), nil
+	return slices.ContainsFunc(s.msgs, func(r storedMsg) bool { return r.m.Source == source }), nil
+}
+
+func (s *memStore) DeactivateExternalMessages(_ context.Context, source string) error {
+	for i := range s.msgs {
+		if s.msgs[i].m.Source == source {
+			s.msgs[i].active = false
+		}
+	}
+
+	return nil
+}
+
+func (s *memStore) setManual(m message.Message) {
+	s.msgs = append(s.msgs, storedMsg{m: m, active: true})
 }
 
 func TestTaskUpdate(t *testing.T) {
@@ -51,9 +79,8 @@ func TestTaskUpdate(t *testing.T) {
 	shared := Notice{ID: "1", Date: day(9), Heading: "Barnehagen"}
 	noticer := fakeNoticer{"a": {shared}, "b": {shared}}
 
-	s := &memStore{msgs: []message.Message{
-		{Time: day(10), Message: "Ta med sekk", Source: message.SourceManual},
-	}}
+	s := &memStore{}
+	s.setManual(message.Message{Time: day(10), Message: "Ta med sekk", Source: message.SourceManual})
 
 	task := &Task{
 		Client:  noticer,
@@ -63,32 +90,33 @@ func TestTaskUpdate(t *testing.T) {
 		now:     func() time.Time { return now },
 	}
 
-	// First run back-dates the backlog, so the newer manual reminder stays on top.
+	mustShow := func(label, wantSource, wantMsg string) {
+		t.Helper()
+		got, _ := s.GetMessage(t.Context())
+		if got.Source != wantSource || got.Message != wantMsg {
+			t.Errorf("%s: reminder = %+v, want source %q message %q", label, got, wantSource, wantMsg)
+		}
+	}
+
+	// First run seeds the existing backlog silently: nothing shown, manual stands.
 	task.update(t.Context())
+	mustShow("after first-run seed", message.SourceManual, "Ta med sekk")
 
-	if len(s.msgs) != 2 {
-		t.Fatalf("stored %d messages, want 2 (shared post-it once)", len(s.msgs))
-	}
-
-	if got, _ := s.GetMessage(t.Context()); got.Source != message.SourceManual {
-		t.Errorf("latest after seeding = %+v, want the manual reminder", got)
-	}
-
-	// A new post-it on a later run takes the slot at the current time.
+	// A new post-it is shown on the run it first appears.
 	noticer["b"] = append(noticer["b"], Notice{ID: "2", Date: day(14), Heading: "Avdelingen"})
 	task.update(t.Context())
+	mustShow("new notice", message.SourceMyKid, "Ny beskjed fra barnehagen (14.11)")
 
-	got, _ := s.GetMessage(t.Context())
-	want := message.Message{Time: now, Message: "Ny beskjed fra barnehagen (14.11)", Source: message.SourceMyKid, ExternalID: "2"}
-
-	if got != want {
-		t.Errorf("latest = %+v, want %+v", got, want)
-	}
-
-	// Unchanged post-its are not stored again.
+	// Next scheduled run with no newer post-it clears it back to the manual message.
 	task.update(t.Context())
+	mustShow("notice expired", message.SourceManual, "Ta med sekk")
 
-	if len(s.msgs) != 3 {
-		t.Errorf("stored %d messages, want 3", len(s.msgs))
-	}
+	// And it is not resurrected on later runs while it is still the newest post-it.
+	task.update(t.Context())
+	mustShow("stays cleared", message.SourceManual, "Ta med sekk")
+
+	// A genuinely new post-it shows again.
+	noticer["a"] = append(noticer["a"], Notice{ID: "3", Date: day(15), Heading: "Barnehagen"})
+	task.update(t.Context())
+	mustShow("another new notice", message.SourceMyKid, "Ny beskjed fra barnehagen (15.11)")
 }

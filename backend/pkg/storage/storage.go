@@ -17,7 +17,8 @@ type store interface {
 	GetWeatherForecasts(context.Context) (weather.Forecasts, error)
 	SetMessage(context.Context, message.Message) error
 	GetMessage(context.Context) (message.Message, error)
-	AddExternalMessage(context.Context, message.Message) (bool, error)
+	AddExternalMessage(context.Context, message.Message, bool) (bool, error)
+	DeactivateExternalMessages(context.Context, string) error
 	HasMessages(context.Context, string) (bool, error)
 	SetSun(context.Context, weather.Sun) error
 	GetSun(context.Context) (weather.Sun, error)
@@ -64,12 +65,16 @@ func (s *Storage) GetMessage(ctx context.Context) (message.Message, error) {
 	return s.client.GetMessage(ctx)
 }
 
-func (s *Storage) AddExternalMessage(ctx context.Context, m message.Message) (bool, error) {
-	return s.client.AddExternalMessage(ctx, m)
+func (s *Storage) AddExternalMessage(ctx context.Context, m message.Message, show bool) (bool, error) {
+	return s.client.AddExternalMessage(ctx, m, show)
 }
 
 func (s *Storage) HasMessages(ctx context.Context, source string) (bool, error) {
 	return s.client.HasMessages(ctx, source)
+}
+
+func (s *Storage) DeactivateExternalMessages(ctx context.Context, source string) error {
+	return s.client.DeactivateExternalMessages(ctx, source)
 }
 
 func (s *Storage) SetSun(ctx context.Context, sun weather.Sun) error {

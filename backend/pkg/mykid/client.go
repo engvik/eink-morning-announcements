@@ -19,7 +19,7 @@ const DefaultBaseURL = "https://mykid.no"
 
 var errLoggedOut = errors.New("session logged out")
 
-// Client scrapes MyKid with a session cookie, logging in when it has none.
+// Client is a logged-in MyKid session.
 type Client struct {
 	BaseURL   string
 	UserAgent string
@@ -29,7 +29,7 @@ type Client struct {
 	password string
 	location *time.Location
 
-	// The active child is session state, so switching and fetching must not interleave.
+	// Active child is session state.
 	mu sync.Mutex
 }
 
@@ -116,8 +116,7 @@ func (c *Client) login(ctx context.Context) error {
 		return fmt.Errorf("decoding login response: %w", err)
 	}
 
-	// "bad" is the only known error status. anything else is treated as success
-	// and checked by the next page load.
+	// Only "bad" is known; a wrong success surfaces as a logged-out next page.
 
 	if res.Status == "bad" {
 		return fmt.Errorf("rejected: %s", res.Message)

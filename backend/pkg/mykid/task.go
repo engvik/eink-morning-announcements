@@ -18,8 +18,9 @@ type noticer interface {
 
 type store interface {
 	GetMessage(context.Context) (message.Message, error)
-	AddExternalMessage(context.Context, message.Message) (bool, error)
+	AddExternalMessage(context.Context, message.Message, bool) (bool, error)
 	HasMessages(context.Context, string) (bool, error)
+	DeactivateExternalMessages(context.Context, string) error
 }
 
 // Task turns new post-its into a short reminder pointing at the app.
@@ -80,22 +81,28 @@ func (t *Task) update(ctx context.Context) {
 		notices = append(notices, n...)
 	}
 
-	// Kids in the same department share post-its. Oldest first so the newest
-	// ends up on top.
+	// Shared across kids, oldest first so the newest takes the slot.
 	slices.SortFunc(notices, func(a, b Notice) int {
 		return cmp.Or(a.Date.Compare(b.Date), cmp.Compare(a.ID, b.ID))
 	})
 	notices = slices.CompactFunc(notices, func(a, b Notice) bool { return a.ID == b.ID })
 
+	// First run, remember the backlog without showing it.
 	seeded, err := t.Storage.HasMessages(ctx, message.SourceMyKid)
 	if err != nil {
 		log.Printf("Error checking MyKid messages: %s\n", err)
 		return
 	}
 
-	latest, err := t.Storage.GetMessage(ctx)
+	before, err := t.Storage.GetMessage(ctx)
 	if err != nil && !errors.Is(err, message.ErrNoMessages) {
 		log.Printf("Error getting message: %s\n", err)
+		return
+	}
+
+	// Expire last run's notice.
+	if err := t.Storage.DeactivateExternalMessages(ctx, message.SourceMyKid); err != nil {
+		log.Printf("Error expiring MyKid notices: %s\n", err)
 		return
 	}
 
@@ -107,26 +114,15 @@ func (t *Task) update(ctx context.Context) {
 			ExternalID: n.ID,
 		}
 
-		// The first run back-dates existing post-its, so the backlog doesn't bury
-		// a newer reminder.
-		if !seeded {
-			m.Time = n.Date
-		}
-
-		added, err := t.Storage.AddExternalMessage(ctx, m)
+		// Only brand-new notices are added, so each shows for one run.
+		added, err := t.Storage.AddExternalMessage(ctx, m, seeded)
 		if err != nil {
 			log.Printf("Error storing MyKid notice %s: %s\n", n.ID, err)
 			return
 		}
 
-		if !added || !seeded {
-			continue
+		if added && seeded && before.Source == message.SourceManual && before.Message != "" {
+			log.Printf("MyKid notice %s (%q) replaces manual reminder %q\n", n.ID, n.Heading, before.Message)
 		}
-
-		if latest.Source == message.SourceManual && latest.Message != "" {
-			log.Printf("MyKid notice %s (%q) replaces manual reminder %q\n", n.ID, n.Heading, latest.Message)
-		}
-
-		latest = m
 	}
 }

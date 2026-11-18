@@ -50,8 +50,7 @@ func (e Events) Dedupe() Events {
 	return out
 }
 
-// Exclude drops events whose title matches one of titles, ignoring case and
-// surrounding space.
+// Exclude drops events whose title matches one of titles, case-insensitively.
 func (e Events) Exclude(titles []string) Events {
 	if len(titles) == 0 {
 		return e
